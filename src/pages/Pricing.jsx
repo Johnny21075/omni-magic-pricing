@@ -1,13 +1,12 @@
 
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Star, Gift, CheckCircle, DollarSign, ExternalLink, Play } from 'lucide-react';
+import { Users, Gift, CheckCircle, DollarSign, ExternalLink, Play, Filter, X } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { format, addHours } from 'date-fns';
 import {
@@ -27,6 +26,12 @@ const backgroundImageUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/
 const zelleQRCodeUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/b227159ae_IMG_2995.jpg";
 
 export default function PricingPage() {
+  // Filter states
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterPerformer, setFilterPerformer] = useState('all'); // all, johnny_wu, dylan_george
+  const [filterSpecialty, setFilterSpecialty] = useState('all'); // all, closeup, stage, bundle, virtual
+  const [filterEventType, setFilterEventType] = useState('all'); // all, corporate, private, wedding, virtual
+
   const [eventDate, setEventDate] = useState('');
   const [selectedService, setSelectedService] = useState(null);
 
@@ -70,10 +75,75 @@ export default function PricingPage() {
   const eventSize = urlParams.get('eventSize');
   const eventScale = urlParams.get('eventScale');
 
+  // Initialize filters from URL params
+  useEffect(() => {
+    if (eventType && eventType !== 'all') {
+      setFilterEventType(eventType);
+    }
+  }, [eventType]);
+
+  // Adjust performer state if filter changes
+  useEffect(() => {
+    if (filterPerformer !== 'all' && closeUpPerformer !== filterPerformer) {
+      setCloseUpPerformer(filterPerformer);
+    } else if (filterPerformer === 'all' && closeUpPerformer !== 'johnny_wu') {
+      setCloseUpPerformer('johnny_wu');
+    }
+  }, [filterPerformer, closeUpPerformer]);
+
+  useEffect(() => {
+    if (filterPerformer !== 'all' && stagePerformer !== filterPerformer) {
+      setStagePerformer(filterPerformer);
+    } else if (filterPerformer === 'all' && stagePerformer !== 'johnny_wu') {
+      setStagePerformer('johnny_wu');
+    }
+  }, [filterPerformer, stagePerformer]);
+
+  useEffect(() => {
+    if (filterPerformer !== 'all' && bundlePerformer !== filterPerformer) {
+      setBundlePerformer(filterPerformer);
+    } else if (filterPerformer === 'all' && bundlePerformer !== 'johnny_wu') {
+      setBundlePerformer('johnny_wu');
+    }
+  }, [filterPerformer, bundlePerformer]);
+
+
   const availableTiers = getAvailableTiers(eventType, eventSize, eventScale);
   
   // Check if this is a kids birthday party
   const isKidsBirthdayParty = eventType === 'private' && eventScale === 'kids';
+
+  // Check if service matches filters
+  const serviceMatchesFilters = (serviceType) => {
+    if (filterSpecialty !== 'all' && filterSpecialty !== serviceType) return false;
+    if (filterEventType !== 'all') {
+      // If event type filter is set, only show services available for that event type
+      if (filterEventType === 'virtual' && serviceType !== 'virtual') return false;
+      if (filterEventType !== 'virtual' && serviceType === 'virtual') return false;
+      // If an eventType is filtered, and the current page's eventType doesn't match the filter, hide it
+      if (eventType !== filterEventType && eventType !== 'all' && filterEventType !== 'all') return false;
+    }
+    return true;
+  };
+
+  // Check if performer is available for the selected service
+  const performerMatchesFilters = (performerId) => {
+    if (filterPerformer === 'all') return true;
+    return filterPerformer === performerId;
+  };
+
+  // Count active filters
+  const activeFiltersCount = [
+    filterPerformer !== 'all',
+    filterSpecialty !== 'all',
+    filterEventType !== 'all'
+  ].filter(Boolean).length;
+
+  const clearFilters = () => {
+    setFilterPerformer('all');
+    setFilterSpecialty('all');
+    setFilterEventType('all');
+  };
 
   const getServiceDescriptions = () => {
     if (eventType === 'wedding') {
@@ -625,6 +695,123 @@ Omni Magic Pricing System
           </div>
 
           <div className="max-w-[900px] mx-auto px-4 pb-24">
+            {/* Enhanced Filtering Options */}
+            <div className="bg-slate-800/90 rounded-xl border-2 border-slate-600 mb-6 shadow-xl overflow-hidden">
+              <div className="p-4 md:p-5">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Filter className="w-5 h-5 text-amber-400" />
+                    <h2 className="text-white text-[16px] md:text-[18px] font-bold">
+                      Filter Options
+                    </h2>
+                    {activeFiltersCount > 0 && (
+                      <span className="bg-amber-500 text-slate-900 text-[11px] font-bold px-2 py-0.5 rounded-full">
+                        {activeFiltersCount}
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    {activeFiltersCount > 0 && (
+                      <Button
+                        onClick={clearFilters}
+                        variant="ghost"
+                        size="sm"
+                        className="text-slate-400 hover:text-white"
+                      >
+                        <X className="w-3 h-3 mr-1" />
+                        Clear
+                      </Button>
+                    )}
+                    <Button
+                      onClick={() => setShowFilters(!showFilters)}
+                      variant="ghost"
+                      size="sm"
+                      className="text-amber-400 hover:text-amber-300"
+                    >
+                      {showFilters ? 'Hide' : 'Show'}
+                    </Button>
+                  </div>
+                </div>
+
+                {showFilters && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-3 border-t border-slate-600">
+                    <div>
+                      <Label className="text-slate-200 text-[12px] mb-1.5 block">Performer</Label>
+                      <Select value={filterPerformer} onValueChange={setFilterPerformer}>
+                        <SelectTrigger className="bg-slate-700 border-slate-600 text-white text-[13px] h-9">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Performers</SelectItem>
+                          <SelectItem value="johnny_wu">Johnny Wu</SelectItem>
+                          <SelectItem value="dylan_george">Dylan George</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label className="text-slate-200 text-[12px] mb-1.5 block">Specialty</Label>
+                      <Select value={filterSpecialty} onValueChange={setFilterSpecialty}>
+                        <SelectTrigger className="bg-slate-700 border-slate-600 text-white text-[13px] h-9">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Specialties</SelectItem>
+                          <SelectItem value="closeup">Close-Up Magic</SelectItem>
+                          <SelectItem value="stage">Stage Show</SelectItem>
+                          <SelectItem value="bundle">Bundle Package</SelectItem>
+                          <SelectItem value="virtual">Virtual Show</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label className="text-slate-200 text-[12px] mb-1.5 block">Event Type</Label>
+                      <Select value={filterEventType} onValueChange={setFilterEventType}>
+                        <SelectTrigger className="bg-slate-700 border-slate-600 text-white text-[13px] h-9">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Event Types</SelectItem>
+                          <SelectItem value="corporate">Corporate</SelectItem>
+                          <SelectItem value="private">Private</SelectItem>
+                          <SelectItem value="wedding">Wedding</SelectItem>
+                          <SelectItem value="virtual">Virtual</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                )}
+
+                {activeFiltersCount > 0 && (
+                  <div className="mt-3 pt-3 border-t border-slate-600">
+                    <p className="text-slate-300 text-[12px]">
+                      Showing options for:{' '}
+                      {filterPerformer !== 'all' && (
+                        <span className="text-amber-400 font-semibold">
+                          {filterPerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George'}
+                        </span>
+                      )}
+                      {filterPerformer !== 'all' && (filterSpecialty !== 'all' || filterEventType !== 'all') && ', '}
+                      {filterSpecialty !== 'all' && (
+                        <span className="text-amber-400 font-semibold">
+                          {filterSpecialty === 'closeup' ? 'Close-Up Magic' :
+                           filterSpecialty === 'stage' ? 'Stage Show' :
+                           filterSpecialty === 'bundle' ? 'Bundle Package' : 'Virtual Show'}
+                        </span>
+                      )}
+                      {filterSpecialty !== 'all' && filterEventType !== 'all' && ', '}
+                      {filterEventType !== 'all' && (
+                        <span className="text-amber-400 font-semibold">
+                          {filterEventType.charAt(0).toUpperCase() + filterEventType.slice(1)} Events
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Event Date Section */}
             <div className="bg-slate-800/90 rounded-xl border-2 border-slate-600 mb-6 shadow-xl overflow-hidden">
               <div className="p-4 md:p-6">
@@ -676,7 +863,7 @@ Omni Magic Pricing System
             </div>
 
             {/* Virtual Show Selection */}
-            {eventType === 'virtual' ? (
+            {eventType === 'virtual' && serviceMatchesFilters('virtual') ? (
               <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-6 mb-4 shadow-sm">
                 <div className="text-center mb-6">
                   <h2 className="text-white text-[22px] md:text-[26px] font-bold mb-2">
@@ -752,59 +939,65 @@ Omni Magic Pricing System
               /* Regular Service Selection for non-virtual events */
               <>
                 {/* Service Type Selection */}
-                {!selectedService && !isKidsBirthdayParty && (
+                {!selectedService && !isKidsBirthdayParty && eventType !== 'virtual' && (
                   <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-6 mb-4 shadow-sm">
                     <h2 className="text-white text-[20px] md:text-[24px] font-bold mb-4 text-center">
                       Choose Your Service
                     </h2>
                     
                     <div className="space-y-3 max-w-2xl mx-auto">
-                      <button
-                        onClick={() => handleServiceSelect('closeup')}
-                        className="w-full text-left p-4 rounded-lg border-2 border-slate-600 hover:border-amber-500 hover:bg-amber-500/10 transition-all"
-                      >
-                        <h3 className="text-white text-[18px] font-bold mb-2">
-                          Close-Up Mingling Magic
-                        </h3>
-                        <p className="text-slate-200 text-[14px]">
-                          {serviceDescriptions.closeUp}
-                        </p>
-                      </button>
-
-                      <button
-                        onClick={() => handleServiceSelect('stage')}
-                        className="w-full text-left p-4 rounded-lg border-2 border-slate-600 hover:border-amber-500 hover:bg-amber-500/10 transition-all"
-                      >
-                        <h3 className="text-white text-[18px] font-bold mb-2">
-                          Stage Show
-                        </h3>
-                        <p className="text-slate-200 text-[14px]">
-                          {serviceDescriptions.stage}
-                        </p>
-                      </button>
-
-                      <button
-                        onClick={() => handleServiceSelect('bundle')}
-                        className="w-full text-left p-4 rounded-lg border-2 border-slate-600 hover:border-amber-500 hover:bg-amber-500/10 transition-all"
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <h3 className="text-white text-[18px] font-bold">
-                            Bundle Package
+                      {serviceMatchesFilters('closeup') && (
+                        <button
+                          onClick={() => handleServiceSelect('closeup')}
+                          className="w-full text-left p-4 rounded-lg border-2 border-slate-600 hover:border-amber-500 hover:bg-amber-500/10 transition-all"
+                        >
+                          <h3 className="text-white text-[18px] font-bold mb-2">
+                            Close-Up Mingling Magic
                           </h3>
-                          <span className="text-[11px] bg-green-500 text-white px-2 py-1 rounded font-medium">
-                            10% OFF
-                          </span>
-                        </div>
-                        <p className="text-slate-200 text-[14px]">
-                          {serviceDescriptions.bundle}
-                        </p>
-                      </button>
+                          <p className="text-slate-200 text-[14px]">
+                            {serviceDescriptions.closeUp}
+                          </p>
+                        </button>
+                      )}
+
+                      {serviceMatchesFilters('stage') && (
+                        <button
+                          onClick={() => handleServiceSelect('stage')}
+                          className="w-full text-left p-4 rounded-lg border-2 border-slate-600 hover:border-amber-500 hover:bg-amber-500/10 transition-all"
+                        >
+                          <h3 className="text-white text-[18px] font-bold mb-2">
+                            Stage Show
+                          </h3>
+                          <p className="text-slate-200 text-[14px]">
+                            {serviceDescriptions.stage}
+                          </p>
+                        </button>
+                      )}
+
+                      {serviceMatchesFilters('bundle') && (
+                        <button
+                          onClick={() => handleServiceSelect('bundle')}
+                          className="w-full text-left p-4 rounded-lg border-2 border-slate-600 hover:border-amber-500 hover:bg-amber-500/10 transition-all"
+                        >
+                          <div className="flex items-center justify-between mb-2">
+                            <h3 className="text-white text-[18px] font-bold">
+                              Bundle Package
+                            </h3>
+                            <span className="text-[11px] bg-green-500 text-white px-2 py-1 rounded font-medium">
+                              10% OFF
+                            </span>
+                          </div>
+                          <p className="text-slate-200 text-[14px]">
+                            {serviceDescriptions.bundle}
+                          </p>
+                        </button>
+                      )}
                     </div>
                   </div>
                 )}
                 
                 {/* For kids birthday party, automatically select stage show */}
-                {!selectedService && isKidsBirthdayParty && (
+                {!selectedService && isKidsBirthdayParty && serviceMatchesFilters('stage') && (
                   <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-6 mb-4 shadow-sm">
                     <h2 className="text-white text-[20px] md:text-[24px] font-bold mb-4 text-center">
                       Kids Birthday Party Stage Show
@@ -853,8 +1046,8 @@ Omni Magic Pricing System
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="johnny_wu">Johnny Wu</SelectItem>
-                            <SelectItem value="dylan_george">Dylan George</SelectItem>
+                            {(filterPerformer === 'all' || filterPerformer === 'johnny_wu') && <SelectItem value="johnny_wu">Johnny Wu</SelectItem>}
+                            {(filterPerformer === 'all' || filterPerformer === 'dylan_george') && <SelectItem value="dylan_george">Dylan George</SelectItem>}
                           </SelectContent>
                         </Select>
                       </div>
@@ -944,8 +1137,8 @@ Omni Magic Pricing System
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="johnny_wu">Johnny Wu</SelectItem>
-                            <SelectItem value="dylan_george">Dylan George</SelectItem>
+                            {(filterPerformer === 'all' || filterPerformer === 'johnny_wu') && <SelectItem value="johnny_wu">Johnny Wu</SelectItem>}
+                            {(filterPerformer === 'all' || filterPerformer === 'dylan_george') && <SelectItem value="dylan_george">Dylan George</SelectItem>}
                           </SelectContent>
                         </Select>
                       </div>
@@ -1026,8 +1219,8 @@ Omni Magic Pricing System
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="johnny_wu">Johnny Wu</SelectItem>
-                            <SelectItem value="dylan_george">Dylan George</SelectItem>
+                            {(filterPerformer === 'all' || filterPerformer === 'johnny_wu') && <SelectItem value="johnny_wu">Johnny Wu</SelectItem>}
+                            {(filterPerformer === 'all' || filterPerformer === 'dylan_george') && <SelectItem value="dylan_george">Dylan George</SelectItem>}
                           </SelectContent>
                         </Select>
                       </div>
@@ -1125,7 +1318,7 @@ Omni Magic Pricing System
             )}
 
             {/* Package Summary */}
-            {(selectedService || eventType === 'virtual') && packageSummary && isFormValid() && (
+            {(selectedService || eventType === 'virtual') && isFormValid() && (
               <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-5 mb-4 shadow-sm">
                 <h2 className="text-white text-[18px] md:text-[20px] font-semibold mb-3">Your Selected Package</h2>
                 
