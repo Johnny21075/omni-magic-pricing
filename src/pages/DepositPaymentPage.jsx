@@ -1,122 +1,15 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { DollarSign, CheckCircle, CreditCard } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { DollarSign, CheckCircle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { createPageUrl } from '@/utils';
 
 const backgroundImageUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/e620330f2_IMG_1641.jpg";
 const zelleQRCodeUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/b227159ae_IMG_2995.jpg";
-
-const CREDIT_CARD_FEE_PERCENTAGE = 0.035; // 3.5%
-
-// Stripe promise will be initialized after fetching the key
-let stripePromise = null;
-
-function StripePaymentForm({ amount, email, fullName, description, onSuccess, onCancel }) {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [isReady, setIsReady] = useState(false);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!stripe || !elements || !isReady) {
-      setErrorMessage('Payment form is still loading. Please wait.');
-      return;
-    }
-
-    setIsProcessing(true);
-    setErrorMessage('');
-
-    try {
-      const { error: submitError } = await elements.submit();
-
-      if (submitError) {
-        setErrorMessage(submitError.message);
-        setIsProcessing(false);
-        return;
-      }
-
-      const { error, paymentIntent } = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url: window.location.href,
-          receipt_email: email
-        },
-        redirect: 'if_required'
-      });
-
-      if (error) {
-        setErrorMessage(error.message);
-        setIsProcessing(false);
-      } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-        await onSuccess(paymentIntent.id);
-      } else {
-        setErrorMessage('Payment could not be completed. Please try again.');
-        setIsProcessing(false);
-      }
-    } catch (err) {
-      console.error('Payment error:', err);
-      setErrorMessage(err.message || 'An unexpected error occurred.');
-      setIsProcessing(false);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-3">
-      <PaymentElement
-        onReady={() => {
-          console.log('Payment Element ready');
-          setIsReady(true);
-        }}
-        onLoadError={(error) => {
-          console.error('Payment Element load error:', error);
-          setErrorMessage(error?.error?.message || error?.message || 'Failed to load payment form. Please try again.');
-        }}
-      />
-
-      {!isReady && !errorMessage && (
-        <div className="text-center py-3">
-          <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-amber-400"></div>
-          <p className="text-slate-400 text-xs mt-2">Loading payment form...</p>
-        </div>
-      )}
-
-      {errorMessage && (
-        <div className="p-2 bg-red-900/30 border border-red-500 rounded text-red-300 text-xs">
-          {errorMessage}
-        </div>
-      )}
-
-      <div className="flex gap-2 pt-2">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          disabled={isProcessing}
-          className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-800 text-sm h-9">
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          disabled={!stripe || !isReady || isProcessing}
-          className="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-medium text-sm h-9">
-          {isProcessing ? 'Processing...' : `Pay $${amount.toLocaleString()}`}
-        </Button>
-      </div>
-    </form>
-  );
-}
 
 export default function DepositPaymentPage() {
   const [amount, setAmount] = useState('');
@@ -125,39 +18,12 @@ export default function DepositPaymentPage() {
   const [description, setDescription] = useState('');
   const [message, setMessage] = useState('');
 
-  const [stripeModalOpen, setStripeModalOpen] = useState(false);
-  const [clientSecret, setClientSecret] = useState('');
-  const [paymentIntentId, setPaymentIntentId] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   
   const [showSuccess, setShowSuccess] = useState(false);
-  const [stripeLoaded, setStripeLoaded] = useState(false);
   const [showZelleModal, setShowZelleModal] = useState(false);
 
-  // Calculate credit card fee
   const baseAmount = parseInt(amount) || 0;
-  const creditCardFee = Math.ceil(baseAmount * CREDIT_CARD_FEE_PERCENTAGE);
-  const totalWithFee = baseAmount + creditCardFee;
-
-  // Fetch Stripe publishable key on component mount
-  useEffect(() => {
-    const initStripe = async () => {
-      try {
-        const response = await base44.functions.invoke('getStripePublishableKey');
-        if (response.data && response.data.publishableKey) {
-          stripePromise = loadStripe(response.data.publishableKey);
-          setStripeLoaded(true);
-        } else {
-          console.error('Failed to get Stripe publishable key');
-        }
-      } catch (error) {
-        console.error('Error initializing Stripe:', error);
-      }
-    };
-    
-    initStripe();
-  }, []);
 
   // Parse URL parameters on mount
   useEffect(() => {
@@ -171,152 +37,6 @@ export default function DepositPaymentPage() {
     if (descParam) setDescription(decodeURIComponent(descParam));
   }, []);
 
-  const handleCreatePaymentIntent = async () => {
-    const finalAmount = totalWithFee; // Use total with fee
-    
-    if (!baseAmount || baseAmount < 1) {
-      setError('Please enter a valid amount (minimum $1)');
-      return;
-    }
-
-    if (!email || !email.includes('@') || !email.includes('.')) {
-      setError('Please enter a valid email address');
-      return;
-    }
-
-    if (!fullName || fullName.trim() === '') {
-      setError('Please enter your full name');
-      return;
-    }
-
-    if (!stripeLoaded) {
-      setError('Payment system is still loading. Please wait a moment and try again.');
-      return;
-    }
-    
-    setIsSubmitting(true);
-    setError('');
-    setClientSecret('');
-    setStripeModalOpen(false);
-
-    try {
-      console.log('Creating payment intent for deposit...');
-
-      const response = await base44.functions.invoke('createCustomDepositPayment', {
-        amount: finalAmount,
-        email: email,
-        fullName: fullName,
-        description: description || 'Hold Date Deposit',
-        message: message || '',
-        feeBreakdown: {
-          baseAmount: baseAmount,
-          creditCardFee: creditCardFee,
-          total: totalWithFee
-        }
-      });
-
-      console.log('Response:', response);
-
-      if (!response.data) {
-        throw new Error('No response received from server');
-      }
-
-      if (response.data.error) {
-        throw new Error(response.data.error);
-      }
-
-      if (!response.data.clientSecret) {
-        console.error('Missing client secret in response:', response.data);
-        throw new Error('Invalid response from payment server');
-      }
-
-      const secret = response.data.clientSecret;
-      console.log('Client secret received');
-
-      setClientSecret(secret);
-      setPaymentIntentId(response.data.paymentIntentId);
-      
-      // Small delay to ensure state updates
-      await new Promise(resolve => setTimeout(resolve, 200));
-      setStripeModalOpen(true);
-
-    } catch (error) {
-      console.error('Error creating payment intent:', error);
-      setError(error.message || 'Failed to initialize payment. Please try again.');
-      setClientSecret('');
-      setPaymentIntentId('');
-      setStripeModalOpen(false);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handlePaymentSuccess = async (paymentId) => {
-    try {
-      await base44.integrations.Core.SendEmail({
-        to: 'hello@omnimagic.co',
-        subject: `💳 Deposit Payment Received - $${totalWithFee.toLocaleString()}`,
-        body: `
-DEPOSIT PAYMENT SUCCESSFULLY PROCESSED
-
-Payment Details:
-- Base Amount: $${baseAmount.toLocaleString()}
-- Credit Card Fee (3.5%): $${creditCardFee.toLocaleString()}
-- Total Charged: $${totalWithFee.toLocaleString()}
-- Payment ID: ${paymentId}
-- Payment Time: ${new Date().toLocaleString()}
-- Description: ${description || 'Hold Date Deposit'}
-
-Customer Information:
-- Full Name: ${fullName}
-- Email: ${email}
-${message ? `- Message: ${message}` : ''}
-
-NEXT STEPS: Contact the client within 24 hours to finalize booking details.
-
-Best regards,
-Omni Magic Pricing System
-        `
-      });
-
-      await base44.integrations.Core.SendEmail({
-        to: email,
-        subject: `Payment Confirmation - Omni Magic Entertainment`,
-        body: `
-Dear ${fullName},
-
-Thank you for your payment!
-
-Payment Details:
-- Deposit Amount: $${baseAmount.toLocaleString()}
-- Credit Card Processing Fee (3.5%): $${creditCardFee.toLocaleString()}
-- Total Charged: $${totalWithFee.toLocaleString()}
-- Description: ${description || 'Hold Date Deposit'}
-- Date: ${new Date().toLocaleDateString()}
-- Payment ID: ${paymentId}
-
-${message ? `Your Message:\n"${message}"\n\n` : ''}We will contact you shortly to finalize the details of your event.
-
-If you have any questions, please don't hesitate to reach out.
-
-Warmest regards,
-The Omni Magic Entertainment Team
-
-Website: https://www.omnimagic.co
-Instagram: https://instagram.com/johnnywumagic
-Email: hello@omnimagic.co
-        `
-      });
-      
-      setStripeModalOpen(false);
-      setShowSuccess(true);
-    } catch (error) {
-      console.error('Error sending confirmation emails:', error);
-      setStripeModalOpen(false);
-      setShowSuccess(true);
-    }
-  };
-
   const resetForm = () => {
     // Don't reset amount/description if they came from URL
     const urlParams = new URLSearchParams(window.location.search);
@@ -326,8 +46,6 @@ Email: hello@omnimagic.co
     
     setFullName('');
     setMessage('');
-    setClientSecret('');
-    setPaymentIntentId('');
     setError('');
     setShowSuccess(false);
   };
@@ -434,7 +152,7 @@ Email: hello@omnimagic.co
 
                   <div>
                     <Label htmlFor="email" className="luxury-body text-white mb-2 block text-lg">
-                      Email * <span className="text-slate-300 text-sm font-normal">(for receipt)</span>
+                      Email * <span className="text-slate-300 text-sm font-normal">(for confirmation)</span>
                     </Label>
                     <Input
                       id="email"
@@ -472,54 +190,14 @@ Email: hello@omnimagic.co
 
                   {/* Payment Methods Section */}
                   <div className="pt-4 border-t border-amber-500/30">
-                    <h3 className="luxury-serif text-xl text-white mb-4 text-center">Choose Payment Method</h3>
+                    <h3 className="luxury-serif text-xl text-white mb-4 text-center">Send Your Deposit</h3>
                     
                     <div className="space-y-4">
-                      {/* Credit Card with Fee Display */}
-                      <div>
-                        {baseAmount >= 1 && (
-                          <div className="mb-3 p-3 bg-slate-700/50 rounded-lg border border-slate-600">
-                            <div className="flex justify-between items-center text-sm text-slate-200 mb-1">
-                              <span>Deposit Amount:</span>
-                              <span>${baseAmount.toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-sm text-slate-200 mb-2">
-                              <span>Credit Card Fee (3.5%):</span>
-                              <span>+${creditCardFee.toLocaleString()}</span>
-                            </div>
-                            <div className="flex justify-between items-center text-base font-bold text-white pt-2 border-t border-slate-600">
-                              <span>Total with Card:</span>
-                              <span className="text-amber-400">${totalWithFee.toLocaleString()}</span>
-                            </div>
-                          </div>
-                        )}
-                        
-                        <Button
-                          onClick={handleCreatePaymentIntent}
-                          disabled={isSubmitting || !amount || !email || !fullName || !stripeLoaded}
-                          className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-bold text-lg h-12 flex items-center justify-center gap-2"
-                        >
-                          <CreditCard className="w-5 h-5" />
-                          {isSubmitting ? 'Processing...' : stripeLoaded ? `Pay $${totalWithFee.toLocaleString()} with Card` : 'Loading...'}
-                        </Button>
-                        <p className="text-xs text-slate-400 mt-2 text-center">
-                          Secure payment • Supports Apple Pay & Google Pay
-                        </p>
-                      </div>
-
-                      {/* Divider */}
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1 h-px bg-slate-600"></div>
-                        <span className="text-slate-400 text-sm">OR PAY WITHOUT FEE</span>
-                        <div className="flex-1 h-px bg-slate-600"></div>
-                      </div>
-
                       {/* Zelle */}
                       <div className="p-4 bg-slate-800/70 rounded-lg border border-slate-600">
                         <div className="flex items-center gap-2 mb-3">
                           <DollarSign className="w-5 h-5 text-purple-400" />
                           <span className="luxury-serif text-lg text-white">Pay with Zelle</span>
-                          <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded font-semibold">NO FEE</span>
                         </div>
                         <p className="luxury-body text-sm text-slate-200 mb-3">
                           Send ${baseAmount.toLocaleString()} to: <span className="text-white font-bold">626-242-7710</span>
@@ -538,7 +216,6 @@ Email: hello@omnimagic.co
                         <div className="flex items-center gap-2 mb-3">
                           <DollarSign className="w-5 h-5 text-blue-400" />
                           <span className="luxury-serif text-lg text-white">Pay with Venmo</span>
-                          <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded font-semibold">NO FEE</span>
                         </div>
                         <p className="luxury-body text-sm text-slate-200 mb-2">
                           Send ${baseAmount.toLocaleString()} to:
@@ -555,6 +232,16 @@ Email: hello@omnimagic.co
                           </svg>
                         </a>
                       </div>
+
+                      <div className="mt-4 p-4 bg-blue-900/30 border border-blue-500/40 rounded-lg">
+                        <p className="text-blue-200 text-sm text-center">
+                          💡 <strong>After sending payment</strong>, please email us at{' '}
+                          <a href="mailto:hello@omnimagic.co" className="text-blue-400 hover:text-blue-300 underline font-semibold">
+                            hello@omnimagic.co
+                          </a>
+                          {' '}with your payment confirmation. Include your name ({fullName || 'your full name'}) and the deposit amount (${baseAmount.toLocaleString()}).
+                        </p>
+                      </div>
                     </div>
                   </div>
 
@@ -570,13 +257,10 @@ Email: hello@omnimagic.co
                 <CardContent className="text-center py-12">
                   <CheckCircle className="w-20 h-20 text-amber-400 mx-auto mb-6" />
                   <h3 className="luxury-serif text-3xl font-bold text-white mb-4">
-                    Payment Successful! 🎉
+                    Thank You! 🎉
                   </h3>
                   <p className="luxury-body text-lg text-slate-100 mb-6">
-                    Your ${totalWithFee.toLocaleString()} payment has been received.
-                  </p>
-                  <p className="luxury-body text-sm text-slate-200 mb-6">
-                    A receipt has been sent to {email}
+                    We're looking forward to your ${baseAmount.toLocaleString()} deposit payment.
                   </p>
                   <p className="luxury-body text-base text-amber-300 mb-8">
                     We'll be in touch shortly to finalize your event details!
@@ -585,7 +269,7 @@ Email: hello@omnimagic.co
                     onClick={resetForm}
                     className="bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold px-8"
                   >
-                    Make Another Payment
+                    Close
                   </Button>
                 </CardContent>
               </Card>
@@ -593,83 +277,6 @@ Email: hello@omnimagic.co
           </motion.div>
         </div>
       </div>
-
-      {/* Stripe Payment Modal */}
-      <Dialog open={stripeModalOpen} onOpenChange={(open) => {
-        if (!open) {
-          setStripeModalOpen(false);
-          setClientSecret('');
-          setPaymentIntentId('');
-        }
-      }}>
-        <DialogContent className="bg-slate-900 border-2 border-amber-500/50 text-white max-w-md max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-[22px] md:text-[24px] font-bold text-center text-white mb-2">
-              Complete Payment
-            </DialogTitle>
-            <p className="text-slate-200 text-center text-[13px] md:text-[14px]">
-              Secure payment via Stripe
-            </p>
-          </DialogHeader>
-
-          <div className="bg-amber-500/20 border border-amber-500/50 rounded-lg p-4 mb-4">
-            <div className="flex justify-between items-center text-sm text-slate-200 mb-1">
-              <span>Deposit:</span>
-              <span>${baseAmount.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between items-center text-sm text-slate-200 mb-2">
-              <span>Processing Fee (3.5%):</span>
-              <span>+${creditCardFee.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between items-center pt-2 border-t border-amber-500/30">
-              <p className="text-amber-200 text-sm font-semibold">Total Amount</p>
-              <p className="text-3xl font-bold text-amber-400">${totalWithFee.toLocaleString()}</p>
-            </div>
-            {description && (
-              <p className="text-slate-300 text-[13px] mt-2 text-center">{description}</p>
-            )}
-          </div>
-
-          {clientSecret && stripePromise ? (
-            <Elements 
-              key={clientSecret}
-              stripe={stripePromise} 
-              options={{
-                clientSecret: clientSecret,
-                appearance: {
-                  theme: 'night',
-                  variables: {
-                    colorPrimary: '#d4af37',
-                    colorBackground: '#1e293b',
-                    colorText: '#ffffff',
-                    colorDanger: '#ef4444',
-                    fontFamily: 'Inter, system-ui, sans-serif',
-                    borderRadius: '8px'
-                  }
-                }
-              }}
-            >
-              <StripePaymentForm
-                amount={totalWithFee}
-                email={email}
-                fullName={fullName}
-                description={description}
-                onSuccess={handlePaymentSuccess}
-                onCancel={() => {
-                  setStripeModalOpen(false);
-                  setClientSecret('');
-                  setPaymentIntentId('');
-                }}
-              />
-            </Elements>
-          ) : (
-            <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-amber-400"></div>
-              <p className="text-slate-400 text-sm mt-3">Initializing payment...</p>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
 
       {/* Zelle QR Code Enlargement Modal */}
       <Dialog open={showZelleModal} onOpenChange={setShowZelleModal}>
@@ -689,11 +296,6 @@ Email: hello@omnimagic.co
             <p className="luxury-serif text-xl text-white font-bold mt-4">
               Send to: 626-242-7710
             </p>
-            <div className="mt-4 p-3 bg-green-500/20 border border-green-500/40 rounded-lg">
-              <p className="text-green-300 text-sm font-semibold">
-                ✓ No processing fee with Zelle
-              </p>
-            </div>
           </div>
         </DialogContent>
       </Dialog>

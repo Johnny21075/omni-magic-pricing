@@ -4,111 +4,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Heart, DollarSign, CheckCircle, CreditCard, ExternalLink, BriefcaseBusiness, Package } from 'lucide-react';
+import { Heart, DollarSign, CheckCircle, ExternalLink, BriefcaseBusiness, Package } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { motion } from 'framer-motion';
-
-const STRIPE_PUBLISHABLE_KEY = 'pk_live_6Nc8XGyb1hjYhBXPXTM6wWWB00csFwk1ZG';
-const stripePromise = loadStripe(STRIPE_PUBLISHABLE_KEY);
 
 const backgroundImageUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/e620330f2_IMG_1641.jpg";
 const zelleQRCodeUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/b227159ae_IMG_2995.jpg";
 
 const TIER_AMOUNTS = [25, 50, 100];
 const POSTER_THRESHOLD = 100;
-
-function StripePaymentForm({ amount, email, performerName, message, isCorporateEvent, companyName, wantsPoster, onSuccess, onCancel }) {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [isReady, setIsReady] = useState(false);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!stripe || !elements || !isReady) {
-      setErrorMessage('Payment form is still loading. Please wait.');
-      return;
-    }
-
-    setIsProcessing(true);
-    setErrorMessage('');
-
-    try {
-      const { error: submitError } = await elements.submit();
-
-      if (submitError) {
-        setErrorMessage(submitError.message);
-        setIsProcessing(false);
-        return;
-      }
-
-      const { error, paymentIntent } = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url: window.location.href,
-          receipt_email: email
-        },
-        redirect: 'if_required'
-      });
-
-      if (error) {
-        setErrorMessage(error.message);
-        setIsProcessing(false);
-      } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-        await onSuccess({ isCorporateEvent, companyName, wantsPoster });
-      } else {
-        setErrorMessage('Payment could not be completed. Please try again.');
-        setIsProcessing(false);
-      }
-    } catch (err) {
-      setErrorMessage(err.message || 'An unexpected error occurred.');
-      setIsProcessing(false);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-3">
-      <PaymentElement
-        onReady={() => setIsReady(true)}
-        onLoadError={() => setErrorMessage('Failed to load payment form. Please try again.')}
-      />
-
-      {!isReady && !errorMessage && (
-        <div className="text-center py-3">
-          <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-amber-400"></div>
-          <p className="text-slate-400 text-xs mt-2">Loading payment form...</p>
-        </div>
-      )}
-
-      {errorMessage && (
-        <div className="p-2 bg-red-900/30 border border-red-500 rounded text-red-300 text-xs">
-          {errorMessage}
-        </div>
-      )}
-
-      <div className="flex gap-2 pt-2">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          disabled={isProcessing}
-          className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-800 text-sm h-9">
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          disabled={!stripe || !isReady || isProcessing}
-          className="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-medium text-sm h-9">
-          {isProcessing ? 'Processing...' : `Pay $${amount.toLocaleString()}`}
-        </Button>
-      </div>
-    </form>
-  );
-}
 
 export default function GratuityPage() {
   const [amount, setAmount] = useState('');
@@ -122,10 +26,6 @@ export default function GratuityPage() {
   const [companyName, setCompanyName] = useState('');
   const [wantsPoster, setWantsPoster] = useState(false);
 
-  const [stripeModalOpen, setStripeModalOpen] = useState(false);
-  const [clientSecret, setClientSecret] = useState('');
-  const [paymentIntentId, setPaymentIntentId] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   
   const [showSuccess, setShowSuccess] = useState(false);
@@ -162,125 +62,6 @@ export default function GratuityPage() {
     setError('');
   };
 
-  const handleCreatePaymentIntent = async () => {
-    const finalAmount = parseInt(amount);
-    
-    if (!finalAmount || finalAmount < 1) {
-      setError('Please enter a valid amount (minimum $1)');
-      return;
-    }
-
-    if (!email || !email.includes('@') || !email.includes('.')) {
-      setError('Please enter a valid email address for the receipt');
-      return;
-    }
-    
-    setIsSubmitting(true);
-    setError('');
-
-    try {
-      const response = await base44.functions.invoke('createGratuityPayment', {
-        amount: finalAmount,
-        email: email,
-        performerName: performerName || (isCorporateEvent && companyName ? companyName : 'Omni Magic Entertainment'),
-        message: message || '',
-        metadata: {
-          isCorporateEvent,
-          companyName: isCorporateEvent ? companyName : undefined,
-          wantsPoster: wantsPoster && finalAmount >= POSTER_THRESHOLD ? true : undefined,
-        }
-      });
-
-      if (!response.data || response.data.error) {
-        throw new Error(response.data?.error || 'Failed to initialize payment');
-      }
-
-      setClientSecret(response.data.clientSecret);
-      setPaymentIntentId(response.data.paymentIntentId);
-      setStripeModalOpen(true);
-    } catch (error) {
-      console.error('Error creating payment intent:', error);
-      setError(error.message || 'Failed to initialize payment. Please try again.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handlePaymentSuccess = async ({ isCorporateEvent, companyName, wantsPoster }) => {
-    try {
-      const businessEmailRecipient = 'hello@omnimagic.co';
-
-      const commonEmailDetails = `
-- Amount: $${amount}
-- Payment ID: ${paymentIntentId}
-- Payment Time: ${new Date().toLocaleString()}
-
-${isCorporateEvent ? `- Event Type: Corporate (Company: ${companyName || 'Not specified'})` : ''}
-Performance Details:
-- Performer: ${performerName || 'Not specified'}
-- Customer Message: ${message || 'No message provided'}
-
-Customer Information:
-- Email: ${email}
-${wantsPoster && parseInt(amount) >= POSTER_THRESHOLD ? '\n** CUSTOMER REQUESTS FREE POSTER ** (Please contact for shipping details)' : ''}
-      `.trim();
-
-      await base44.integrations.Core.SendEmail({
-        to: businessEmailRecipient,
-        subject: `💝 Gratuity Payment Received - $${amount}`,
-        body: `
-GRATUITY PAYMENT SUCCESSFULLY PROCESSED
-
-Payment Details:
-${commonEmailDetails}
-
-Thank you for your generosity!
-
-Best regards,
-Omni Magic Pricing System
-        `
-      });
-
-      await base44.integrations.Core.SendEmail({
-        to: email,
-        subject: `Thank You for Your Generous Gratuity - Omni Magic Entertainment`,
-        body: `
-Dear Valued Guest,
-
-Thank you so much for your generous gratuity of $${amount}!
-
-Your appreciation means the world to us and directly supports ${performerName || 'our performers'}.
-
-${message ? `\nYour Message:\n"${message}"\n` : ''}
-
-${wantsPoster && parseInt(amount) >= POSTER_THRESHOLD ? `
-As a special thank you for your generous gratuity, we'd love to send you a complimentary Omni Magic poster! We will contact you shortly to arrange for shipping details.
-` : ''}
-
-Payment Confirmation:
-- Amount: $${amount}
-- Date: ${new Date().toLocaleDateString()}
-- Payment ID: ${paymentIntentId}
-
-We hope you had an unforgettable experience, and we look forward to entertaining you again in the future!
-
-Warmest regards,
-The Omni Magic Entertainment Team
-
-Website: https://www.omnimagic.co
-Instagram: https://instagram.com/johnnywumagic
-        `
-      });
-      
-      setStripeModalOpen(false);
-      setShowSuccess(true);
-    } catch (error) {
-      console.error('Error sending confirmation emails:', error);
-      setStripeModalOpen(false);
-      setShowSuccess(true);
-    }
-  };
-
   const resetForm = () => {
     setAmount('');
     setSelectedTier(null);
@@ -291,8 +72,6 @@ Instagram: https://instagram.com/johnnywumagic
     setCompanyName('');
     setWantsPoster(false);
     setShowPaymentOptions(false);
-    setClientSecret('');
-    setPaymentIntentId('');
     setError('');
     setShowSuccess(false);
   };
@@ -402,7 +181,7 @@ Instagram: https://instagram.com/johnnywumagic
 
                   <div>
                     <Label htmlFor="email" className="luxury-body text-white mb-2 block text-lg">
-                      Your Email * <span className="text-slate-300 text-sm font-normal">(for receipt)</span>
+                      Your Email * <span className="text-slate-300 text-sm font-normal">(for confirmation)</span>
                     </Label>
                     <Input
                       id="email"
@@ -511,10 +290,10 @@ Instagram: https://instagram.com/johnnywumagic
                       {showPaymentOptions && (
                         <div className="pt-6">
                           <h3 className="luxury-serif text-xl md:text-2xl font-bold text-white mb-4 text-center">
-                            Choose Payment Method
+                            Send Gratuity
                           </h3>
 
-                          <div className="grid md:grid-cols-3 gap-4">
+                          <div className="grid md:grid-cols-2 gap-4">
                             <Card className="bg-slate-800/70 border-2 border-slate-600 hover:border-purple-500/50 transition-all">
                               <CardContent className="p-6 text-center">
                                 <img 
@@ -555,26 +334,16 @@ Instagram: https://instagram.com/johnnywumagic
                                 </p>
                               </CardContent>
                             </Card>
+                          </div>
 
-                            <Card className="bg-slate-800/70 border-2 border-slate-600 hover:border-amber-500/50 transition-all">
-                              <CardContent className="p-6 text-center flex flex-col justify-center h-full">
-                                <CreditCard className="w-16 h-16 mx-auto mb-4 text-amber-400" />
-                                <h4 className="luxury-serif text-lg font-bold text-white mb-3">Credit/Debit Card</h4>
-                                <Button
-                                  onClick={handleCreatePaymentIntent}
-                                  disabled={isSubmitting || parseInt(amount) < 1 || !email}
-                                  className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-bold"
-                                >
-                                  {isSubmitting ? 'Processing...' : `Pay $${parseInt(amount).toLocaleString()}`}
-                                </Button>
-                                <p className="text-xs text-slate-400 mt-2">
-                                  Powered by Stripe
-                                </p>
-                                <p className="text-xs text-slate-200 mt-1 font-semibold">
-                                  Supports Apple Pay & Google Pay
-                                </p>
-                              </CardContent>
-                            </Card>
+                          <div className="mt-6 p-4 bg-blue-900/30 border border-blue-500/40 rounded-lg">
+                            <p className="text-blue-200 text-sm text-center">
+                              💡 <strong>After sending payment</strong>, please email us at{' '}
+                              <a href="mailto:hello@omnimagic.co" className="text-blue-400 hover:text-blue-300 underline font-semibold">
+                                hello@omnimagic.co
+                              </a>
+                              {' '}with your payment confirmation so we can ensure your gratuity reaches the performer.
+                            </p>
                           </div>
 
                           {error && (
@@ -602,16 +371,13 @@ Instagram: https://instagram.com/johnnywumagic
                     Thank You! 🎉
                   </h3>
                   <p className="luxury-body text-lg text-slate-100 mb-6">
-                    Your ${parseInt(amount).toLocaleString()} gratuity has been received. Your generosity is deeply appreciated!
+                    Your ${parseInt(amount).toLocaleString()} gratuity has been noted. Your generosity is deeply appreciated!
                   </p>
                   {parseInt(amount) >= POSTER_THRESHOLD && wantsPoster && (
                     <p className="luxury-body text-md text-amber-300 mb-6 font-semibold">
                       We'll be in touch shortly to arrange delivery of your complimentary poster!
                     </p>
                   )}
-                  <p className="luxury-body text-sm text-slate-200 mb-6">
-                    A receipt has been sent to {email}
-                  </p>
                   <Button
                     onClick={resetForm}
                     className="bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold px-8"
@@ -624,65 +390,6 @@ Instagram: https://instagram.com/johnnywumagic
           </motion.div>
         </div>
       </div>
-
-      <Dialog open={stripeModalOpen} onOpenChange={() => {
-        setStripeModalOpen(false);
-        setClientSecret('');
-        setPaymentIntentId('');
-        setError('');
-      }}>
-        <DialogContent className="bg-slate-900 border-amber-400/30 text-white max-w-md md:max-w-xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="luxury-serif text-2xl md:text-3xl font-bold text-center text-white mb-2">
-              Complete Payment
-            </DialogTitle>
-            <p className="luxury-body text-sm md:text-base text-slate-200 text-center">
-              Secure payment with Apple Pay, Google Pay, or card
-            </p>
-          </DialogHeader>
-
-          <div className="bg-amber-500/20 border border-amber-500/50 rounded-lg p-4 mb-6 text-center">
-            <p className="luxury-body text-amber-200 text-sm mb-1">Gratuity Amount</p>
-            <p className="luxury-serif text-4xl font-bold text-amber-400">${parseInt(amount).toLocaleString()}</p>
-          </div>
-
-          {clientSecret && (
-            <Elements 
-              stripe={stripePromise} 
-              options={{
-                clientSecret,
-                appearance: {
-                  theme: 'night',
-                  variables: {
-                    colorPrimary: '#d4af37',
-                    colorBackground: '#1e293b',
-                    colorText: '#ffffff',
-                    colorDanger: '#ef4444',
-                    fontFamily: 'Oswald, sans-serif',
-                    borderRadius: '8px'
-                  }
-                }
-              }}
-            >
-              <StripePaymentForm
-                amount={amount}
-                email={email}
-                performerName={performerName}
-                message={message}
-                isCorporateEvent={isCorporateEvent}
-                companyName={companyName}
-                wantsPoster={wantsPoster}
-                onSuccess={handlePaymentSuccess}
-                onCancel={() => {
-                  setStripeModalOpen(false);
-                  setClientSecret('');
-                  setPaymentIntentId('');
-                }}
-              />
-            </Elements>
-          )}
-        </DialogContent>
-      </Dialog>
 
       <Dialog open={showZelleModal} onOpenChange={setShowZelleModal}>
         <DialogContent className="bg-slate-900 border-amber-400/30 text-white max-w-md">
