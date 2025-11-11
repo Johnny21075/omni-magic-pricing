@@ -7,10 +7,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Star, Gift, CheckCircle, CreditCard, DollarSign, ExternalLink, Play } from 'lucide-react';
+import { Users, Star, Gift, CheckCircle, DollarSign, ExternalLink, Play } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { loadStripe } from '@stripe/stripe-js';
-import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { format, addHours } from 'date-fns';
 import {
   calculateCloseUpPrice,
@@ -27,106 +25,6 @@ import { createPageUrl } from '@/utils';
 
 const backgroundImageUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/e620330f2_IMG_1641.jpg";
 const zelleQRCodeUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/b227159ae_IMG_2995.jpg";
-
-let stripePromise = null;
-
-function StripePaymentForm({ amount, email, fullName, phone, additionalNotes, onSuccess, onCancel }) {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
-  const [isReady, setIsReady] = useState(false);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!stripe || !elements || !isReady) {
-      setErrorMessage('Payment form is still loading. Please wait.');
-      return;
-    }
-
-    setIsProcessing(true);
-    setErrorMessage('');
-
-    try {
-      const { error: submitError } = await elements.submit();
-
-      if (submitError) {
-        setErrorMessage(submitError.message);
-        setIsProcessing(false);
-        return;
-      }
-
-      const { error, paymentIntent } = await stripe.confirmPayment({
-        elements,
-        confirmParams: {
-          return_url: window.location.href,
-          receipt_email: email
-        },
-        redirect: 'if_required'
-      });
-
-      if (error) {
-        setErrorMessage(error.message);
-        setIsProcessing(false);
-      } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-        await onSuccess(paymentIntent.id);
-      } else {
-        setErrorMessage('Payment could not be completed. Please try again.');
-        setIsProcessing(false);
-      }
-    } catch (err) {
-      console.error('Payment error:', err);
-      setErrorMessage(err.message || 'An unexpected error occurred.');
-      setIsProcessing(false);
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-3">
-      <PaymentElement
-        onReady={() => {
-          console.log('Payment Element ready');
-          setIsReady(true);
-        }}
-        onLoadError={(error) => {
-          console.error('Payment Element load error:', error);
-          setErrorMessage(error?.error?.message || error?.message || 'Failed to load payment form. Please try again.');
-        }}
-      />
-
-      {!isReady && !errorMessage && (
-        <div className="text-center py-3">
-          <div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-amber-400"></div>
-          <p className="text-slate-400 text-xs mt-2">Loading payment form...</p>
-        </div>
-      )}
-
-      {errorMessage && (
-        <div className="p-2 bg-red-900/30 border border-red-500 rounded text-red-300 text-xs">
-          {errorMessage}
-        </div>
-      )}
-
-      <div className="flex gap-2 pt-2">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          disabled={isProcessing}
-          className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-800 text-sm h-9">
-          Cancel
-        </Button>
-        <Button
-          type="submit"
-          disabled={!stripe || !isReady || isProcessing}
-          className="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-medium text-sm h-9">
-          {isProcessing ? 'Processing...' : `Pay $${amount.toLocaleString()}`}
-        </Button>
-      </div>
-    </form>
-  );
-}
 
 export default function PricingPage() {
   const [eventDate, setEventDate] = useState('');
@@ -157,11 +55,7 @@ export default function PricingPage() {
   const [additionalNotes, setAdditionalNotes] = useState('');
 
   const [bookingOption, setBookingOption] = useState(null);
-  const [paymentMethod, setPaymentMethod] = useState(null); // Added from outline
-  const [showStripeModal, setShowStripeModal] = useState(false);
   const [showContactModal, setShowContactModal] = useState(false);
-  const [clientSecret, setClientSecret] = useState('');
-  const [paymentIntentId, setPaymentIntentId] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [holdExpiryTime, setHoldExpiryTime] = useState(null);
@@ -170,39 +64,6 @@ export default function PricingPage() {
   const [videoUrl, setVideoUrl] = useState('');
   
   const [showZelleModal, setShowZelleModal] = useState(false);
-  const [stripeLoaded, setStripeLoaded] = useState(false);
-
-  const [amount, setAmount] = useState(''); 
-  const [description, setDescription] = useState('');
-
-  useEffect(() => {
-    const initStripe = async () => {
-      try {
-        const response = await base44.functions.invoke('getStripePublishableKey');
-        if (response.data && response.data.publishableKey) {
-          stripePromise = loadStripe(response.data.publishableKey);
-          setStripeLoaded(true);
-        } else {
-          console.error('Failed to get Stripe publishable key');
-        }
-      } catch (error) {
-        console.error('Error initializing Stripe:', error);
-      }
-    };
-    
-    initStripe();
-  }, []);
-
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const amountParam = urlParams.get('amount');
-    const emailParam = urlParams.get('clientEmail');
-    const descParam = urlParams.get('description');
-
-    if (amountParam) setAmount(amountParam);
-    if (emailParam) setEmail(emailParam);
-    if (descParam) setDescription(decodeURIComponent(descParam));
-  }, []);
 
   const urlParams = new URLSearchParams(window.location.search);
   const eventType = urlParams.get('eventType');
@@ -329,7 +190,7 @@ export default function PricingPage() {
   };
 
   const handleHoldDateClick = () => {
-    setBookingOption('hold'); // Re-added from outline
+    setBookingOption('hold');
     setFullName('');
     setEmail('');
     setPhone('');
@@ -338,7 +199,7 @@ export default function PricingPage() {
   };
 
   const handleConfirmNowClick = () => {
-    setBookingOption('confirm'); // Re-added from outline
+    setBookingOption('confirm');
     setFullName('');
     setEmail('');
     setPhone('');
@@ -355,132 +216,21 @@ export default function PricingPage() {
     setShowContactModal(false);
 
     if (bookingOption === 'hold') {
-      // For 'hold', after contact details are submitted, the user will proceed to select a payment method.
-      // No direct payment intent creation here.
+      await handleHoldDateRequest();
     } else if (bookingOption === 'confirm') {
-      // For 'confirm', after contact details are submitted, proceed directly to send the booking request.
       await handleConfirmNow();
     }
   };
 
-  const handleCreatePaymentIntent = async () => {
-    if (!email || !fullName) { // Added from outline
-      alert('Please enter your contact details'); // Added from outline
-      return; // Added from outline
-    } // Added from outline
-
-    if (!stripeLoaded) {
-      alert('Payment system is still loading. Please wait a moment and try again.');
-      return;
-    }
-
-    const finalDepositAmount = depositAmount;
-    
-    if (!finalDepositAmount || finalDepositAmount < 1) {
-      alert('Invalid deposit amount');
+  const handleHoldDateRequest = async () => {
+    if (!email || !fullName) {
+      alert('Please enter your contact details');
       return;
     }
 
     setIsSubmitting(true);
-    setClientSecret('');
-    setShowStripeModal(false);
-
-    try {
-      let packageDetails;
-      if (eventType === 'virtual') {
-        packageDetails = {
-          type: 'Virtual Experience',
-          performer: 'Johnny Wu',
-          duration: `${virtualDuration} Minutes`,
-          tier: 'Virtual Show',
-          price: selectedPackagePrice.price,
-          addons: selectedAddons.map((id) => {
-            const addon = pricingData?.app?.add_ons?.find((a) => a.id === id);
-            return { label: addon?.label, price: addon?.price };
-          }).filter(Boolean),
-          totalWithAddons: totalInvestment
-        };
-      } else {
-        packageDetails = {
-          type: selectedService === 'closeup' ? 'Close-Up Mingling Magic' :
-                selectedService === 'stage' ? 'Stage Show' :
-                selectedService === 'bundle' ? 'Bundle Package' :
-                'Unknown',
-          performer: selectedService === 'closeup' ? (closeUpPerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George') :
-            selectedService === 'stage' ? (stagePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George') :
-            selectedService === 'bundle' ? (bundlePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George') :
-            'Unknown',
-          duration: selectedService === 'closeup' ? `${closeUpDuration} ${parseInt(closeUpDuration) === 1 ? 'Hour' : 'Hours'}` :
-            selectedService === 'stage' ? `${stageDuration} Minutes` :
-            selectedService === 'bundle' ? `${bundleCloseUpDuration}hr Close-Up + ${bundleStageDuration}min Stage` :
-            'Unknown',
-          magicians: selectedService === 'closeup' ? closeUpMagicians : (selectedService === 'bundle' ? bundleNumMagicians : undefined),
-          tier: selectedService === 'closeup' ? closeUpTier :
-                selectedService === 'stage' ? stageTier :
-                selectedService === 'bundle' ? bundleTier :
-                'Unknown',
-          price: selectedPackagePrice.price,
-          addons: selectedAddons.map((id) => {
-            const addon = pricingData?.app?.add_ons?.find((a) => a.id === id); 
-            if (addon && id === 'addon_poster' && includesFreePoster) {
-              return { label: addon.label, price: 0, isFree: true };
-            }
-            return { label: addon?.label, price: addon?.price };
-          }).filter(Boolean),
-          totalWithAddons: totalInvestment
-        };
-      }
-
-      console.log('Creating payment intent...');
-
-      const response = await base44.functions.invoke('createStripePayment', {
-        amount: finalDepositAmount,
-        email: email,
-        packageDetails,
-        eventDetails: { eventDate }
-      });
-
-      console.log('Full response:', response);
-      console.log('Response data:', response.data);
-
-      if (!response.data) {
-        throw new Error('No response received from server');
-      }
-
-      if (response.data.error) {
-        throw new Error(response.data.error);
-      }
-
-      if (!response.data.clientSecret) {
-        console.error('Missing client secret in response:', response.data);
-        throw new Error('Invalid response from payment server');
-      }
-
-      const secret = response.data.clientSecret;
-      console.log('Client secret received:', secret.substring(0, 20) + '...');
-
-      setClientSecret(secret);
-      setPaymentIntentId(response.data.paymentIntentId);
-      
-      await new Promise(resolve => setTimeout(resolve, 200));
-      setShowStripeModal(true);
-
-    } catch (error) {
-      console.error('Error creating payment intent:', error);
-      alert(error.message || 'Failed to initialize payment. Please try again.');
-      setClientSecret('');
-      setPaymentIntentId('');
-      setShowStripeModal(false);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const handlePaymentSuccess = async (paymentId) => {
-    setShowStripeModal(false);
     const currentTime = new Date();
-    const expiryTime = addHours(currentTime, 48);
-    setHoldExpiryTime(expiryTime);
+    const expiryTime = addHours(currentTime, 48); // 48 hours for the hold
 
     try {
       const addonsText = selectedAddons.length > 0 ?
@@ -525,20 +275,18 @@ export default function PricingPage() {
 
       await base44.integrations.Core.SendEmail({
         to: 'hello@omnimagic.co',
-        subject: `💳 10% Hold Payment Received - ${packageDetails.type}`,
+        subject: `🗓️ New Date Hold Request - ${packageDetails.type}`,
         body: `
 ═══════════════════════════════════════════════════════
-           10% HOLD PAYMENT SUCCESSFULLY PROCESSED
+                 NEW DATE HOLD REQUEST
 ═══════════════════════════════════════════════════════
 
-PAYMENT INFORMATION
+REQUEST DETAILS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Payment Amount:        $${depositAmount.toLocaleString()}
-  Payment Type:          10% Non-Refundable Hold
-  Payment ID:            ${paymentId}
-  Payment Time:          ${format(currentTime, 'PPpp')}
-  Hold Expires:          ${format(expiryTime, 'PPpp')}
-                         (48 hours from payment)
+  Request Time:          ${format(currentTime, 'PPpp')}
+  Hold Until:            ${format(expiryTime, 'PPpp')}
+                         (48 hours from request)
+  Deposit Due:           $${depositAmount.toLocaleString()} (10% of total)
 
 EVENT DETAILS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -570,8 +318,9 @@ CUSTOMER INFORMATION
   Phone:                 ${phone || 'Not provided'}${additionalNotes ? `\n  Notes:                 ${additionalNotes}` : ''}
 
 ═══════════════════════════════════════════════════════
-⏰ NEXT STEPS: Contact the client within 24 hours to 
-   finalize booking details and secure the date.
+⏰ NEXT STEPS: Contact the client to confirm their
+   deposit via Zelle/Venmo and secure the date.
+   Send confirmation email with payment details.
 ═══════════════════════════════════════════════════════
 
 —
@@ -579,18 +328,60 @@ Omni Magic Pricing System
         `
       });
 
+      // Send a confirmation email to the client
+      await base44.integrations.Core.SendEmail({
+        to: email,
+        subject: `🗓️ Your Omni Magic Booking Request is Received!`,
+        body: `
+Dear ${fullName},
+
+Thank you for your interest in Omni Magic Entertainment!
+
+We have received your request to hold the date for your upcoming event.
+To secure your booking, please complete your 10% deposit of $${depositAmount.toLocaleString()} within the next 48 hours.
+
+Your selected package details:
+------------------------------------------------------
+  Service Type:          ${packageDetails.type}
+  Event Date:            ${eventDate || 'Not specified'}
+  Total Investment:      $${totalInvestment.toLocaleString()}
+  10% Deposit Due:       $${depositAmount.toLocaleString()}
+------------------------------------------------------
+
+You can complete your deposit via Zelle or Venmo:
+
+Zelle: Send to 626-242-7710
+Venmo: Send to @johnnywumagic (https://venmo.com/u/johnnywumagic)
+
+Once your deposit is received, your date will be fully secured, and we will reach out to finalize the booking details.
+
+If you have any questions, please don't hesitate to reply to this email or call us at 626-242-7710.
+
+We look forward to making your event truly magical!
+
+Sincerely,
+
+The Omni Magic Team
+www.omnimagic.co
+        `
+      });
+
+      setHoldExpiryTime(expiryTime); // Set expiry time for success modal display
       setShowSuccessModal(true);
     } catch (error) {
-      console.error('Error sending confirmation email:', error);
-      setShowSuccessModal(true);
+      console.error('Error sending hold request email:', error);
+      alert(error.message || 'Failed to send hold request. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
+
   const handleConfirmNow = async () => {
-    if (!email || !fullName) { // Added from outline
-      alert('Please enter your contact details'); // Added from outline
-      return; // Added from outline
-    } // Added from outline
+    if (!email || !fullName) {
+      alert('Please enter your contact details');
+      return;
+    }
 
     setIsSubmitting(true);
 
@@ -1512,31 +1303,10 @@ Omni Magic Pricing System
                   </button>
                 </div>
 
-                {/* Payment method options (Stripe, Zelle, Venmo) are now conditionally shown if bookingOption is 'hold'
-                    and the contact modal is not open (implying contact info has been submitted) */}
                 {bookingOption === 'hold' && !showContactModal && (
                   <div className="space-y-3 mt-4 pt-4 border-t border-slate-600">
-                    <Label className="text-slate-200 text-[13px] block">Select Payment Method</Label>
-
-                    <div className="space-y-3">
-                      <button
-                        onClick={handleCreatePaymentIntent}
-                        disabled={isSubmitting || showStripeModal || !stripeLoaded}
-                        className={`w-full text-left p-3 rounded border-2 transition-all ${
-                          showStripeModal ?
-                            'border-amber-500 bg-amber-500/10' :
-                            'border-slate-600 hover:border-slate-500'
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <CreditCard className="w-5 h-5 text-amber-400" />
-                          <span className="text-white text-[14px] font-medium">
-                            {isSubmitting ? 'Loading Payment Form...' : stripeLoaded ? 'Credit/Debit Card' : 'Loading payment system...'}
-                          </span>
-                        </div>
-                      </button>
-                    </div>
-
+                    <Label className="text-slate-200 text-[13px] block">Payment Options for Deposit</Label>
+                    
                     <div className="p-3 bg-slate-700/50 rounded border border-slate-600">
                       <div className="flex items-center gap-2 mb-2">
                         <DollarSign className="w-5 h-5 text-purple-400" />
@@ -1571,6 +1341,9 @@ Omni Magic Pricing System
                         @johnnywumagic <ExternalLink className="w-3 h-3" />
                       </a>
                     </div>
+                    <p className="text-slate-400 text-[11px] mt-2 text-center">
+                      After sending your deposit, we will confirm your booking via email.
+                    </p>
                   </div>
                 )}
 
@@ -1695,84 +1468,20 @@ Omni Magic Pricing System
         </DialogContent>
       </Dialog>
 
-      {/* Stripe Payment Modal */}
-      <Dialog open={showStripeModal} onOpenChange={(open) => {
-        if (!open) {
-          setShowStripeModal(false);
-          setClientSecret('');
-          setPaymentIntentId('');
-        }
-      }}>
-        <DialogContent className="bg-slate-900 border-2 border-amber-500/50 text-white max-w-md max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-[22px] md:text-[24px] font-bold text-center text-white mb-2">
-              Complete Payment
-            </DialogTitle>
-            <p className="text-slate-200 text-center text-[13px] md:text-[14px]">
-              Secure payment via Stripe
-            </p>
-          </DialogHeader>
-
-          <div className="bg-amber-500/20 border border-amber-500/50 rounded-lg p-4 mb-4 text-center">
-            <p className="text-amber-200 text-[12px] mb-1">Hold Deposit (10%)</p>
-            <p className="text-4xl font-bold text-amber-400">${depositAmount.toLocaleString()}</p>
-          </div>
-
-          {clientSecret && stripePromise ? (
-            <Elements 
-              key={clientSecret}
-              stripe={stripePromise} 
-              options={{
-                clientSecret: clientSecret,
-                appearance: {
-                  theme: 'night',
-                  variables: {
-                    colorPrimary: '#d4af37',
-                    colorBackground: '#1e293b',
-                    colorText: '#ffffff',
-                    colorDanger: '#ef4444',
-                    fontFamily: 'Inter, system-ui, sans-serif',
-                    borderRadius: '8px'
-                  }
-                }
-              }}
-            >
-              <StripePaymentForm
-                amount={depositAmount}
-                email={email}
-                fullName={fullName} // Passed from outline
-                phone={phone} // Passed from outline
-                additionalNotes={additionalNotes} // Passed from outline
-                onSuccess={handlePaymentSuccess}
-                onCancel={() => {
-                  setShowStripeModal(false);
-                  setClientSecret('');
-                  setPaymentIntentId('');
-                }}
-              />
-            </Elements>
-          ) : (
-            <div className="text-center py-8">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-amber-400"></div>
-              <p className="text-slate-400 text-sm mt-3">Initializing payment...</p>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
       {/* Success Modal */}
       <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
         <DialogContent className="bg-slate-900 border-amber-400/30 text-white max-w-md overflow-y-auto">
           <div className="text-center py-6">
             <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
             <h3 className="text-[22px] font-semibold text-white mb-3">
-              {bookingOption === 'hold' ? 'Payment Successful! 🎉' : 'Request Sent! 📧'}
+              {bookingOption === 'hold' ? 'Hold Request Sent! 🎉' : 'Request Sent! 📧'}
             </h3>
             
             {bookingOption === 'hold' ? (
               <>
                 <p className="text-[15px] text-slate-200 mb-4">
-                  Thank you! Your ${depositAmount.toLocaleString()} deposit has been received.
+                  Thank you! Your request to hold the date has been received.
+                  To secure your booking, please complete your 10% deposit of <span className="font-bold text-amber-400">${depositAmount.toLocaleString()}</span> via Zelle or Venmo within 48 hours.
                 </p>
                 {holdExpiryTime && (
                   <div className="bg-blue-900/30 rounded p-3 mb-4">
@@ -1780,9 +1489,39 @@ Omni Magic Pricing System
                     <p className="text-white text-[16px] font-semibold">
                       {format(holdExpiryTime, 'PPpp')}
                     </p>
-                    <p className="text-slate-400 text-[12px] mt-1">48 hours from now</p>
+                    <p className="text-slate-400 text-[12px] mt-1">
+                      Please send your deposit by this time to confirm.
+                    </p>
                   </div>
                 )}
+                <div className="mt-4 text-left">
+                  <p className="text-slate-200 text-[13px] mb-2 font-semibold">Payment Options:</p>
+                  <div className="p-3 bg-slate-700/50 rounded border border-slate-600 mb-2">
+                    <div className="flex items-center gap-2 mb-2">
+                      <DollarSign className="w-5 h-5 text-purple-400" />
+                      <span className="text-white text-[14px] font-medium">Zelle</span>
+                    </div>
+                    <p className="text-slate-200 text-[12px]">
+                      Send to: <span className="text-white font-medium">626-242-7710</span>
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setShowZelleModal(true)}
+                      className="text-blue-400 text-[11px] hover:text-blue-300 inline-flex items-center gap-1 mt-1"
+                    >
+                      View QR Code <ExternalLink className="w-3 h-3" />
+                    </button>
+                  </div>
+                  <div className="p-3 bg-slate-700/50 rounded border border-slate-600">
+                    <div className="flex items-center gap-2 mb-2">
+                      <DollarSign className="w-5 h-5 text-blue-400" />
+                      <span className="text-white text-[14px] font-medium">Venmo</span>
+                    </div>
+                    <p className="text-slate-200 text-[12px]">
+                      Send to: <a href="https://venmo.com/u/johnnywumagic" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 inline-flex items-center gap-1">@johnnywumagic <ExternalLink className="w-3 h-3" /></a>
+                    </p>
+                  </div>
+                </div>
               </>
             ) : (
               <>
@@ -1799,7 +1538,7 @@ Omni Magic Pricing System
               </>
             )}
             
-            <p className="text-[14px] text-slate-200 mb-4">
+            <p className="text-[14px] text-slate-200 mb-4 mt-4">
               Check your email for confirmation details.
             </p>
             
