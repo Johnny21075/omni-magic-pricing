@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Star, Gift, CheckCircle, DollarSign, ExternalLink, Play, Sparkles } from 'lucide-react';
+import { Users, Star, Gift, CheckCircle, DollarSign, ExternalLink, Play } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { format, addHours } from 'date-fns';
 import {
@@ -252,26 +252,20 @@ export default function PricingPage() {
           tier: 'Virtual Show'
         };
       } else {
-        const getPerformerName = (performerId) => {
-          if (performerId === 'duo') return 'Johnny Wu & Dylan George (10% Duo Discount)';
-          if (performerId === 'johnny_wu') return 'Johnny Wu';
-          return 'Dylan George';
-        };
-
         packageDetails = {
           type: selectedService === 'closeup' ? 'Close-Up Mingling Magic' :
                 selectedService === 'stage' ? 'Stage Show' :
                 selectedService === 'bundle' ? 'Bundle Package' :
                 'Unknown',
-          performer: selectedService === 'closeup' ? getPerformerName(closeUpPerformer) :
-            selectedService === 'stage' ? getPerformerName(stagePerformer) :
-            selectedService === 'bundle' ? getPerformerName(bundlePerformer) :
+          performer: selectedService === 'closeup' ? (closeUpPerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George') :
+            selectedService === 'stage' ? (stagePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George') :
+            selectedService === 'bundle' ? (bundlePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George') :
             'Unknown',
           duration: selectedService === 'closeup' ? `${closeUpDuration} ${parseInt(closeUpDuration) === 1 ? 'Hour' : 'Hours'}` :
             selectedService === 'stage' ? `${stageDuration} Minutes` :
             selectedService === 'bundle' ? `${bundleCloseUpDuration}hr Close-Up + ${bundleStageDuration}min Stage` :
             'Unknown',
-          magicians: selectedService === 'closeup' ? (closeUpPerformer === 'duo' ? '2 (Duo)' : closeUpMagicians) : (selectedService === 'bundle' ? bundleNumMagicians : undefined),
+          magicians: selectedService === 'closeup' ? closeUpMagicians : (selectedService === 'bundle' ? bundleNumMagicians : undefined),
           tier: selectedService === 'closeup' ? closeUpTier :
                 selectedService === 'stage' ? stageTier :
                 selectedService === 'bundle' ? bundleTier :
@@ -402,26 +396,20 @@ www.omnimagic.co
           tier: 'Virtual Show'
         };
       } else {
-        const getPerformerName = (performerId) => {
-          if (performerId === 'duo') return 'Johnny Wu & Dylan George (10% Duo Discount)';
-          if (performerId === 'johnny_wu') return 'Johnny Wu';
-          return 'Dylan George';
-        };
-
         packageDetails = {
           type: selectedService === 'closeup' ? 'Close-Up Mingling Magic' :
                 selectedService === 'stage' ? 'Stage Show' :
                 selectedService === 'bundle' ? 'Combination Package' :
                 'Unknown',
-          performer: selectedService === 'closeup' ? getPerformerName(closeUpPerformer) :
-            selectedService === 'stage' ? getPerformerName(stagePerformer) :
-            selectedService === 'bundle' ? getPerformerName(bundlePerformer) :
+          performer: selectedService === 'closeup' ? (closeUpPerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George') :
+            selectedService === 'stage' ? (stagePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George') :
+            selectedService === 'bundle' ? (bundlePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George') :
             'Unknown',
           duration: selectedService === 'closeup' ? `${closeUpDuration} ${parseInt(closeUpDuration) === 1 ? 'Hour' : 'Hours'}` :
             selectedService === 'stage' ? `${stageDuration}-Minute Show` :
             selectedService === 'bundle' ? `${bundleCloseUpDuration}hr Close-Up + ${bundleStageDuration}min Stage` :
             'Unknown',
-          magicians: selectedService === 'closeup' ? (closeUpPerformer === 'duo' ? '2 (Duo)' : closeUpMagicians) : (selectedService === 'bundle' ? bundleNumMagicians : undefined),
+          magicians: selectedService === 'closeup' ? closeUpMagicians : (selectedService === 'bundle' ? bundleNumMagicians : undefined),
           tier: selectedService === 'closeup' ? closeUpTier :
                 selectedService === 'stage' ? stageTier :
                 selectedService === 'bundle' ? bundleTier :
@@ -523,9 +511,6 @@ Omni Magic Pricing System
   };
 
   const getMagicianOptions = (performerId) => {
-    if (performerId === 'duo') {
-      return [{ value: "2", label: "2 Magicians: Johnny Wu & Dylan George" }];
-    }
     const performerName = performerId === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George';
     return [
       { value: "1", label: `1 Magician: ${performerName}` },
@@ -533,13 +518,6 @@ Omni Magic Pricing System
       { value: "3", label: `3 Magicians: ${performerName} + 2 Associates` }
     ];
   };
-
-  // Reset magicians to 2 when duo is selected
-  useEffect(() => {
-    if (closeUpPerformer === 'duo') {
-      setCloseUpMagicians('2');
-    }
-  }, [closeUpPerformer]);
 
   const isFormValid = () => {
     if (!eventDate) return false;
@@ -574,26 +552,20 @@ Omni Magic Pricing System
       tier: ''
     };
 
-    const getPerformerName = (performerId) => {
-      if (performerId === 'duo') return 'Johnny Wu & Dylan George';
-      if (performerId === 'johnny_wu') return 'Johnny Wu';
-      return 'Dylan George';
-    };
-
     if (selectedService === 'closeup') {
       summary.type = 'Close-Up Mingling Magic';
-      summary.performer = getPerformerName(closeUpPerformer);
+      summary.performer = closeUpPerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George';
       summary.duration = `${closeUpDuration} ${parseInt(closeUpDuration) === 1 ? 'Hour' : 'Hours'}`;
-      summary.magicians = closeUpPerformer === 'duo' ? '2 Magicians (Duo)' : (closeUpMagicians ? `${closeUpMagicians} ${parseInt(closeUpMagicians) === 1 ? 'Magician' : 'Magicians'}` : '');
+      summary.magicians = closeUpMagicians ? `${closeUpMagicians} ${parseInt(closeUpMagicians) === 1 ? 'Magician' : 'Magicians'}` : '';
       summary.tier = closeUpTier ? closeUpTier.charAt(0).toUpperCase() + closeUpTier.slice(1) : '';
     } else if (selectedService === 'stage') {
       summary.type = 'Stage Show';
-      summary.performer = getPerformerName(stagePerformer);
+      summary.performer = stagePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George';
       summary.duration = `${stageDuration} Minutes`;
       summary.tier = stageTier ? stageTier.charAt(0).toUpperCase() + stageTier.slice(1) : '';
     } else if (selectedService === 'bundle') {
       summary.type = 'Bundle Package';
-      summary.performer = getPerformerName(bundlePerformer);
+      summary.performer = bundlePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George';
       summary.duration = `${bundleCloseUpDuration}hr Close-Up + ${bundleStageDuration}min Stage`;
       summary.magicians = bundleNumMagicians ? `${bundleNumMagicians} ${parseInt(bundleNumMagicians) === 1 ? 'Magician' : 'Magicians'}` : '';
       summary.tier = bundleTier ? bundleTier.charAt(0).toUpperCase() + bundleTier.slice(1) : '';
@@ -607,19 +579,12 @@ Omni Magic Pricing System
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         
         body {
           font-family: 'Inter', sans-serif;
           font-size: 15px;
-          line-height: 1.5;
-          letter-spacing: -0.01em;
-        }
-        
-        h1, h2, h3, h4, h5, h6 {
-          font-family: 'Playfair Display', serif;
-          font-weight: 700;
-          letter-spacing: -0.02em;
+          line-height: 1.3;
         }
         
         @media (max-width: 768px) {
@@ -631,73 +596,46 @@ Omni Magic Pricing System
         input[type="date"]::-webkit-calendar-picker-indicator {
           filter: invert(1);
         }
-        
-        .luxury-gradient {
-          background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-        }
-        
-        .glass-effect {
-          background: rgba(255, 255, 255, 0.03);
-          backdrop-filter: blur(20px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .gold-shimmer {
-          background: linear-gradient(135deg, #f6e05e 0%, #ecc94b 25%, #d69e2e 50%, #ecc94b 75%, #f6e05e 100%);
-          background-size: 200% 100%;
-          animation: shimmer 3s infinite;
-        }
-        
-        @keyframes shimmer {
-          0%, 100% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-        }
       `}</style>
 
-      <div className="min-h-screen luxury-gradient relative">
+      <div className="min-h-screen bg-slate-900">
         <div
           style={{ backgroundImage: `url(${backgroundImageUrl})` }}
-          className="fixed inset-0 bg-cover bg-center filter brightness-[0.15] opacity-40 z-0"
+          className="fixed inset-0 bg-cover bg-center filter brightness-[0.3] z-0"
         />
 
-        {/* Elegant overlay pattern */}
-        <div className="fixed inset-0 z-0" style={{
-          backgroundImage: `radial-gradient(circle at 20% 50%, rgba(236, 201, 75, 0.08) 0%, transparent 50%), 
-                           radial-gradient(circle at 80% 50%, rgba(236, 201, 75, 0.08) 0%, transparent 50%)`
-        }}></div>
-
         <div className="relative z-10">
-          <div className="min-h-[280px] flex flex-col items-center justify-center px-4 py-12">
+          <div className="h-[200px] md:h-[250px] flex flex-col items-center justify-center px-4">
             <a 
               href={createPageUrl('Home')}
-              className="cursor-pointer group mb-8"
+              className="cursor-pointer"
             >
               <img
                 src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/705652e3a_logowhitewordstransparent.png"
                 alt="Omni Magic Entertainment"
-                className="h-20 md:h-24 drop-shadow-2xl group-hover:scale-105 transition-transform duration-300"
+                className="h-16 md:h-20 mb-3 drop-shadow-2xl hover:opacity-80 transition-opacity"
               />
             </a>
-            <h1 className="text-white text-[32px] md:text-[42px] font-bold text-center mb-4 tracking-tight">
-              Craft Your <span className="gold-shimmer bg-clip-text text-transparent">Unforgettable</span> Experience
+            <h1 className="text-white text-[22px] md:text-[28px] font-semibold text-center mb-2">
+              Reserve Your Experience
             </h1>
-            <p className="text-slate-200 text-[16px] md:text-[18px] text-center max-w-2xl font-light">
-              Select your service, personalize with premium add-ons, and secure your exclusive date
+            <p className="text-slate-200 text-[13px] md:text-[15px] text-center max-w-2xl">
+              Select your service, choose add-ons, and secure your date
             </p>
           </div>
 
-          <div className="max-w-[950px] mx-auto px-4 md:px-6 pb-32">
+          <div className="max-w-[900px] mx-auto px-4 pb-24">
             {/* Event Date Section */}
-            <div className="glass-effect rounded-2xl border-amber-500/20 mb-8 shadow-2xl overflow-hidden">
-              <div className="p-6 md:p-8">
-                <h2 className="text-white text-[24px] md:text-[28px] font-bold mb-2 text-center">
+            <div className="bg-slate-800/90 rounded-xl border-2 border-slate-600 mb-6 shadow-xl overflow-hidden">
+              <div className="p-4 md:p-6">
+                <h2 className="text-white text-[18px] md:text-[22px] font-bold mb-1 text-center">
                   Event Date
                 </h2>
-                <p className="text-amber-400 text-[14px] md:text-[15px] text-center mb-6 font-medium">
+                <p className="text-amber-400 text-[13px] md:text-[14px] text-center mb-4">
                   * Required to calculate accurate pricing
                 </p>
                 
-                <div className="max-w-lg mx-auto">
+                <div className="max-w-md mx-auto">
                   <Input
                     id="eventDate"
                     type="date"
@@ -705,32 +643,31 @@ Omni Magic Pricing System
                     onChange={handleDateChange}
                     min={getTodayDate()}
                     required
-                    className="w-full bg-white/5 border-2 border-white/10 focus:border-amber-500 text-white text-[15px] md:text-[16px] h-12 md:h-14 px-4 rounded-xl transition-all hover:bg-white/8 shadow-lg"
+                    className="w-full bg-slate-700 border-2 border-slate-500 focus:border-amber-500 text-white text-[13px] md:text-[14px] h-10 md:h-11 px-3 rounded-lg transition-all hover:bg-slate-700/90"
                   />
                 </div>
 
                 {eventDate && isPeakDate(eventDate) && (
-                  <div className="mt-5 p-4 bg-amber-500/20 border-2 border-amber-500/50 rounded-xl text-amber-300 text-[14px] text-center max-w-lg mx-auto shadow-lg">
-                    <Sparkles className="inline w-5 h-5 mr-2" />
-                    <span className="font-semibold">High demand date</span> — limited availability
+                  <div className="mt-3 p-3 bg-amber-500/20 border-2 border-amber-500/40 rounded-lg text-amber-300 text-[13px] text-center max-w-md mx-auto">
+                    🔥 <span className="font-semibold">High demand date</span> - limited availability
                   </div>
                 )}
               </div>
             </div>
 
             {/* Location Disclaimer */}
-            <div className="glass-effect border-blue-500/30 rounded-2xl p-5 md:p-6 mb-8 shadow-xl">
-              <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 mt-1">
-                  <svg className="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+            <div className="bg-blue-900/30 border-2 border-blue-500/50 rounded-xl p-4 md:p-5 mb-6 shadow-lg">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 mt-0.5">
+                  <svg className="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                   </svg>
                 </div>
                 <div>
-                  <h3 className="text-blue-300 font-semibold text-[15px] md:text-[16px] mb-2">
+                  <h3 className="text-blue-300 font-semibold text-[14px] md:text-[15px] mb-1">
                     📍 Location Notice
                   </h3>
-                  <p className="text-blue-100 text-[14px] md:text-[15px] leading-relaxed font-light">
+                  <p className="text-blue-200 text-[13px] md:text-[14px] leading-relaxed">
                     Pricing shown is for events within <span className="font-semibold text-white">Southern California</span> (within 50 miles of Los Angeles). 
                     If your event is outside this area, please <a href="mailto:hello@omnimagic.co" className="text-blue-400 hover:text-blue-300 underline font-medium">contact us</a> for a custom quote including travel arrangements.
                   </p>
@@ -740,73 +677,73 @@ Omni Magic Pricing System
 
             {/* Virtual Show Selection */}
             {eventType === 'virtual' ? (
-              <div className="glass-effect rounded-2xl border-white/10 p-6 md:p-8 mb-6 shadow-2xl">
-                <div className="text-center mb-8">
-                  <h2 className="text-white text-[26px] md:text-[32px] font-bold mb-3">
+              <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-6 mb-4 shadow-sm">
+                <div className="text-center mb-6">
+                  <h2 className="text-white text-[22px] md:text-[26px] font-bold mb-2">
                     Virtual Experience — Magic That Connects Anywhere
                   </h2>
-                  <p className="text-slate-200 text-[15px] md:text-[17px] max-w-2xl mx-auto font-light">
+                  <p className="text-slate-200 text-[14px] md:text-[16px] max-w-2xl mx-auto">
                     Bring world-class magic, mind reading, and connection straight to your screen — designed for remote teams, virtual galas, and global audiences.
                   </p>
                 </div>
 
-                <div className="space-y-4 max-w-2xl mx-auto">
-                  <h3 className="text-white text-[19px] font-semibold mb-4">Select Duration:</h3>
+                <div className="space-y-3 max-w-2xl mx-auto">
+                  <h3 className="text-white text-[18px] font-semibold mb-3">Select Duration:</h3>
                   
                   <button
                     onClick={() => setVirtualDuration('30')}
-                    className={`w-full text-left p-5 rounded-xl border-2 transition-all transform hover:scale-102 ${
+                    className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
                       virtualDuration === '30' ?
-                        'border-amber-500 bg-amber-500/20 shadow-xl' :
-                        'border-white/10 hover:border-white/20 bg-white/5'
+                        'border-amber-500 bg-amber-500/10' :
+                        'border-slate-600 hover:border-slate-500'
                     }`}
                   >
                     <div className="flex justify-between items-center mb-2">
-                      <h4 className="text-white text-[19px] font-bold">30 Minutes — $1,500</h4>
+                      <h4 className="text-white text-[18px] font-bold">30 Minutes — $1,500</h4>
                     </div>
-                    <p className="text-slate-200 text-[14px] font-light">
+                    <p className="text-slate-200 text-[14px]">
                       Perfect for team meetings or quick virtual celebrations.
                     </p>
                   </button>
 
                   <button
                     onClick={() => setVirtualDuration('45')}
-                    className={`w-full text-left p-5 rounded-xl border-2 transition-all transform hover:scale-102 ${
+                    className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
                       virtualDuration === '45' ?
-                        'border-amber-500 bg-amber-500/20 shadow-xl' :
-                        'border-white/10 hover:border-white/20 bg-white/5'
+                        'border-amber-500 bg-amber-500/10' :
+                        'border-slate-600 hover:border-slate-500'
                     }`}
                   >
                     <div className="flex justify-between items-center mb-2">
-                      <h4 className="text-white text-[19px] font-bold">45 Minutes — $2,000</h4>
-                      <span className="text-[11px] bg-blue-500 text-white px-3 py-1 rounded-full font-medium">
+                      <h4 className="text-white text-[18px] font-bold">45 Minutes — $2,000</h4>
+                      <span className="text-[11px] bg-blue-500 text-white px-2 py-1 rounded font-medium">
                         MOST POPULAR
                       </span>
                     </div>
-                    <p className="text-slate-200 text-[14px] font-light">
+                    <p className="text-slate-200 text-[14px]">
                       Interactive, fast-paced, and unforgettable. Includes hypnosis and mind reading.
                     </p>
                   </button>
 
                   <button
                     onClick={() => setVirtualDuration('60')}
-                    className={`w-full text-left p-5 rounded-xl border-2 transition-all transform hover:scale-102 ${
+                    className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
                       virtualDuration === '60' ?
-                        'border-amber-500 bg-amber-500/20 shadow-xl' :
-                        'border-white/10 hover:border-white/20 bg-white/5'
+                        'border-amber-500 bg-amber-500/10' :
+                        'border-slate-600 hover:border-slate-500'
                     }`}
                   >
                     <div className="flex justify-between items-center mb-2">
-                      <h4 className="text-white text-[19px] font-bold">60 Minutes — $2,500</h4>
+                      <h4 className="text-white text-[18px] font-bold">60 Minutes — $2,500</h4>
                     </div>
-                    <p className="text-slate-200 text-[14px] font-light">
+                    <p className="text-slate-200 text-[14px]">
                       45-minute full experience with hypnosis and mind reading + 15-minute magic masterclass where everyone learns from a master magician.
                     </p>
                   </button>
                 </div>
 
                 {eventDate && isPeakDate(eventDate) && (
-                  <div className="mt-5 p-4 bg-amber-500/20 border-2 border-amber-500/50 rounded-xl text-amber-300 text-[14px] text-center max-w-2xl mx-auto">
+                  <div className="mt-4 p-3 bg-amber-500/20 border-2 border-amber-500/40 rounded-lg text-amber-300 text-[13px] text-center max-w-2xl mx-auto">
                     📅 <span className="font-semibold">December Performance:</span> 1.5× premium automatically applied due to limited availability
                   </div>
                 )}
@@ -816,49 +753,49 @@ Omni Magic Pricing System
               <>
                 {/* Service Type Selection */}
                 {!selectedService && !isKidsBirthdayParty && (
-                  <div className="glass-effect rounded-2xl border-white/10 p-6 md:p-8 mb-6 shadow-2xl">
-                    <h2 className="text-white text-[24px] md:text-[30px] font-bold mb-6 text-center">
+                  <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-6 mb-4 shadow-sm">
+                    <h2 className="text-white text-[20px] md:text-[24px] font-bold mb-4 text-center">
                       Choose Your Service
                     </h2>
                     
-                    <div className="space-y-4 max-w-2xl mx-auto">
+                    <div className="space-y-3 max-w-2xl mx-auto">
                       <button
                         onClick={() => handleServiceSelect('closeup')}
-                        className="w-full text-left p-5 rounded-xl border-2 border-white/10 hover:border-amber-500 hover:bg-amber-500/10 transition-all transform hover:scale-102"
+                        className="w-full text-left p-4 rounded-lg border-2 border-slate-600 hover:border-amber-500 hover:bg-amber-500/10 transition-all"
                       >
-                        <h3 className="text-white text-[19px] font-bold mb-2">
+                        <h3 className="text-white text-[18px] font-bold mb-2">
                           Close-Up Mingling Magic
                         </h3>
-                        <p className="text-slate-200 text-[15px] font-light">
+                        <p className="text-slate-200 text-[14px]">
                           {serviceDescriptions.closeUp}
                         </p>
                       </button>
 
                       <button
                         onClick={() => handleServiceSelect('stage')}
-                        className="w-full text-left p-5 rounded-xl border-2 border-white/10 hover:border-amber-500 hover:bg-amber-500/10 transition-all transform hover:scale-102"
+                        className="w-full text-left p-4 rounded-lg border-2 border-slate-600 hover:border-amber-500 hover:bg-amber-500/10 transition-all"
                       >
-                        <h3 className="text-white text-[19px] font-bold mb-2">
+                        <h3 className="text-white text-[18px] font-bold mb-2">
                           Stage Show
                         </h3>
-                        <p className="text-slate-200 text-[15px] font-light">
+                        <p className="text-slate-200 text-[14px]">
                           {serviceDescriptions.stage}
                         </p>
                       </button>
 
                       <button
                         onClick={() => handleServiceSelect('bundle')}
-                        className="w-full text-left p-5 rounded-xl border-2 border-white/10 hover:border-amber-500 hover:bg-amber-500/10 transition-all transform hover:scale-102"
+                        className="w-full text-left p-4 rounded-lg border-2 border-slate-600 hover:border-amber-500 hover:bg-amber-500/10 transition-all"
                       >
                         <div className="flex items-center justify-between mb-2">
-                          <h3 className="text-white text-[19px] font-bold">
+                          <h3 className="text-white text-[18px] font-bold">
                             Bundle Package
                           </h3>
-                          <span className="text-[12px] bg-green-500 text-white px-3 py-1 rounded-full font-medium">
+                          <span className="text-[11px] bg-green-500 text-white px-2 py-1 rounded font-medium">
                             10% OFF
                           </span>
                         </div>
-                        <p className="text-slate-200 text-[15px] font-light">
+                        <p className="text-slate-200 text-[14px]">
                           {serviceDescriptions.bundle}
                         </p>
                       </button>
@@ -868,17 +805,17 @@ Omni Magic Pricing System
                 
                 {/* For kids birthday party, automatically select stage show */}
                 {!selectedService && isKidsBirthdayParty && (
-                  <div className="glass-effect rounded-2xl border-white/10 p-6 md:p-8 mb-6 shadow-2xl">
-                    <h2 className="text-white text-[24px] md:text-[30px] font-bold mb-4 text-center">
+                  <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-6 mb-4 shadow-sm">
+                    <h2 className="text-white text-[20px] md:text-[24px] font-bold mb-4 text-center">
                       Kids Birthday Party Stage Show
                     </h2>
-                    <p className="text-slate-200 text-[15px] text-center mb-6 max-w-2xl mx-auto font-light">
+                    <p className="text-slate-200 text-[14px] text-center mb-4 max-w-2xl mx-auto">
                       For kids birthday parties, we offer an engaging stage show designed to captivate young audiences. Select your preferences below to get started.
                     </p>
                     <div className="text-center">
                       <button
                         onClick={() => handleServiceSelect('stage')}
-                        className="inline-block px-8 py-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-bold rounded-xl transition-all transform hover:scale-105 shadow-xl text-[15px]"
+                        className="inline-block px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-semibold rounded-lg transition-all"
                       >
                         Configure Stage Show
                       </button>
@@ -888,9 +825,9 @@ Omni Magic Pricing System
 
                 {/* Close-Up Configuration */}
                 {selectedService === 'closeup' && (
-                  <div className="glass-effect rounded-2xl border-white/10 p-6 md:p-8 mb-6 shadow-2xl">
-                    <div className="flex items-center justify-between mb-6">
-                      <h2 className="text-white text-[22px] font-bold">
+                  <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-6 mb-4 shadow-sm">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-white text-[20px] font-bold">
                         Close-Up Mingling Magic
                       </h2>
                       <Button
@@ -901,42 +838,34 @@ Omni Magic Pricing System
                           setCloseUpDuration('');
                           setCloseUpMagicians('');
                           setCloseUpTier('');
-                          setCloseUpPerformer('johnny_wu');
                         }}
-                        className="text-slate-400 hover:text-white hover:bg-white/10"
+                        className="text-slate-400 hover:text-white"
                       >
                         Change Service
                       </Button>
                     </div>
 
-                    <div className="space-y-5">
+                    <div className="space-y-4">
                       <div>
-                        <Label className="text-white text-[15px] mb-3 block font-medium">Select Performer</Label>
+                        <Label className="text-white text-[14px] mb-2 block">Select Performer</Label>
                         <Select value={closeUpPerformer} onValueChange={setCloseUpPerformer}>
-                          <SelectTrigger className="bg-white/5 border-2 border-white/10 text-white h-12 rounded-xl hover:bg-white/8 transition-all">
+                          <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent className="bg-slate-900 border-white/20">
+                          <SelectContent>
                             <SelectItem value="johnny_wu">Johnny Wu</SelectItem>
                             <SelectItem value="dylan_george">Dylan George</SelectItem>
-                            <SelectItem value="duo">
-                              <div className="flex items-center gap-2">
-                                <Sparkles className="w-4 h-4 text-amber-400" />
-                                <span>Johnny Wu & Dylan George</span>
-                                <span className="text-[11px] bg-green-500 text-white px-2 py-0.5 rounded-full ml-2">10% OFF</span>
-                              </div>
-                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
 
                       <div>
-                        <Label className="text-white text-[15px] mb-3 block font-medium">Duration</Label>
+                        <Label className="text-white text-[14px] mb-2 block">Duration</Label>
                         <Select value={closeUpDuration} onValueChange={setCloseUpDuration}>
-                          <SelectTrigger className="bg-white/5 border-2 border-white/10 text-white h-12 rounded-xl hover:bg-white/8 transition-all">
+                          <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                             <SelectValue placeholder="Select duration" />
                           </SelectTrigger>
-                          <SelectContent className="bg-slate-900 border-white/20">
+                          <SelectContent>
                             <SelectItem value="1">1 Hour (Great for 30-40 people)</SelectItem>
                             <SelectItem value="2">2 Hours (Great for 60-80 people)</SelectItem>
                             <SelectItem value="3">3 Hours (Great for 90-120 people)</SelectItem>
@@ -946,16 +875,12 @@ Omni Magic Pricing System
                       </div>
 
                       <div>
-                        <Label className="text-white text-[15px] mb-3 block font-medium">Number of Magicians</Label>
-                        <Select 
-                          value={closeUpMagicians} 
-                          onValueChange={setCloseUpMagicians}
-                          disabled={closeUpPerformer === 'duo'}
-                        >
-                          <SelectTrigger className="bg-white/5 border-2 border-white/10 text-white h-12 rounded-xl hover:bg-white/8 transition-all disabled:opacity-50">
+                        <Label className="text-white text-[14px] mb-2 block">Number of Magicians</Label>
+                        <Select value={closeUpMagicians} onValueChange={setCloseUpMagicians}>
+                          <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                             <SelectValue placeholder="Select number" />
                           </SelectTrigger>
-                          <SelectContent className="bg-slate-900 border-white/20">
+                          <SelectContent>
                             {getMagicianOptions(closeUpPerformer).map((option) => (
                               <SelectItem key={option.value} value={option.value}>
                                 {option.label}
@@ -966,19 +891,19 @@ Omni Magic Pricing System
                       </div>
 
                       <div>
-                        <Label className="text-white text-[15px] mb-3 block font-medium">Experience Tier</Label>
+                        <Label className="text-white text-[14px] mb-2 block">Experience Tier</Label>
                         <Select value={closeUpTier} onValueChange={setCloseUpTier}>
-                          <SelectTrigger className="bg-white/5 border-2 border-white/10 text-white h-12 rounded-xl hover:bg-white/8 transition-all">
+                          <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                             <SelectValue placeholder="Select tier" />
                           </SelectTrigger>
-                          <SelectContent className="max-w-[calc(100vw-2rem)] md:max-w-2xl bg-slate-900 border-white/20">
+                          <SelectContent className="max-w-[calc(100vw-2rem)] md:max-w-2xl">
                             {availableTiers.map((tier) => {
                               const tierDesc = TIER_DESCRIPTIONS.close_up[tier];
                               return (
                                 <SelectItem key={tier} value={tier}>
-                                  <div className="py-2 pr-2">
-                                    <div className="font-semibold text-[15px]">{tierDesc?.title || tier.charAt(0).toUpperCase() + tier.slice(1)}</div>
-                                    <div className="text-[12px] text-slate-400 mt-1 whitespace-normal font-light">{tierDesc?.description}</div>
+                                  <div className="py-1 pr-2">
+                                    <div className="font-semibold text-sm">{tierDesc?.title || tier.charAt(0).toUpperCase() + tier.slice(1)}</div>
+                                    <div className="text-[11px] text-slate-400 mt-1 whitespace-normal">{tierDesc?.description}</div>
                                   </div>
                                 </SelectItem>
                               );
@@ -992,9 +917,9 @@ Omni Magic Pricing System
 
                 {/* Stage Show Configuration */}
                 {selectedService === 'stage' && (
-                  <div className="glass-effect rounded-2xl border-white/10 p-6 md:p-8 mb-6 shadow-2xl">
-                    <div className="flex items-center justify-between mb-6">
-                      <h2 className="text-white text-[22px] font-bold">
+                  <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-6 mb-4 shadow-sm">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-white text-[20px] font-bold">
                         Stage Show
                       </h2>
                       <Button
@@ -1005,20 +930,20 @@ Omni Magic Pricing System
                           setStageDuration('');
                           setStageTier('');
                         }}
-                        className="text-slate-400 hover:text-white hover:bg-white/10"
+                        className="text-slate-400 hover:text-white"
                       >
                         Change Service
                       </Button>
                     </div>
 
-                    <div className="space-y-5">
+                    <div className="space-y-4">
                       <div>
-                        <Label className="text-white text-[15px] mb-3 block font-medium">Select Performer</Label>
+                        <Label className="text-white text-[14px] mb-2 block">Select Performer</Label>
                         <Select value={stagePerformer} onValueChange={setStagePerformer}>
-                          <SelectTrigger className="bg-white/5 border-2 border-white/10 text-white h-12 rounded-xl hover:bg-white/8 transition-all">
+                          <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent className="bg-slate-900 border-white/20">
+                          <SelectContent>
                             <SelectItem value="johnny_wu">Johnny Wu</SelectItem>
                             <SelectItem value="dylan_george">Dylan George</SelectItem>
                           </SelectContent>
@@ -1026,12 +951,12 @@ Omni Magic Pricing System
                       </div>
 
                       <div>
-                        <Label className="text-white text-[15px] mb-3 block font-medium">Show Duration</Label>
+                        <Label className="text-white text-[14px] mb-2 block">Show Duration</Label>
                         <Select value={stageDuration} onValueChange={setStageDuration}>
-                          <SelectTrigger className="bg-white/5 border-2 border-white/10 text-white h-12 rounded-xl hover:bg-white/8 transition-all">
+                          <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                             <SelectValue placeholder="Select duration" />
                           </SelectTrigger>
-                          <SelectContent className="bg-slate-900 border-white/20">
+                          <SelectContent>
                             {eventType === 'wedding' ? (
                               <SelectItem value="20">20 Minutes</SelectItem>
                             ) : (
@@ -1046,19 +971,19 @@ Omni Magic Pricing System
                       </div>
 
                       <div>
-                        <Label className="text-white text-[15px] mb-3 block font-medium">Experience Tier</Label>
+                        <Label className="text-white text-[14px] mb-2 block">Experience Tier</Label>
                         <Select value={stageTier} onValueChange={setStageTier}>
-                          <SelectTrigger className="bg-white/5 border-2 border-white/10 text-white h-12 rounded-xl hover:bg-white/8 transition-all">
+                          <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                             <SelectValue placeholder="Select tier" />
                           </SelectTrigger>
-                          <SelectContent className="max-w-[calc(100vw-2rem)] md:max-w-2xl bg-slate-900 border-white/20">
+                          <SelectContent className="max-w-[calc(100vw-2rem)] md:max-w-2xl">
                             {availableTiers.map((tier) => {
                               const tierDesc = TIER_DESCRIPTIONS.stage[tier];
                               return (
                                 <SelectItem key={tier} value={tier}>
-                                  <div className="py-2 pr-2">
-                                    <div className="font-semibold text-[15px]">{tierDesc?.title || tier.charAt(0).toUpperCase() + tier.slice(1)}</div>
-                                    <div className="text-[12px] text-slate-400 mt-1 whitespace-normal font-light">{tierDesc?.description}</div>
+                                  <div className="py-1 pr-2">
+                                    <div className="font-semibold text-sm">{tierDesc?.title || tier.charAt(0).toUpperCase() + tier.slice(1)}</div>
+                                    <div className="text-[11px] text-slate-400 mt-1 whitespace-normal">{tierDesc?.description}</div>
                                   </div>
                                 </SelectItem>
                               );
@@ -1072,10 +997,10 @@ Omni Magic Pricing System
 
                 {/* Bundle Configuration */}
                 {selectedService === 'bundle' && (
-                  <div className="glass-effect rounded-2xl border-white/10 p-6 md:p-8 mb-6 shadow-2xl">
-                    <div className="flex items-center justify-between mb-6">
-                      <h2 className="text-white text-[22px] font-bold">
-                        Bundle Package <span className="text-green-400 text-[15px]">(10% OFF)</span>
+                  <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-6 mb-4 shadow-sm">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-white text-[20px] font-bold">
+                        Bundle Package <span className="text-green-400 text-[14px]">(10% OFF)</span>
                       </h2>
                       <Button
                         variant="ghost"
@@ -1087,37 +1012,37 @@ Omni Magic Pricing System
                           setBundleStageDuration('');
                           setBundleTier('');
                         }}
-                        className="text-slate-400 hover:text-white hover:bg-white/10"
+                        className="text-slate-400 hover:text-white"
                       >
                         Change Service
                       </Button>
                     </div>
 
-                    <div className="space-y-5">
+                    <div className="space-y-4">
                       <div>
-                        <Label className="text-white text-[15px] mb-3 block font-medium">Select Performer</Label>
+                        <Label className="text-white text-[14px] mb-2 block">Select Performer</Label>
                         <Select value={bundlePerformer} onValueChange={setBundlePerformer}>
-                          <SelectTrigger className="bg-white/5 border-2 border-white/10 text-white h-12 rounded-xl hover:bg-white/8 transition-all">
+                          <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                             <SelectValue />
                           </SelectTrigger>
-                          <SelectContent className="bg-slate-900 border-white/20">
+                          <SelectContent>
                             <SelectItem value="johnny_wu">Johnny Wu</SelectItem>
                             <SelectItem value="dylan_george">Dylan George</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
 
-                      <div className="border-t border-white/10 pt-5">
-                        <h3 className="text-white text-[17px] font-semibold mb-4">Close-Up Portion</h3>
+                      <div className="border-t border-slate-600 pt-4">
+                        <h3 className="text-white text-[16px] font-semibold mb-3">Close-Up Portion</h3>
                         
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                           <div>
-                            <Label className="text-white text-[15px] mb-3 block font-medium">Duration</Label>
+                            <Label className="text-white text-[14px] mb-2 block">Duration</Label>
                             <Select value={bundleCloseUpDuration} onValueChange={setBundleCloseUpDuration}>
-                              <SelectTrigger className="bg-white/5 border-2 border-white/10 text-white h-12 rounded-xl hover:bg-white/8 transition-all">
+                              <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                                 <SelectValue placeholder="Select duration" />
                               </SelectTrigger>
-                              <SelectContent className="bg-slate-900 border-white/20">
+                              <SelectContent>
                                 <SelectItem value="1">1 Hour (Great for 30-40 people)</SelectItem>
                                 <SelectItem value="2">2 Hours (Great for 60-80 people)</SelectItem>
                                 <SelectItem value="3">3 Hours (Great for 90-120 people)</SelectItem>
@@ -1127,12 +1052,12 @@ Omni Magic Pricing System
                           </div>
 
                           <div>
-                            <Label className="text-white text-[15px] mb-3 block font-medium">Number of Magicians</Label>
+                            <Label className="text-white text-[14px] mb-2 block">Number of Magicians</Label>
                             <Select value={bundleNumMagicians} onValueChange={setBundleNumMagicians}>
-                              <SelectTrigger className="bg-white/5 border-2 border-white/10 text-white h-12 rounded-xl hover:bg-white/8 transition-all">
+                              <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                                 <SelectValue placeholder="Select number" />
                               </SelectTrigger>
-                              <SelectContent className="bg-slate-900 border-white/20">
+                              <SelectContent>
                                 {getMagicianOptions(bundlePerformer).map((option) => (
                                   <SelectItem key={option.value} value={option.value}>
                                     {option.label}
@@ -1144,17 +1069,17 @@ Omni Magic Pricing System
                         </div>
                       </div>
 
-                      <div className="border-t border-white/10 pt-5">
-                        <h3 className="text-white text-[17px] font-semibold mb-4">Stage Show Portion</h3>
+                      <div className="border-t border-slate-600 pt-4">
+                        <h3 className="text-white text-[16px] font-semibold mb-3">Stage Show Portion</h3>
                         
-                        <div className="space-y-4">
+                        <div className="space-y-3">
                           <div>
-                            <Label className="text-white text-[15px] mb-3 block font-medium">Show Duration</Label>
+                            <Label className="text-white text-[14px] mb-2 block">Show Duration</Label>
                             <Select value={bundleStageDuration} onValueChange={setBundleStageDuration}>
-                              <SelectTrigger className="bg-white/5 border-2 border-white/10 text-white h-12 rounded-xl hover:bg-white/8 transition-all">
+                              <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                                 <SelectValue placeholder="Select duration" />
                               </SelectTrigger>
-                              <SelectContent className="bg-slate-900 border-white/20">
+                              <SelectContent>
                                 {eventType === 'wedding' ? (
                                   <SelectItem value="20">20 Minutes</SelectItem>
                                 ) : (
@@ -1171,21 +1096,21 @@ Omni Magic Pricing System
                       </div>
 
                       <div>
-                        <Label className="text-white text-[15px] mb-3 block font-medium">Experience Tier</Label>
+                        <Label className="text-white text-[14px] mb-2 block">Experience Tier</Label>
                         <Select value={bundleTier} onValueChange={setBundleTier}>
-                          <SelectTrigger className="bg-white/5 border-2 border-white/10 text-white h-12 rounded-xl hover:bg-white/8 transition-all">
+                          <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                             <SelectValue placeholder="Select tier" />
                           </SelectTrigger>
-                          <SelectContent className="max-w-[calc(100vw-2rem)] md:max-w-2xl bg-slate-900 border-white/20">
+                          <SelectContent className="max-w-[calc(100vw-2rem)] md:max-w-2xl">
                             {availableTiers.map((tier) => {
                               const closeUpDesc = TIER_DESCRIPTIONS.close_up[tier];
                               const stageDesc = TIER_DESCRIPTIONS.stage[tier];
                               return (
                                 <SelectItem key={tier} value={tier}>
-                                  <div className="py-2 pr-2">
-                                    <div className="font-semibold text-[15px]">{tier.charAt(0).toUpperCase() + tier.slice(1)} Bundle</div>
-                                    <div className="text-[12px] text-slate-400 mt-1 whitespace-normal font-light">Close-Up: ${closeUpDesc?.description}</div>
-                                    <div className="text-[12px] text-slate-400 whitespace-normal font-light">Stage: ${stageDesc?.description}</div>
+                                  <div className="py-1 pr-2">
+                                    <div className="font-semibold text-sm">{tier.charAt(0).toUpperCase() + tier.slice(1)} Bundle</div>
+                                    <div className="text-[11px] text-slate-400 mt-1 whitespace-normal">Close-Up: ${closeUpDesc?.description}</div>
+                                    <div className="text-[11px] text-slate-400 whitespace-normal">Stage: ${stageDesc?.description}</div>
                                   </div>
                                 </SelectItem>
                               );
@@ -1201,37 +1126,37 @@ Omni Magic Pricing System
 
             {/* Package Summary */}
             {(selectedService || eventType === 'virtual') && packageSummary && isFormValid() && (
-              <div className="glass-effect rounded-2xl border-white/10 p-5 md:p-6 mb-6 shadow-2xl">
-                <h2 className="text-white text-[20px] md:text-[22px] font-semibold mb-3">Your Selected Package</h2>
+              <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-5 mb-4 shadow-sm">
+                <h2 className="text-white text-[18px] md:text-[20px] font-semibold mb-3">Your Selected Package</h2>
                 
                 <div className="space-y-2 mb-3">
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-200 text-[15px] font-light">Service:</span>
-                    <span className="text-white text-[15px] font-semibold">{packageSummary.type}</span>
+                    <span className="text-slate-200 text-[14px]">Service:</span>
+                    <span className="text-white text-[14px] font-semibold">{packageSummary.type}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-200 text-[15px] font-light">Performer:</span>
-                    <span className="text-white text-[15px] font-semibold">{packageSummary.performer}</span>
+                    <span className="text-slate-200 text-[14px]">Performer:</span>
+                    <span className="text-white text-[14px] font-semibold">{packageSummary.performer}</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-200 text-[15px] font-light">Duration:</span>
-                    <span className="text-white text-[15px] font-semibold">{packageSummary.duration}</span>
+                    <span className="text-slate-200 text-[14px]">Duration:</span>
+                    <span className="text-white text-[14px] font-semibold">{packageSummary.duration}</span>
                   </div>
                   {packageSummary.magicians && (
                     <div className="flex justify-between items-center">
-                      <span className="text-slate-200 text-[15px] font-light">Magicians:</span>
-                      <span className="text-white text-[15px] font-semibold">{packageSummary.magicians}</span>
+                      <span className="text-slate-200 text-[14px]">Magicians:</span>
+                      <span className="text-white text-[14px] font-semibold">{packageSummary.magicians}</span>
                     </div>
                   )}
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-200 text-[15px] font-light">Tier:</span>
-                    <span className="text-white text-[15px] font-semibold">{packageSummary.tier}</span>
+                    <span className="text-slate-200 text-[14px]">Tier:</span>
+                    <span className="text-white text-[14px] font-semibold">{packageSummary.tier}</span>
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-white/10 flex justify-between items-center">
-                  <span className="text-white text-[17px] font-semibold">Package Price:</span>
-                  <span className="text-amber-400 text-[22px] font-bold">
+                <div className="pt-3 border-t border-slate-600 flex justify-between items-center">
+                  <span className="text-white text-[16px] font-semibold">Package Price:</span>
+                  <span className="text-amber-400 text-[20px] font-bold">
                     ${selectedPackagePrice.price.toLocaleString()}
                   </span>
                 </div>
@@ -1240,10 +1165,10 @@ Omni Magic Pricing System
 
             {/* Add-Ons Section */}
             {(selectedService || eventType === 'virtual') && filteredAddons.length > 0 && (
-              <div className="glass-effect rounded-2xl border-white/10 p-5 md:p-6 mb-6 shadow-2xl">
-                <h2 className="text-white text-[20px] md:text-[22px] font-semibold mb-4">Add-Ons (Optional)</h2>
+              <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-5 mb-4 shadow-sm">
+                <h2 className="text-white text-[18px] md:text-[20px] font-semibold mb-3">Add-Ons (Optional)</h2>
                 
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {filteredAddons.map((addon) => {
                     const isFreePoster = addon.id === 'addon_poster' && includesFreePoster;
                     const displayPrice = isFreePoster ? 0 : addon.price;
@@ -1251,32 +1176,32 @@ Omni Magic Pricing System
                     return (
                       <div
                         key={addon.id}
-                        className={`flex items-start gap-3 p-4 rounded-xl border-2 transition-all bg-white/5 ${
+                        className={`flex items-start gap-3 p-3 rounded border-2 transition-all bg-slate-700/70 ${
                           selectedAddons.includes(addon.id) ?
-                            'border-amber-500 bg-amber-500/20' :
-                            'border-white/10'
+                            'border-amber-500 bg-amber-500/10' :
+                            'border-slate-500'
                         }`}
                       >
                         <Checkbox
                           id={addon.id}
                           checked={selectedAddons.includes(addon.id)}
                           onCheckedChange={() => handleAddonToggle(addon.id)}
-                          className="mt-1"
+                          className="mt-0.5"
                         />
                         <label htmlFor={addon.id} className="flex-1 cursor-pointer">
                           <div className="flex items-center justify-between mb-1">
-                            <span className="text-white text-[15px] font-medium">{addon.label}</span>
+                            <span className="text-white text-[14px] font-medium">{addon.label}</span>
                             {isFreePoster ? (
-                              <span className="text-green-400 text-[15px] font-semibold">FREE 🎁</span>
+                              <span className="text-green-400 text-[14px] font-semibold">FREE 🎁</span>
                             ) : (
-                              <span className="text-amber-400 text-[15px] font-semibold">
+                              <span className="text-amber-400 text-[14px] font-semibold">
                                 +${displayPrice.toLocaleString()}
                               </span>
                             )}
                           </div>
-                          <p className="text-slate-200 text-[13px] mb-1 font-light">{addon.tooltip}</p>
+                          <p className="text-slate-200 text-[12px] mb-1">{addon.tooltip}</p>
                           {isFreePoster && (
-                            <p className="text-green-300 text-[12px] font-semibold mt-1">
+                            <p className="text-green-300 text-[11px] font-semibold mt-1">
                               ✨ Complimentary with Stage Show + Confirm Now booking
                             </p>
                           )}
@@ -1287,9 +1212,9 @@ Omni Magic Pricing System
                                 e.preventDefault();
                                 handleVideoPlay(addon.preview_url);
                               }}
-                              className="text-blue-400 text-[12px] hover:text-blue-300 inline-flex items-center gap-1 mt-1"
+                              className="text-blue-400 text-[11px] hover:text-blue-300 inline-flex items-center gap-1 mt-1"
                             >
-                              <Play className="w-3.5 h-3.5" /> Watch Demo
+                              <Play className="w-3 h-3" /> Watch Demo
                             </button>
                           )}
                         </label>
@@ -1299,11 +1224,11 @@ Omni Magic Pricing System
                 </div>
 
                 {selectedAddons.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center">
-                    <span className="text-slate-200 text-[14px] font-light">
+                  <div className="mt-3 pt-3 border-t border-slate-600 flex justify-between items-center">
+                    <span className="text-slate-200 text-[13px]">
                       {selectedAddons.length} add-on{selectedAddons.length > 1 ? 's' : ''} selected
                     </span>
-                    <span className="text-amber-400 text-[17px] font-semibold">
+                    <span className="text-amber-400 text-[15px] font-semibold">
                       +${totalAddonsCost.toLocaleString()}
                     </span>
                   </div>
@@ -1313,125 +1238,125 @@ Omni Magic Pricing System
 
             {/* Booking Options */}
             {(selectedService || eventType === 'virtual') && isFormValid() && (
-              <div className="glass-effect rounded-2xl border-white/10 p-5 md:p-6 mb-6 shadow-2xl">
-                <h2 className="text-white text-[20px] md:text-[22px] font-semibold mb-4">Complete Your Booking</h2>
+              <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-5 mb-4 shadow-sm">
+                <h2 className="text-white text-[18px] md:text-[20px] font-semibold mb-3">Complete Your Booking</h2>
                 
-                <div className="bg-white/5 rounded-xl p-4 mb-5 shadow-inner">
+                <div className="bg-slate-700/50 rounded p-3 mb-4">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-slate-200 text-[14px] font-light">Package</span>
-                    <span className="text-white text-[15px]">
+                    <span className="text-slate-200 text-[13px]">Package</span>
+                    <span className="text-white text-[14px]">
                       ${selectedPackagePrice.price.toLocaleString()}
                     </span>
                   </div>
                   {totalAddonsCost > 0 && (
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-slate-200 text-[14px] font-light">Add-ons</span>
-                      <span className="text-white text-[15px]">
+                      <span className="text-slate-200 text-[13px]">Add-ons</span>
+                      <span className="text-white text-[14px]">
                         +${totalAddonsCost.toLocaleString()}
                       </span>
                     </div>
                   )}
                   {includesFreePoster && (
                     <div className="flex justify-between items-center mb-2">
-                      <span className="text-green-300 text-[14px] font-light">FREE Poster Bonus</span>
-                      <span className="text-green-400 text-[15px]">+$200 (FREE)</span>
+                      <span className="text-green-300 text-[13px]">FREE Poster Bonus</span>
+                      <span className="text-green-400 text-[14px]">+$200 (FREE)</span>
                     </div>
                   )}
-                  <div className="pt-2 border-t border-white/10 flex justify-between items-center mt-3">
-                    <span className="text-white text-[17px] font-semibold">Total Investment</span>
-                    <span className="text-amber-400 text-[22px] font-bold">
+                  <div className="pt-2 border-t border-slate-600 flex justify-between items-center">
+                    <span className="text-white text-[15px] font-semibold">Total Investment</span>
+                    <span className="text-amber-400 text-[18px] font-bold">
                       ${totalInvestment.toLocaleString()}
                     </span>
                   </div>
                 </div>
 
-                <div className="space-y-4 mb-5">
-                  <Label className="text-slate-200 text-[14px] block font-light">Choose Booking Option</Label>
+                <div className="space-y-3 mb-4">
+                  <Label className="text-slate-200 text-[13px] block">Choose Booking Option</Label>
                   
                   <button
                     onClick={handleHoldDateClick}
-                    className="w-full text-left p-4 rounded-xl border-2 border-white/10 hover:border-blue-500 hover:bg-blue-500/10 transition-all transform hover:scale-102"
+                    className="w-full text-left p-3 rounded border-2 border-slate-600 hover:border-blue-500 hover:bg-blue-500/10 transition-all"
                   >
                     <div className="flex justify-between items-center">
-                      <span className="text-white text-[15px] font-medium">Hold the Date (10% Deposit)</span>
-                      <span className="text-blue-400 text-[18px] font-semibold">
+                      <span className="text-white text-[14px] font-medium">Hold the Date (10% Deposit)</span>
+                      <span className="text-blue-400 text-[16px] font-semibold">
                         ${depositAmount.toLocaleString()}
                       </span>
                     </div>
-                    <p className="text-slate-200 text-[13px] mt-1 font-light">Non-refundable • Holds your date for 48 hours</p>
+                    <p className="text-slate-200 text-[12px] mt-1">Non-refundable • Holds your date for 48 hours</p>
                   </button>
 
                   <button
                     onClick={handleConfirmNowClick}
-                    className="w-full text-left p-4 rounded-xl border-2 border-white/10 hover:border-green-500 hover:bg-green-500/10 transition-all transform hover:scale-102"
+                    className="w-full text-left p-3 rounded border-2 border-slate-600 hover:border-green-500 hover:bg-green-500/10 transition-all"
                   >
                     <div className="flex justify-between items-center">
-                      <span className="text-white text-[15px] font-medium">Confirm Now</span>
-                      <span className="text-green-400 text-[15px]">Contract & Invoice</span>
+                      <span className="text-white text-[14px] font-medium">Confirm Now</span>
+                      <span className="text-green-400 text-[14px]">Contract & Invoice</span>
                     </div>
-                    <p className="text-slate-200 text-[13px] mt-1 font-light">We will send you an official contract and invoice via email</p>
+                    <p className="text-slate-200 text-[12px] mt-1">We will send you an official contract and invoice via email</p>
                     {includesFreePoster && (
-                      <div className="mt-3 p-3 bg-green-900/40 border border-green-500/50 rounded-lg">
-                        <p className="text-green-300 text-[13px] font-semibold">🎁 Complimentary Bonus: Impossible Poster Souvenir (Value: $200)</p>
+                      <div className="mt-2 p-2 bg-green-900/30 border border-green-500/40 rounded">
+                        <p className="text-green-300 text-[12px] font-semibold">🎁 Complimentary Bonus: Impossible Poster Souvenir (Value: $200)</p>
                       </div>
                     )}
                   </button>
                 </div>
 
                 {bookingOption === 'hold' && !showContactModal && (
-                  <div className="space-y-4 mt-5 pt-5 border-t border-white/10">
-                    <Label className="text-slate-200 text-[14px] block font-light">Payment Options for Deposit</Label>
+                  <div className="space-y-3 mt-4 pt-4 border-t border-slate-600">
+                    <Label className="text-slate-200 text-[13px] block">Payment Options for Deposit</Label>
                     
-                    <div className="p-4 bg-white/5 rounded-xl border border-white/10 shadow-inner">
+                    <div className="p-3 bg-slate-700/50 rounded border border-slate-600">
                       <div className="flex items-center gap-2 mb-2">
-                        <DollarSign className="w-5.5 h-5.5 text-purple-400" />
-                        <span className="text-white text-[15px] font-medium">Pay with Zelle</span>
+                        <DollarSign className="w-5 h-5 text-purple-400" />
+                        <span className="text-white text-[14px] font-medium">Pay with Zelle</span>
                       </div>
-                      <p className="text-slate-200 text-[13px] mb-3 font-light">
+                      <p className="text-slate-200 text-[12px] mb-3">
                         Send ${depositAmount.toLocaleString()} to: <span className="text-white font-medium">626-242-7710</span>
                       </p>
                       <img 
                         src={zelleQRCodeUrl} 
                         alt="Zelle QR Code" 
-                        className="w-56 h-56 mx-auto rounded-lg shadow-xl cursor-pointer hover:opacity-80 transition-opacity"
+                        className="w-48 h-48 mx-auto rounded cursor-pointer hover:opacity-80 transition-opacity"
                         onClick={() => setShowZelleModal(true)}
                       />
-                      <p className="text-slate-400 text-[12px] text-center mt-2">Click to enlarge</p>
+                      <p className="text-slate-400 text-[11px] text-center mt-2">Click to enlarge</p>
                     </div>
 
-                    <div className="p-4 bg-white/5 rounded-xl border border-white/10 shadow-inner">
+                    <div className="p-3 bg-slate-700/50 rounded border border-slate-600">
                       <div className="flex items-center gap-2 mb-2">
-                        <DollarSign className="w-5.5 h-5.5 text-blue-400" />
-                        <span className="text-white text-[15px] font-medium">Pay with Venmo</span>
+                        <DollarSign className="w-5 h-5 text-blue-400" />
+                        <span className="text-white text-[14px] font-medium">Pay with Venmo</span>
                       </div>
-                      <p className="text-slate-200 text-[13px] mb-2 font-light">
+                      <p className="text-slate-200 text-[12px] mb-2">
                         Send ${depositAmount.toLocaleString()} to:
                       </p>
                       <a
                         href="https://venmo.com/u/johnnywumagic"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-blue-400 text-[14px] hover:text-blue-300 inline-flex items-center gap-1"
+                        className="text-blue-400 text-[13px] hover:text-blue-300 inline-flex items-center gap-1"
                       >
-                        @johnnywumagic <ExternalLink className="w-3.5 h-3.5" />
+                        @johnnywumagic <ExternalLink className="w-3 h-3" />
                       </a>
                     </div>
-                    <p className="text-slate-400 text-[12px] mt-2 text-center">
+                    <p className="text-slate-400 text-[11px] mt-2 text-center">
                       After sending your deposit, we will confirm your booking via email.
                     </p>
                   </div>
                 )}
 
                 {bookingOption === 'confirm' && !showContactModal && (
-                  <div className="mt-5 pt-5 border-t border-white/10">
+                  <div className="mt-4 pt-4 border-t border-slate-600">
                     <Button
                       onClick={handleConfirmNow}
                       disabled={isSubmitting}
-                      className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-bold text-[16px] h-12 rounded-xl transition-all transform hover:scale-102 shadow-xl"
+                      className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-medium text-[15px] h-10"
                     >
                       {isSubmitting ? 'Sending Request...' : 'Send Booking Request'}
                     </Button>
-                    <p className="text-slate-400 text-[12px] mt-2 text-center">
+                    <p className="text-slate-400 text-[11px] mt-2 text-center">
                       We will email you within 24 hours with your contract and invoice
                     </p>
                   </div>
@@ -1444,19 +1369,19 @@ Omni Magic Pricing System
 
       {/* Contact Information Modal */}
       <Dialog open={showContactModal} onOpenChange={setShowContactModal}>
-        <DialogContent className="glass-effect border-white/10 text-white max-w-md max-h-[90vh] overflow-y-auto rounded-2xl p-6 md:p-8 shadow-3xl">
+        <DialogContent className="bg-slate-900 border-2 border-amber-500/50 text-white max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-[24px] font-bold text-center text-white mb-2">
+            <DialogTitle className="text-[22px] font-bold text-center text-white mb-2">
               Enter Your Details
             </DialogTitle>
-            <p className="text-slate-200 text-center text-[14px] font-light">
+            <p className="text-slate-200 text-center text-[13px]">
               {bookingOption === 'hold' ? 'To proceed with holding your date, please provide your contact information.' : 'To send your booking request, please provide your contact information.'}
             </p>
           </DialogHeader>
 
           <div className="space-y-4 pt-4">
             <div>
-              <Label htmlFor="modalFullName" className="text-slate-200 text-[14px] mb-1 block font-light">Full Name *</Label>
+              <Label htmlFor="modalFullName" className="text-slate-200 text-[13px] mb-1 block">Full Name *</Label>
               <Input
                 id="modalFullName"
                 type="text"
@@ -1464,12 +1389,12 @@ Omni Magic Pricing System
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder="John Smith"
                 required
-                className="bg-white/5 border-2 border-white/10 text-white text-[15px] placeholder-slate-400 h-11 rounded-xl"
+                className="bg-slate-700 border-slate-600 text-white text-[14px] placeholder-slate-500 h-9"
               />
             </div>
 
             <div>
-              <Label htmlFor="modalEmail" className="text-slate-200 text-[14px] mb-1 block font-light">Email *</Label>
+              <Label htmlFor="modalEmail" className="text-slate-200 text-[13px] mb-1 block">Email *</Label>
               <Input
                 id="modalEmail"
                 type="email"
@@ -1477,24 +1402,24 @@ Omni Magic Pricing System
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="john@example.com"
                 required
-                className="bg-white/5 border-2 border-white/10 text-white text-[15px] placeholder-slate-400 h-11 rounded-xl"
+                className="bg-slate-700 border-slate-600 text-white text-[14px] placeholder-slate-500 h-9"
               />
             </div>
 
             <div>
-              <Label htmlFor="modalPhone" className="text-slate-200 text-[14px] mb-1 block font-light">Phone (Optional)</Label>
+              <Label htmlFor="modalPhone" className="text-slate-200 text-[13px] mb-1 block">Phone (Optional)</Label>
               <Input
                 id="modalPhone"
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="(555) 123-4567"
-                className="bg-white/5 border-2 border-white/10 text-white text-[15px] placeholder-slate-400 h-11 rounded-xl"
+                className="bg-slate-700 border-slate-600 text-white text-[14px] placeholder-slate-500 h-9"
               />
             </div>
 
             <div>
-              <Label htmlFor="modalNotes" className="text-slate-200 text-[14px] mb-1 block font-light">
+              <Label htmlFor="modalNotes" className="text-slate-200 text-[13px] mb-1 block">
                 Additional Notes (Optional)
               </Label>
               <textarea
@@ -1503,7 +1428,7 @@ Omni Magic Pricing System
                 onChange={(e) => setAdditionalNotes(e.target.value)}
                 placeholder="Anything we should know about your event?"
                 rows={3}
-                className="w-full bg-white/5 border-2 border-white/10 text-white text-[15px] placeholder-slate-400 rounded-xl p-3"
+                className="w-full bg-slate-700 border border-slate-600 text-white text-[14px] placeholder-slate-500 rounded-md p-2"
               />
             </div>
 
@@ -1512,13 +1437,13 @@ Omni Magic Pricing System
                 type="button"
                 variant="outline"
                 onClick={() => setShowContactModal(false)}
-                className="flex-1 border-white/10 text-slate-300 hover:bg-white/10 rounded-xl h-11">
+                className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-800">
                 Cancel
               </Button>
               <Button
                 onClick={handleContactSubmit}
                 disabled={isSubmitting || !fullName || !email}
-                className="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-bold rounded-xl h-11">
+                className="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-medium">
                 {isSubmitting ? 'Processing...' : 'Continue'}
               </Button>
             </div>
@@ -1528,14 +1453,14 @@ Omni Magic Pricing System
 
       {/* Video Modal */}
       <Dialog open={showVideoModal} onOpenChange={setShowVideoModal}>
-        <DialogContent className="glass-effect border-white/10 text-white max-w-4xl max-h-[90vh] p-0 overflow-y-auto rounded-2xl shadow-3xl">
+        <DialogContent className="bg-slate-900 border-amber-400/30 text-white max-w-4xl max-h-[90vh] p-0 overflow-y-auto">
           <DialogHeader className="p-4">
-            <DialogTitle className="text-[22px] font-semibold text-white">Add-on Preview</DialogTitle>
+            <DialogTitle className="text-[20px] font-semibold text-white">Add-on Preview</DialogTitle>
           </DialogHeader>
           <div className="relative pb-[56.25%] h-0">
             <iframe
               src={videoUrl}
-              className="absolute top-0 left-0 w-full h-full rounded-xl"
+              className="absolute top-0 left-0 w-full h-full rounded-b-lg"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen
             />
@@ -1545,67 +1470,67 @@ Omni Magic Pricing System
 
       {/* Success Modal */}
       <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
-        <DialogContent className="glass-effect border-white/10 text-white max-w-md overflow-y-auto rounded-2xl p-6 md:p-8 shadow-3xl">
+        <DialogContent className="bg-slate-900 border-amber-400/30 text-white max-w-md overflow-y-auto">
           <div className="text-center py-6">
-            <CheckCircle className="w-18 h-18 text-green-400 mx-auto mb-4" />
-            <h3 className="text-[26px] font-semibold text-white mb-3">
+            <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
+            <h3 className="text-[22px] font-semibold text-white mb-3">
               {bookingOption === 'hold' ? 'Hold Request Sent! 🎉' : 'Request Sent! 📧'}
             </h3>
             
             {bookingOption === 'hold' ? (
               <>
-                <p className="text-[16px] text-slate-200 mb-4 font-light">
+                <p className="text-[15px] text-slate-200 mb-4">
                   Thank you! Your request to hold the date has been received.
                   To secure your booking, please complete your 10% deposit of <span className="font-bold text-amber-400">${depositAmount.toLocaleString()}</span> via Zelle or Venmo within 48 hours.
                 </p>
                 {holdExpiryTime && (
-                  <div className="bg-white/5 rounded-xl p-4 mb-4">
-                    <p className="text-blue-400 text-[14px] mb-1 font-light">Your hold expires:</p>
-                    <p className="text-white text-[18px] font-semibold">
+                  <div className="bg-blue-900/30 rounded p-3 mb-4">
+                    <p className="text-blue-400 text-[13px] mb-1">Your hold expires:</p>
+                    <p className="text-white text-[16px] font-semibold">
                       {format(holdExpiryTime, 'PPpp')}
                     </p>
-                    <p className="text-slate-400 text-[13px] mt-1 font-light">
+                    <p className="text-slate-400 text-[12px] mt-1">
                       Please send your deposit by this time to confirm.
                     </p>
                   </div>
                 )}
                 <div className="mt-4 text-left">
-                  <p className="text-slate-200 text-[14px] mb-2 font-semibold">Payment Options:</p>
-                  <div className="p-4 bg-white/5 rounded-xl border border-white/10 mb-2">
+                  <p className="text-slate-200 text-[13px] mb-2 font-semibold">Payment Options:</p>
+                  <div className="p-3 bg-slate-700/50 rounded border border-slate-600 mb-2">
                     <div className="flex items-center gap-2 mb-2">
-                      <DollarSign className="w-5.5 h-5.5 text-purple-400" />
-                      <span className="text-white text-[15px] font-medium">Zelle</span>
+                      <DollarSign className="w-5 h-5 text-purple-400" />
+                      <span className="text-white text-[14px] font-medium">Zelle</span>
                     </div>
-                    <p className="text-slate-200 text-[13px]">
+                    <p className="text-slate-200 text-[12px]">
                       Send to: <span className="text-white font-medium">626-242-7710</span>
                     </p>
                     <button
                       type="button"
                       onClick={() => setShowZelleModal(true)}
-                      className="text-blue-400 text-[12px] hover:text-blue-300 inline-flex items-center gap-1 mt-1"
+                      className="text-blue-400 text-[11px] hover:text-blue-300 inline-flex items-center gap-1 mt-1"
                     >
-                      View QR Code <ExternalLink className="w-3.5 h-3.5" />
+                      View QR Code <ExternalLink className="w-3 h-3" />
                     </button>
                   </div>
-                  <div className="p-4 bg-white/5 rounded-xl border border-white/10">
+                  <div className="p-3 bg-slate-700/50 rounded border border-slate-600">
                     <div className="flex items-center gap-2 mb-2">
-                      <DollarSign className="w-5.5 h-5.5 text-blue-400" />
-                      <span className="text-white text-[15px] font-medium">Venmo</span>
+                      <DollarSign className="w-5 h-5 text-blue-400" />
+                      <span className="text-white text-[14px] font-medium">Venmo</span>
                     </div>
-                    <p className="text-slate-200 text-[13px]">
-                      Send to: <a href="https://venmo.com/u/johnnywumagic" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 inline-flex items-center gap-1">@johnnywumagic <ExternalLink className="w-3.5 h-3.5" /></a>
+                    <p className="text-slate-200 text-[12px]">
+                      Send to: <a href="https://venmo.com/u/johnnywumagic" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 inline-flex items-center gap-1">@johnnywumagic <ExternalLink className="w-3 h-3" /></a>
                     </p>
                   </div>
                 </div>
               </>
             ) : (
               <>
-                <p className="text-[16px] text-slate-200 mb-4 font-light">
+                <p className="text-[15px] text-slate-200 mb-4">
                   We have received your booking request and will email you an official contract and invoice within 24 hours.
                 </p>
                 {includesFreePoster && (
-                  <div className="bg-green-900/40 border border-green-500/50 rounded-xl p-4 mb-4">
-                    <p className="text-green-300 text-[15px] font-semibold">
+                  <div className="bg-green-900/30 border border-green-500/40 rounded p-3 mb-4">
+                    <p className="text-green-300 text-[14px] font-semibold">
                       🎁 Your FREE Impossible Poster Souvenir ($200 value) will be included in your booking!
                     </p>
                   </div>
@@ -1613,13 +1538,13 @@ Omni Magic Pricing System
               </>
             )}
             
-            <p className="text-[15px] text-slate-200 mb-4 mt-4 font-light">
+            <p className="text-[14px] text-slate-200 mb-4 mt-4">
               Check your email for confirmation details.
             </p>
             
             <Button
               onClick={() => window.location.reload()}
-              className="bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold text-[16px] px-8 h-12 rounded-xl"
+              className="bg-amber-500 hover:bg-amber-400 text-slate-900 font-medium text-[14px] px-6 h-10"
             >
               Close
             </Button>
@@ -1629,20 +1554,20 @@ Omni Magic Pricing System
 
       {/* Zelle QR Modal */}
       <Dialog open={showZelleModal} onOpenChange={setShowZelleModal}>
-        <DialogContent className="glass-effect border-white/10 text-white max-w-md overflow-y-auto rounded-2xl p-6 md:p-8 shadow-3xl">
+        <DialogContent className="bg-slate-900 border-amber-400/30 text-white max-w-md overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-[24px] font-semibold text-center text-white">Zelle Payment</DialogTitle>
+            <DialogTitle className="text-[20px] font-semibold text-center text-white">Zelle Payment</DialogTitle>
           </DialogHeader>
           <div className="text-center">
-            <p className="text-slate-200 text-[15px] mb-4 font-light">
+            <p className="text-slate-200 text-[14px] mb-4">
               Scan this QR code in your bank app to send ${depositAmount.toLocaleString()}
             </p>
             <img 
               src={zelleQRCodeUrl} 
               alt="Zelle QR Code" 
-              className="w-full max-w-sm mx-auto rounded-xl shadow-2xl"
+              className="w-full max-w-sm mx-auto rounded-lg shadow-2xl"
             />
-            <p className="text-white font-bold text-[18px] mt-4">
+            <p className="text-white font-bold text-[16px] mt-4">
               Send to: 626-242-7710
             </p>
           </div>

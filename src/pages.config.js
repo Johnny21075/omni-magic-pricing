@@ -3,7 +3,7 @@ import GratuityPage from './pages/GratuityPage';
 import EventSelection from './pages/EventSelection';
 import Home from './pages/Home';
 import DepositPaymentPage from './pages/DepositPaymentPage';
-import __Layout from './Layout.jsx';
+import Layout from './Layout.jsx';
 
 
 export const PAGES = {
@@ -17,5 +17,5 @@ export const PAGES = {
 export const pagesConfig = {
     mainPage: "Home",
     Pages: PAGES,
-    Layout: __Layout,
+    Layout: Layout,
 };

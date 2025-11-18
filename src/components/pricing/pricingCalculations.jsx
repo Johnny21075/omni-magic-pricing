@@ -162,21 +162,6 @@ export const getAvailableTiers = (eventType, eventSize, eventScale) => {
 // 1. Close-Up Mingling Magic Calculation
 export const calculateCloseUpPrice = (performer, tier, closeUpHours, numMagicians, eventType, eventScale) => {
   if (!closeUpHours) return 0;
-  
-  // Handle duo performer (Johnny Wu + Dylan George)
-  if (performer === 'duo') {
-    const johnnyPricing = getPerformerPricing('johnny_wu', tier, eventType, eventScale);
-    const dylanPricing = getPerformerPricing('dylan_george', tier, eventType, eventScale);
-    
-    const johnnyPrice = johnnyPricing.close_up_per_hr * parseInt(closeUpHours);
-    const dylanPrice = dylanPricing.close_up_per_hr * parseInt(closeUpHours);
-    
-    const combinedPrice = johnnyPrice + dylanPrice;
-    
-    // Apply 10% duo discount
-    return combinedPrice * 0.9;
-  }
-  
   const pricing = getPerformerPricing(performer, tier, eventType, eventScale);
   
   let basePrice = pricing.close_up_per_hr * parseInt(closeUpHours);
