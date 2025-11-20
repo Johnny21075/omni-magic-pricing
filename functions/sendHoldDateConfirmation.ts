@@ -48,50 +48,69 @@ Deno.serve(async (req) => {
     };
 
     // Send email to business
-    const businessEmailBody = {
-      type: "new_date_hold_request",
-      requested_at: new Date(requestTime).toISOString(),
-      event: {
-        date: eventDate,
-        type: "Hold Request",
-        performer: packageDetails.performer
-      },
-      package: {
-        service_type: packageDetails.type,
-        duration: packageDetails.duration,
-        magicians: packageDetails.magicians || null,
-        tier: packageDetails.tier,
-        price: packageDetails.packagePrice
-      },
-      add_ons: packageDetails.addons && packageDetails.addons !== 'None' ? packageDetails.addons.split(', ') : [],
-      pricing: {
-        package_price: packageDetails.packagePrice,
-        add_ons_total: totalInvestment - packageDetails.packagePrice,
-        total: totalInvestment
-      },
-      customer: {
-        name: customerName,
-        email: customerEmail,
-        phone: customerPhone || null
-      },
-      notes: additionalNotes || null,
-      next_steps: paymentMethod === 'Stripe' 
-        ? [
-            `Payment completed via Stripe ($${depositAmount.toLocaleString()})`,
-            "Date secured for 48 hours",
-            "Send confirmation email to customer"
-          ]
-        : [
-            `Collect $${depositAmount.toLocaleString()} deposit via ${paymentMethod}`,
-            "Date held for 48 hours (expires: ${formatDateTime(holdExpiryTime)})",
-            "Send payment instructions to customer"
-          ]
-    };
+    const addonsText = packageDetails.addons && packageDetails.addons !== 'None' 
+      ? packageDetails.addons.split(', ').map(addon => `  - ${addon}`).join('\n')
+      : '  None';
+
+    const nextStepsText = paymentMethod === 'Stripe'
+      ? `  - Payment completed via Stripe ($${depositAmount.toLocaleString()})
+  - Date secured for 48 hours
+  - Send confirmation email to customer`
+      : `  - Collect $${depositAmount.toLocaleString()} deposit via ${paymentMethod}
+  - Date held for 48 hours (expires: ${formatDateTime(holdExpiryTime)})
+  - Send payment instructions to customer`;
+
+    const businessEmailBody = `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  🗓️  NEW DATE HOLD REQUEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 REQUEST DETAILS
+  Type: Hold Request
+  Requested At: ${new Date(requestTime).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}
+  Deposit Required: $${depositAmount.toLocaleString()} (10% of total)
+  Payment Method: ${paymentMethod}
+
+📅 EVENT DETAILS
+  Date: ${formatDate(eventDate)}
+  Performer: ${packageDetails.performer}
+
+🎭 PACKAGE DETAILS
+  Service Type: ${packageDetails.type}
+  Duration: ${packageDetails.duration}
+  ${packageDetails.magicians ? `Magicians: ${packageDetails.magicians}` : ''}
+  Tier: ${packageDetails.tier}
+  Package Price: $${packageDetails.packagePrice.toLocaleString()}
+
+✨ ADD-ONS
+${addonsText}
+
+💰 PRICING SUMMARY
+  Package Price: $${packageDetails.packagePrice.toLocaleString()}
+  Add-ons Total: $${(totalInvestment - packageDetails.packagePrice).toLocaleString()}
+  ─────────────────────
+  TOTAL INVESTMENT: $${totalInvestment.toLocaleString()}
+
+👤 CUSTOMER INFORMATION
+  Name: ${customerName}
+  Email: ${customerEmail}
+  Phone: ${customerPhone || 'Not provided'}
+
+📝 NOTES
+  ${additionalNotes || 'None'}
+
+📌 NEXT STEPS
+${nextStepsText}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Omni Magic Entertainment System
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
 
     await base44.asServiceRole.integrations.Core.SendEmail({
       to: 'hello@omnimagic.co',
       subject: `🗓️ New Date Hold Request (${formatDate(eventDate)})`,
-      body: JSON.stringify(businessEmailBody, null, 2)
+      body: businessEmailBody
     });
 
     // Send email to customer

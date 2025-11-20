@@ -496,43 +496,61 @@ export default function PricingPage() {
         addonsArray.push('Impossible Poster Souvenir (Value: $200) - FREE');
       }
 
-      const bookingEmailBody = {
-        type: "new_booking_request",
-        requested_at: new Date().toISOString(),
-        event: {
-          date: eventDate,
-          type: eventTypeDisplay,
-          performer: packageDetails.performer
-        },
-        package: {
-          service_type: packageDetails.type,
-          duration: packageDetails.duration,
-          magicians: packageDetails.magicians || null,
-          tier: tierName,
-          price: selectedPackagePrice.price
-        },
-        add_ons: addonsArray,
-        pricing: {
-          package_price: selectedPackagePrice.price,
-          add_ons_total: totalAddonsCost,
-          total: totalInvestment
-        },
-        customer: {
-          name: fullName,
-          email: email,
-          phone: phone || null
-        },
-        notes: additionalNotes || null,
-        next_steps: [
-          `Send official contract and invoice to ${email}`,
-          "Confirm booking upon signature/payment"
-        ]
-      };
+      const addonsEmailText = addonsArray.length > 0
+        ? addonsArray.map(addon => `  - ${addon}`).join('\n')
+        : '  None';
+
+      const bookingEmailBody = `
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  📋  NEW BOOKING REQUEST
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 REQUEST DETAILS
+  Type: Booking Request (Confirm Now)
+  Requested At: ${new Date().toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}
+
+📅 EVENT DETAILS
+  Date: ${eventDateFormatted}
+  Type: ${eventTypeDisplay}
+  Performer: ${packageDetails.performer}
+
+🎭 PACKAGE DETAILS
+  Service Type: ${packageDetails.type}
+  Duration: ${packageDetails.duration}
+  ${packageDetails.magicians ? `Magicians: ${packageDetails.magicians}` : ''}
+  Tier: ${tierName}
+  Package Price: $${selectedPackagePrice.price.toLocaleString()}
+
+✨ ADD-ONS
+${addonsEmailText}
+
+💰 PRICING SUMMARY
+  Package Price: $${selectedPackagePrice.price.toLocaleString()}
+  Add-ons Total: $${totalAddonsCost.toLocaleString()}
+  ─────────────────────
+  TOTAL INVESTMENT: $${totalInvestment.toLocaleString()}
+
+👤 CUSTOMER INFORMATION
+  Name: ${fullName}
+  Email: ${email}
+  Phone: ${phone || 'Not provided'}
+
+📝 NOTES
+  ${additionalNotes || 'None'}
+
+📌 NEXT STEPS
+  - Send official contract and invoice to ${email}
+  - Confirm booking upon signature/payment
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Omni Magic Entertainment System
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+`;
 
       await base44.integrations.Core.SendEmail({
         to: 'hello@omnimagic.co',
         subject: `📋 New Booking Request - ${packageDetails.type}`,
-        body: JSON.stringify(bookingEmailBody, null, 2)
+        body: bookingEmailBody
       });
 
       setShowSuccessModal(true);
