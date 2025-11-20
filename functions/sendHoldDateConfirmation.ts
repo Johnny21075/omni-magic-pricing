@@ -48,63 +48,111 @@ Deno.serve(async (req) => {
     };
 
     // Send email to business
-    const addonsText = packageDetails.addons && packageDetails.addons !== 'None' 
-      ? packageDetails.addons.split(', ').map(addon => `  - ${addon}`).join('\n')
-      : '  None';
+    const addonsHtml = packageDetails.addons && packageDetails.addons !== 'None' 
+      ? packageDetails.addons.split(', ').map(addon => `<div style="margin-left: 20px;">• ${addon}</div>`).join('')
+      : '<div style="margin-left: 20px;">None</div>';
 
-    const nextStepsText = paymentMethod === 'Stripe'
-      ? `  - Payment completed via Stripe ($${depositAmount.toLocaleString()})
-  - Date secured for 48 hours
-  - Send confirmation email to customer`
-      : `  - Collect $${depositAmount.toLocaleString()} deposit via ${paymentMethod}
-  - Date held for 48 hours (expires: ${formatDateTime(holdExpiryTime)})
-  - Send payment instructions to customer`;
+    const nextStepsHtml = paymentMethod === 'Stripe'
+      ? `<div style="margin-left: 20px;">• Payment completed via Stripe ($${depositAmount.toLocaleString()})</div>
+         <div style="margin-left: 20px;">• Date secured for 48 hours</div>
+         <div style="margin-left: 20px;">• Send confirmation email to customer</div>`
+      : `<div style="margin-left: 20px;">• Collect $${depositAmount.toLocaleString()} deposit via ${paymentMethod}</div>
+         <div style="margin-left: 20px;">• Date held for 48 hours (expires: ${formatDateTime(holdExpiryTime)})</div>
+         <div style="margin-left: 20px;">• Send payment instructions to customer</div>`;
 
     const businessEmailBody = `
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  🗓️  NEW DATE HOLD REQUEST
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: 'Courier New', monospace; background-color: #f5f5f5; padding: 20px; }
+    .container { background-color: white; padding: 30px; max-width: 700px; margin: 0 auto; border: 2px solid #333; }
+    .header { text-align: center; border-top: 3px solid #333; border-bottom: 3px solid #333; padding: 15px 0; margin-bottom: 30px; font-size: 20px; font-weight: bold; }
+    .section { margin-bottom: 25px; }
+    .section-title { font-size: 16px; font-weight: bold; margin-bottom: 10px; color: #333; }
+    .section-content { margin-left: 20px; line-height: 1.8; }
+    .highlight { background-color: #fff3cd; padding: 2px 5px; }
+    .footer { text-align: center; border-top: 3px solid #333; border-bottom: 3px solid #333; padding: 15px 0; margin-top: 30px; font-size: 12px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      🗓️ NEW DATE HOLD REQUEST
+    </div>
 
-📋 REQUEST DETAILS
-  Type: Hold Request
-  Requested At: ${new Date(requestTime).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}
-  Deposit Required: $${depositAmount.toLocaleString()} (10% of total)
-  Payment Method: ${paymentMethod}
+    <div class="section">
+      <div class="section-title">📋 REQUEST DETAILS</div>
+      <div class="section-content">
+        <div><strong>Type:</strong> Hold Request</div>
+        <div><strong>Requested At:</strong> ${new Date(requestTime).toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}</div>
+        <div><strong>Deposit Required:</strong> <span class="highlight">$${depositAmount.toLocaleString()}</span> (10% of total)</div>
+        <div><strong>Payment Method:</strong> ${paymentMethod}</div>
+      </div>
+    </div>
 
-📅 EVENT DETAILS
-  Date: ${formatDate(eventDate)}
-  Performer: ${packageDetails.performer}
+    <div class="section">
+      <div class="section-title">📅 EVENT DETAILS</div>
+      <div class="section-content">
+        <div><strong>Date:</strong> ${formatDate(eventDate)}</div>
+        <div><strong>Performer:</strong> ${packageDetails.performer}</div>
+      </div>
+    </div>
 
-🎭 PACKAGE DETAILS
-  Service Type: ${packageDetails.type}
-  Duration: ${packageDetails.duration}
-  ${packageDetails.magicians ? `Magicians: ${packageDetails.magicians}` : ''}
-  Tier: ${packageDetails.tier}
-  Package Price: $${packageDetails.packagePrice.toLocaleString()}
+    <div class="section">
+      <div class="section-title">🎭 PACKAGE DETAILS</div>
+      <div class="section-content">
+        <div><strong>Service Type:</strong> ${packageDetails.type}</div>
+        <div><strong>Duration:</strong> ${packageDetails.duration}</div>
+        ${packageDetails.magicians ? `<div><strong>Magicians:</strong> ${packageDetails.magicians}</div>` : ''}
+        <div><strong>Tier:</strong> ${packageDetails.tier}</div>
+        <div><strong>Package Price:</strong> $${packageDetails.packagePrice.toLocaleString()}</div>
+      </div>
+    </div>
 
-✨ ADD-ONS
-${addonsText}
+    <div class="section">
+      <div class="section-title">✨ ADD-ONS</div>
+      ${addonsHtml}
+    </div>
 
-💰 PRICING SUMMARY
-  Package Price: $${packageDetails.packagePrice.toLocaleString()}
-  Add-ons Total: $${(totalInvestment - packageDetails.packagePrice).toLocaleString()}
-  ─────────────────────
-  TOTAL INVESTMENT: $${totalInvestment.toLocaleString()}
+    <div class="section">
+      <div class="section-title">💰 PRICING SUMMARY</div>
+      <div class="section-content">
+        <div>Package Price: $${packageDetails.packagePrice.toLocaleString()}</div>
+        <div>Add-ons Total: $${(totalInvestment - packageDetails.packagePrice).toLocaleString()}</div>
+        <div style="border-top: 2px solid #333; margin: 10px 0; padding-top: 10px;">
+          <strong>TOTAL INVESTMENT: <span class="highlight">$${totalInvestment.toLocaleString()}</span></strong>
+        </div>
+      </div>
+    </div>
 
-👤 CUSTOMER INFORMATION
-  Name: ${customerName}
-  Email: ${customerEmail}
-  Phone: ${customerPhone || 'Not provided'}
+    <div class="section">
+      <div class="section-title">👤 CUSTOMER INFORMATION</div>
+      <div class="section-content">
+        <div><strong>Name:</strong> ${customerName}</div>
+        <div><strong>Email:</strong> ${customerEmail}</div>
+        <div><strong>Phone:</strong> ${customerPhone || 'Not provided'}</div>
+      </div>
+    </div>
 
-📝 NOTES
-  ${additionalNotes || 'None'}
+    <div class="section">
+      <div class="section-title">📝 NOTES</div>
+      <div class="section-content">
+        ${additionalNotes || 'None'}
+      </div>
+    </div>
 
-📌 NEXT STEPS
-${nextStepsText}
+    <div class="section">
+      <div class="section-title">📌 NEXT STEPS</div>
+      ${nextStepsHtml}
+    </div>
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Omni Magic Entertainment System
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    <div class="footer">
+      Omni Magic Entertainment System
+    </div>
+  </div>
+</body>
+</html>
 `;
 
     await base44.asServiceRole.integrations.Core.SendEmail({

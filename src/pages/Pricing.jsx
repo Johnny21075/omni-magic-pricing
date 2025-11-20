@@ -496,55 +496,105 @@ export default function PricingPage() {
         addonsArray.push('Impossible Poster Souvenir (Value: $200) - FREE');
       }
 
-      const addonsEmailText = addonsArray.length > 0
-        ? addonsArray.map(addon => `  - ${addon}`).join('\n')
-        : '  None';
+      const addonsHtml = addonsArray.length > 0
+        ? addonsArray.map(addon => `<div style="margin-left: 20px;">• ${addon}</div>`).join('')
+        : '<div style="margin-left: 20px;">None</div>';
 
       const bookingEmailBody = `
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  📋  NEW BOOKING REQUEST
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: 'Courier New', monospace; background-color: #f5f5f5; padding: 20px; }
+    .container { background-color: white; padding: 30px; max-width: 700px; margin: 0 auto; border: 2px solid #333; }
+    .header { text-align: center; border-top: 3px solid #333; border-bottom: 3px solid #333; padding: 15px 0; margin-bottom: 30px; font-size: 20px; font-weight: bold; }
+    .section { margin-bottom: 25px; }
+    .section-title { font-size: 16px; font-weight: bold; margin-bottom: 10px; color: #333; }
+    .section-content { margin-left: 20px; line-height: 1.8; }
+    .highlight { background-color: #fff3cd; padding: 2px 5px; }
+    .footer { text-align: center; border-top: 3px solid #333; border-bottom: 3px solid #333; padding: 15px 0; margin-top: 30px; font-size: 12px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      📋 NEW BOOKING REQUEST
+    </div>
 
-📋 REQUEST DETAILS
-  Type: Booking Request (Confirm Now)
-  Requested At: ${new Date().toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}
+    <div class="section">
+      <div class="section-title">📋 REQUEST DETAILS</div>
+      <div class="section-content">
+        <div><strong>Type:</strong> Booking Request (Confirm Now)</div>
+        <div><strong>Requested At:</strong> ${new Date().toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}</div>
+      </div>
+    </div>
 
-📅 EVENT DETAILS
-  Date: ${eventDateFormatted}
-  Type: ${eventTypeDisplay}
-  Performer: ${packageDetails.performer}
+    <div class="section">
+      <div class="section-title">📅 EVENT DETAILS</div>
+      <div class="section-content">
+        <div><strong>Date:</strong> ${eventDateFormatted}</div>
+        <div><strong>Type:</strong> ${eventTypeDisplay}</div>
+        <div><strong>Performer:</strong> ${packageDetails.performer}</div>
+      </div>
+    </div>
 
-🎭 PACKAGE DETAILS
-  Service Type: ${packageDetails.type}
-  Duration: ${packageDetails.duration}
-  ${packageDetails.magicians ? `Magicians: ${packageDetails.magicians}` : ''}
-  Tier: ${tierName}
-  Package Price: $${selectedPackagePrice.price.toLocaleString()}
+    <div class="section">
+      <div class="section-title">🎭 PACKAGE DETAILS</div>
+      <div class="section-content">
+        <div><strong>Service Type:</strong> ${packageDetails.type}</div>
+        <div><strong>Duration:</strong> ${packageDetails.duration}</div>
+        ${packageDetails.magicians ? `<div><strong>Magicians:</strong> ${packageDetails.magicians}</div>` : ''}
+        <div><strong>Tier:</strong> ${tierName}</div>
+        <div><strong>Package Price:</strong> $${selectedPackagePrice.price.toLocaleString()}</div>
+      </div>
+    </div>
 
-✨ ADD-ONS
-${addonsEmailText}
+    <div class="section">
+      <div class="section-title">✨ ADD-ONS</div>
+      ${addonsHtml}
+    </div>
 
-💰 PRICING SUMMARY
-  Package Price: $${selectedPackagePrice.price.toLocaleString()}
-  Add-ons Total: $${totalAddonsCost.toLocaleString()}
-  ─────────────────────
-  TOTAL INVESTMENT: $${totalInvestment.toLocaleString()}
+    <div class="section">
+      <div class="section-title">💰 PRICING SUMMARY</div>
+      <div class="section-content">
+        <div>Package Price: $${selectedPackagePrice.price.toLocaleString()}</div>
+        <div>Add-ons Total: $${totalAddonsCost.toLocaleString()}</div>
+        <div style="border-top: 2px solid #333; margin: 10px 0; padding-top: 10px;">
+          <strong>TOTAL INVESTMENT: <span class="highlight">$${totalInvestment.toLocaleString()}</span></strong>
+        </div>
+      </div>
+    </div>
 
-👤 CUSTOMER INFORMATION
-  Name: ${fullName}
-  Email: ${email}
-  Phone: ${phone || 'Not provided'}
+    <div class="section">
+      <div class="section-title">👤 CUSTOMER INFORMATION</div>
+      <div class="section-content">
+        <div><strong>Name:</strong> ${fullName}</div>
+        <div><strong>Email:</strong> ${email}</div>
+        <div><strong>Phone:</strong> ${phone || 'Not provided'}</div>
+      </div>
+    </div>
 
-📝 NOTES
-  ${additionalNotes || 'None'}
+    <div class="section">
+      <div class="section-title">📝 NOTES</div>
+      <div class="section-content">
+        ${additionalNotes || 'None'}
+      </div>
+    </div>
 
-📌 NEXT STEPS
-  - Send official contract and invoice to ${email}
-  - Confirm booking upon signature/payment
+    <div class="section">
+      <div class="section-title">📌 NEXT STEPS</div>
+      <div style="margin-left: 20px;">
+        <div>• Send official contract and invoice to ${email}</div>
+        <div>• Confirm booking upon signature/payment</div>
+      </div>
+    </div>
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Omni Magic Entertainment System
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    <div class="footer">
+      Omni Magic Entertainment System
+    </div>
+  </div>
+</body>
+</html>
 `;
 
       await base44.integrations.Core.SendEmail({
