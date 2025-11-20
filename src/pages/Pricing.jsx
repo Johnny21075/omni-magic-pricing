@@ -629,7 +629,7 @@ export default function PricingPage() {
     <div class="content">
       <p>Dear ${fullName},</p>
       <p>We've received your booking request for an unforgettable magic experience!</p>
-      <p>Our team at Omni Magic Entertainment is now reviewing your details and will prepare a personalized contract and invoice for you as soon as possible. You can expect to hear from us within 24 hours at the email address: <strong>${email}</strong>.</p>
+      <p>Our team at Omni Magic Entertainment is now reviewing your details and will prepare a personalized contract and invoice for you as soon as possible. You can expect to hear from us within 5 minutes to 12 hours at the email address: <strong>${hello@omnimagic.co}</strong>.</p>
       <p>In the meantime, feel free to visit our website or explore more of our magical offerings.</p>
       <div class="button-container">
         <a href="https://omnimagic.co/" class="button">Visit Omni Magic</a>
