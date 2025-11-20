@@ -603,6 +603,55 @@ export default function PricingPage() {
         body: bookingEmailBody
       });
 
+      const customerThankYouEmailBody = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f5f5f5; padding: 20px; color: #333; }
+    .container { background-color: white; padding: 30px; max-width: 600px; margin: 0 auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
+    .header { text-align: center; padding-bottom: 20px; border-bottom: 1px solid #eee; margin-bottom: 20px; }
+    .header img { max-width: 150px; margin-bottom: 15px; }
+    .header h1 { font-size: 24px; color: #333; margin: 0; }
+    .content { font-size: 16px; line-height: 1.6; }
+    .content p { margin-bottom: 15px; }
+    .button-container { text-align: center; margin-top: 30px; }
+    .button { background-color: #f59e0b; color: white; padding: 12px 25px; border-radius: 5px; text-decoration: none; font-weight: bold; }
+    .footer { text-align: center; padding-top: 20px; margin-top: 30px; border-top: 1px solid #eee; font-size: 12px; color: #777; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/705652e3a_logowhitewordstransparent.png" alt="Omni Magic Entertainment">
+      <h1>Thank You for Your Booking Request!</h1>
+    </div>
+    <div class="content">
+      <p>Dear ${fullName},</p>
+      <p>We've received your booking request for an unforgettable magic experience!</p>
+      <p>Our team at Omni Magic Entertainment is now reviewing your details and will prepare a personalized contract and invoice for you as soon as possible. You can expect to hear from us within 24 hours at the email address: <strong>${email}</strong>.</p>
+      <p>In the meantime, feel free to visit our website or explore more of our magical offerings.</p>
+      <div class="button-container">
+        <a href="https://www.omnimagic.co/" class="button">Visit Omni Magic</a>
+      </div>
+      <p>We're thrilled at the prospect of making your event truly magical!</p>
+      <p>Sincerely,</p>
+      <p>The Omni Magic Team</p>
+    </div>
+    <div class="footer">
+      &copy; 2025 Omni Magic Entertainment. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
+      `;
+
+      await base44.integrations.Core.SendEmail({
+        to: email,
+        subject: `✨ Your Omni Magic Booking Request Received!`,
+        body: customerThankYouEmailBody
+      });
+
       setShowSuccessModal(true);
     } catch (error) {
       console.error('Error sending confirmation email:', error);
