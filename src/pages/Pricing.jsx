@@ -485,43 +485,54 @@ export default function PricingPage() {
         addonsText += (addonsText === 'None' ? '' : '\n') + '  • Impossible Poster Souvenir (Value: $200) - FREE';
       }
 
+      const addonsArray = selectedAddons.length > 0 
+        ? selectedAddons.map(id => {
+            const addon = pricingData?.app?.add_ons?.find(a => a.id === id);
+            return addon?.label;
+          })
+        : [];
+
+      if (includesFreePoster && !selectedAddons.includes('addon_poster')) {
+        addonsArray.push('Impossible Poster Souvenir (Value: $200) - FREE');
+      }
+
+      const bookingEmailBody = {
+        type: "new_booking_request",
+        requested_at: new Date().toISOString(),
+        event: {
+          date: eventDate,
+          type: eventTypeDisplay,
+          performer: packageDetails.performer
+        },
+        package: {
+          service_type: packageDetails.type,
+          duration: packageDetails.duration,
+          magicians: packageDetails.magicians || null,
+          tier: tierName,
+          price: selectedPackagePrice.price
+        },
+        add_ons: addonsArray,
+        pricing: {
+          package_price: selectedPackagePrice.price,
+          add_ons_total: totalAddonsCost,
+          total: totalInvestment
+        },
+        customer: {
+          name: fullName,
+          email: email,
+          phone: phone || null
+        },
+        notes: additionalNotes || null,
+        next_steps: [
+          `Send official contract and invoice to ${email}`,
+          "Confirm booking upon signature/payment"
+        ]
+      };
+
       await base44.integrations.Core.SendEmail({
         to: 'hello@omnimagic.co',
         subject: `📋 New Booking Request - ${packageDetails.type}`,
-        body: `
-New Booking Request (${eventDateFormatted})
-
-Event Details
-
-Date: ${eventDateFormatted}
-Type: ${eventTypeDisplay}
-Performer: ${packageDetails.performer}
-
-Package Selected
-
-Service Type: ${packageDetails.type}
-Duration: ${packageDetails.duration}${packageDetails.magicians ? `\nNumber of Magicians: ${packageDetails.magicians}` : ''}
-Experience Tier: ${tierName}
-Package Price: $${selectedPackagePrice.price.toLocaleString()}
-
-Add-ons: ${addonsText === 'None' ? 'None' : '\n' + addonsText}
-
-Pricing Summary
-
-Package Price: $${selectedPackagePrice.price.toLocaleString()}
-Add-ons Total: $${totalAddonsCost.toLocaleString()}
-Total Investment: $${totalInvestment.toLocaleString()}
-
-Customer Information
-
-Full Name: ${fullName}
-Email: ${email}
-Phone: ${phone || 'Not provided'}${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}
-
-Next Steps
-
-Send official contract and invoice to ${email}
-        `
+        body: JSON.stringify(bookingEmailBody, null, 2)
       });
 
       setShowSuccessModal(true);
