@@ -9,9 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Users, Star, Gift, CheckCircle, DollarSign, ExternalLink, Play, CreditCard } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { format, addHours } from 'date-fns';
-import { loadStripe } from '@stripe/stripe-js';
-
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 import {
   calculateCloseUpPrice,
   calculateStagePrice,
@@ -229,8 +226,6 @@ export default function PricingPage() {
   const handleStripePayment = async () => {
     setIsProcessingPayment(true);
     try {
-      const stripe = await stripePromise;
-      
       let packageDetails;
       if (eventType === 'virtual') {
         packageDetails = {
