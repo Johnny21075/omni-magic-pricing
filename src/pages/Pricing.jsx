@@ -161,7 +161,11 @@ export default function PricingPage() {
   }, 0);
   
   const totalInvestment = selectedPackagePrice.price + totalAddonsCost;
-  const depositAmount = Math.round(totalInvestment * 0.10);
+  const [depositAmount, setDepositAmount] = useState(0);
+  
+  useEffect(() => {
+    setDepositAmount(Math.round(totalInvestment * 0.10));
+  }, [totalInvestment]);
 
   const handleAddonToggle = (addonId) => {
     setSelectedAddons((prev) =>
@@ -299,72 +303,33 @@ export default function PricingPage() {
 
     if (paymentStatus === 'success' && sessionId) {
       handleStripeSuccess(sessionId);
-      window.history.replaceState({}, document.title, window.location.pathname);
+      // Clean URL but keep event params
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('payment');
+      newUrl.searchParams.delete('session_id');
+      window.history.replaceState({}, document.title, newUrl.toString());
     }
   }, []);
 
   const handleStripeSuccess = async (sessionId) => {
     setIsSubmitting(true);
-    const currentTime = new Date();
-    const expiryTime = addHours(currentTime, 48);
 
     try {
-      let packageDetails;
-      if (eventType === 'virtual') {
-        packageDetails = {
-          type: 'Virtual Experience',
-          performer: 'Johnny Wu',
-          duration: `${virtualDuration} Minutes`,
-          tier: 'Virtual Show',
-          packagePrice: selectedPackagePrice.price,
-          addons: selectedAddons.length > 0 ? selectedAddons.map(id => {
-            const addon = pricingData?.app?.add_ons?.find(a => a.id === id);
-            return addon?.label;
-          }).join(', ') : 'None',
-          magicians: ''
-        };
-      } else {
-        packageDetails = {
-          type: selectedService === 'closeup' ? 'Close-Up Mingling Magic' :
-                selectedService === 'stage' ? 'Stage Show' :
-                selectedService === 'bundle' ? 'Bundle Package' : 'Unknown',
-          performer: selectedService === 'closeup' ? (closeUpPerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George') :
-            selectedService === 'stage' ? (stagePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George') :
-            selectedService === 'bundle' ? (bundlePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George') : 'Unknown',
-          duration: selectedService === 'closeup' ? `${closeUpDuration} ${parseInt(closeUpDuration) === 1 ? 'Hour' : 'Hours'}` :
-            selectedService === 'stage' ? `${stageDuration} Minutes` :
-            selectedService === 'bundle' ? `${bundleCloseUpDuration}hr Close-Up + ${bundleStageDuration}min Stage` : 'Unknown',
-          magicians: selectedService === 'closeup' ? closeUpMagicians : (selectedService === 'bundle' ? bundleNumMagicians : ''),
-          tier: selectedService === 'closeup' ? closeUpTier.charAt(0).toUpperCase() + closeUpTier.slice(1) :
-                selectedService === 'stage' ? stageTier.charAt(0).toUpperCase() + stageTier.slice(1) :
-                selectedService === 'bundle' ? bundleTier.charAt(0).toUpperCase() + bundleTier.slice(1) : 'Unknown',
-          packagePrice: selectedPackagePrice.price,
-          addons: selectedAddons.length > 0 ? selectedAddons.map(id => {
-            const addon = pricingData?.app?.add_ons?.find(a => a.id === id);
-            return addon?.label;
-          }).join(', ') : 'None'
-        };
-      }
-
-      await base44.functions.invoke('sendHoldDateConfirmation', {
-        customerName: fullName,
-        customerEmail: email,
-        customerPhone: phone,
-        eventDate: eventDate,
-        packageDetails: packageDetails,
-        depositAmount: depositAmount,
-        totalInvestment: totalInvestment,
-        additionalNotes: additionalNotes,
-        holdExpiryTime: expiryTime.toISOString(),
-        requestTime: currentTime.toISOString(),
-        paymentMethod: 'Stripe'
+      const response = await base44.functions.invoke('handleStripeSuccess', {
+        sessionId: sessionId
       });
 
-      setHoldExpiryTime(expiryTime);
-      setShowSuccessModal(true);
+      if (response.data.success) {
+        setHoldExpiryTime(new Date(response.data.expiryTime));
+        setEmail(response.data.customerEmail);
+        setDepositAmount(response.data.depositAmount);
+        setShowSuccessModal(true);
+      } else {
+        throw new Error('Payment verification failed');
+      }
     } catch (error) {
       console.error('Error processing Stripe success:', error);
-      alert('Payment successful but failed to send confirmation. Please contact us.');
+      alert('Payment successful but failed to send confirmation. Please contact us at hello@omnimagic.co');
     } finally {
       setIsSubmitting(false);
     }
