@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -7,9 +6,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Star, Gift, CheckCircle, DollarSign, ExternalLink, Play } from 'lucide-react';
+import { Users, Star, Gift, CheckCircle, DollarSign, ExternalLink, Play, CreditCard } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { format, addHours } from 'date-fns';
+import { loadStripe } from '@stripe/stripe-js';
+
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 import {
   calculateCloseUpPrice,
   calculateStagePrice,
@@ -64,6 +66,8 @@ export default function PricingPage() {
   const [videoUrl, setVideoUrl] = useState('');
   
   const [showZelleModal, setShowZelleModal] = useState(false);
+  const [showPaymentOptions, setShowPaymentOptions] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   const urlParams = new URLSearchParams(window.location.search);
   const eventType = urlParams.get('eventType');
@@ -216,157 +220,225 @@ export default function PricingPage() {
     setShowContactModal(false);
 
     if (bookingOption === 'hold') {
-      await handleHoldDateRequest();
+      setShowPaymentOptions(true);
     } else if (bookingOption === 'confirm') {
       await handleConfirmNow();
     }
   };
 
-  const handleHoldDateRequest = async () => {
-    if (!email || !fullName) {
-      alert('Please enter your contact details');
-      return;
-    }
-
-    setIsSubmitting(true);
-    const currentTime = new Date();
-    const expiryTime = addHours(currentTime, 48); // 48 hours for the hold
-
+  const handleStripePayment = async () => {
+    setIsProcessingPayment(true);
     try {
-      const addonsText = selectedAddons.length > 0 ?
-        selectedAddons.map((id) => {
-          const addon = pricingData?.app?.add_ons?.find((a) => a.id === id);
-          if (id === 'addon_poster' && includesFreePoster) {
-            return `  • ${addon.label} (Value: $200) - FREE`;
-          }
-          return `  • ${addon?.label} (+$${addon?.price.toLocaleString()})`;
-        }).join('\n') :
-        'None';
-
+      const stripe = await stripePromise;
+      
       let packageDetails;
       if (eventType === 'virtual') {
         packageDetails = {
           type: 'Virtual Experience',
           performer: 'Johnny Wu',
           duration: `${virtualDuration} Minutes`,
-          tier: 'Virtual Show'
+          tier: 'Virtual Show',
+          packagePrice: selectedPackagePrice.price,
+          addons: selectedAddons.length > 0 ? selectedAddons.map(id => {
+            const addon = pricingData?.app?.add_ons?.find(a => a.id === id);
+            return addon?.label;
+          }).join(', ') : 'None',
+          totalInvestment: totalInvestment,
+          magicians: ''
         };
       } else {
         packageDetails = {
           type: selectedService === 'closeup' ? 'Close-Up Mingling Magic' :
                 selectedService === 'stage' ? 'Stage Show' :
-                selectedService === 'bundle' ? 'Bundle Package' :
-                'Unknown',
+                selectedService === 'bundle' ? 'Bundle Package' : 'Unknown',
           performer: selectedService === 'closeup' ? (closeUpPerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George') :
             selectedService === 'stage' ? (stagePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George') :
-            selectedService === 'bundle' ? (bundlePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George') :
-            'Unknown',
+            selectedService === 'bundle' ? (bundlePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George') : 'Unknown',
           duration: selectedService === 'closeup' ? `${closeUpDuration} ${parseInt(closeUpDuration) === 1 ? 'Hour' : 'Hours'}` :
             selectedService === 'stage' ? `${stageDuration} Minutes` :
-            selectedService === 'bundle' ? `${bundleCloseUpDuration}hr Close-Up + ${bundleStageDuration}min Stage` :
-            'Unknown',
-          magicians: selectedService === 'closeup' ? closeUpMagicians : (selectedService === 'bundle' ? bundleNumMagicians : undefined),
-          tier: selectedService === 'closeup' ? closeUpTier :
-                selectedService === 'stage' ? stageTier :
-                selectedService === 'bundle' ? bundleTier :
-                'Unknown'
+            selectedService === 'bundle' ? `${bundleCloseUpDuration}hr Close-Up + ${bundleStageDuration}min Stage` : 'Unknown',
+          magicians: selectedService === 'closeup' ? closeUpMagicians : (selectedService === 'bundle' ? bundleNumMagicians : ''),
+          tier: selectedService === 'closeup' ? closeUpTier.charAt(0).toUpperCase() + closeUpTier.slice(1) :
+                selectedService === 'stage' ? stageTier.charAt(0).toUpperCase() + stageTier.slice(1) :
+                selectedService === 'bundle' ? bundleTier.charAt(0).toUpperCase() + bundleTier.slice(1) : 'Unknown',
+          packagePrice: selectedPackagePrice.price,
+          addons: selectedAddons.length > 0 ? selectedAddons.map(id => {
+            const addon = pricingData?.app?.add_ons?.find(a => a.id === id);
+            return addon?.label;
+          }).join(', ') : 'None',
+          totalInvestment: totalInvestment
         };
       }
 
-      await base44.integrations.Core.SendEmail({
-        to: 'hello@omnimagic.co',
-        subject: `🗓️ New Date Hold Request - ${packageDetails.type}`,
-        body: `
-═══════════════════════════════════════════════════════
-                 NEW DATE HOLD REQUEST
-═══════════════════════════════════════════════════════
-
-REQUEST DETAILS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Request Time:          ${format(currentTime, 'PPpp')}
-  Hold Until:            ${format(expiryTime, 'PPpp')}
-                         (48 hours from request)
-  Deposit Due:           $${depositAmount.toLocaleString()} (10% of total)
-
-EVENT DETAILS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Event Date:            ${eventDate || 'Not specified'}
-  Performer:             ${packageDetails.performer}
-
-PACKAGE SELECTED
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Service Type:          ${packageDetails.type}
-  Duration:              ${packageDetails.duration}${packageDetails.magicians ? `\n  Number of Magicians:   ${packageDetails.magicians}` : ''}
-  Experience Tier:       ${packageDetails.tier.charAt(0).toUpperCase() + packageDetails.tier.slice(1)}
-  Package Price:         $${selectedPackagePrice.price.toLocaleString()}
-
-ADD-ONS SELECTED
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${addonsText}
-
-PRICING SUMMARY
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Package Price:         $${selectedPackagePrice.price.toLocaleString()}
-  Add-ons Total:         $${totalAddonsCost.toLocaleString()}
-  ───────────────────────────────────────────────────
-  TOTAL INVESTMENT:      $${totalInvestment.toLocaleString()}
-
-CUSTOMER INFORMATION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Full Name:             ${fullName}
-  Email:                 ${email}
-  Phone:                 ${phone || 'Not provided'}${additionalNotes ? `\n  Notes:                 ${additionalNotes}` : ''}
-
-═══════════════════════════════════════════════════════
-⏰ NEXT STEPS: Contact the client to confirm their
-   deposit via Zelle/Venmo and secure the date.
-   Send confirmation email with payment details.
-═══════════════════════════════════════════════════════
-
-—
-Omni Magic Pricing System
-        `
+      const response = await base44.functions.invoke('createHoldDateCheckout', {
+        amount: depositAmount,
+        customerEmail: email,
+        customerName: fullName,
+        packageDetails: packageDetails,
+        eventDate: eventDate,
+        phone: phone,
+        additionalNotes: additionalNotes
       });
 
-      // Send a confirmation email to the client
-      await base44.integrations.Core.SendEmail({
-        to: email,
-        subject: `🗓️ Your Omni Magic Booking Request is Received!`,
-        body: `
-Dear ${fullName},
+      if (response.data.url) {
+        window.location.href = response.data.url;
+      } else {
+        throw new Error('No checkout URL returned');
+      }
+    } catch (error) {
+      console.error('Error creating Stripe checkout:', error);
+      alert('Failed to create payment session. Please try again or use Zelle/Venmo.');
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
 
-Thank you for your interest in Omni Magic Entertainment!
+  const handleManualPaymentConfirmation = async (paymentMethod) => {
+    await handleHoldDateRequest(paymentMethod);
+  };
 
-We have received your request to hold the date for your upcoming event.
-To secure your booking, please complete your 10% deposit of $${depositAmount.toLocaleString()} within the next 48 hours.
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const paymentStatus = urlParams.get('payment');
+    const sessionId = urlParams.get('session_id');
 
-Your selected package details:
-------------------------------------------------------
-  Service Type:          ${packageDetails.type}
-  Event Date:            ${eventDate || 'Not specified'}
-  Total Investment:      $${totalInvestment.toLocaleString()}
-  10% Deposit Due:       $${depositAmount.toLocaleString()}
-------------------------------------------------------
+    if (paymentStatus === 'success' && sessionId) {
+      handleStripeSuccess(sessionId);
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
 
-You can complete your deposit via Zelle or Venmo:
+  const handleStripeSuccess = async (sessionId) => {
+    setIsSubmitting(true);
+    const currentTime = new Date();
+    const expiryTime = addHours(currentTime, 48);
 
-Zelle: Send to 626-242-7710
-Venmo: Send to @johnnywumagic (https://venmo.com/u/johnnywumagic)
+    try {
+      let packageDetails;
+      if (eventType === 'virtual') {
+        packageDetails = {
+          type: 'Virtual Experience',
+          performer: 'Johnny Wu',
+          duration: `${virtualDuration} Minutes`,
+          tier: 'Virtual Show',
+          packagePrice: selectedPackagePrice.price,
+          addons: selectedAddons.length > 0 ? selectedAddons.map(id => {
+            const addon = pricingData?.app?.add_ons?.find(a => a.id === id);
+            return addon?.label;
+          }).join(', ') : 'None',
+          magicians: ''
+        };
+      } else {
+        packageDetails = {
+          type: selectedService === 'closeup' ? 'Close-Up Mingling Magic' :
+                selectedService === 'stage' ? 'Stage Show' :
+                selectedService === 'bundle' ? 'Bundle Package' : 'Unknown',
+          performer: selectedService === 'closeup' ? (closeUpPerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George') :
+            selectedService === 'stage' ? (stagePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George') :
+            selectedService === 'bundle' ? (bundlePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George') : 'Unknown',
+          duration: selectedService === 'closeup' ? `${closeUpDuration} ${parseInt(closeUpDuration) === 1 ? 'Hour' : 'Hours'}` :
+            selectedService === 'stage' ? `${stageDuration} Minutes` :
+            selectedService === 'bundle' ? `${bundleCloseUpDuration}hr Close-Up + ${bundleStageDuration}min Stage` : 'Unknown',
+          magicians: selectedService === 'closeup' ? closeUpMagicians : (selectedService === 'bundle' ? bundleNumMagicians : ''),
+          tier: selectedService === 'closeup' ? closeUpTier.charAt(0).toUpperCase() + closeUpTier.slice(1) :
+                selectedService === 'stage' ? stageTier.charAt(0).toUpperCase() + stageTier.slice(1) :
+                selectedService === 'bundle' ? bundleTier.charAt(0).toUpperCase() + bundleTier.slice(1) : 'Unknown',
+          packagePrice: selectedPackagePrice.price,
+          addons: selectedAddons.length > 0 ? selectedAddons.map(id => {
+            const addon = pricingData?.app?.add_ons?.find(a => a.id === id);
+            return addon?.label;
+          }).join(', ') : 'None'
+        };
+      }
 
-Once your deposit is received, your date will be fully secured, and we will reach out to finalize the booking details.
-
-If you have any questions, please don't hesitate to reply to this email or call us at 626-242-7710.
-
-We look forward to making your event truly magical!
-
-Sincerely,
-
-The Omni Magic Team
-www.omnimagic.co
-        `
+      await base44.functions.invoke('sendHoldDateConfirmation', {
+        customerName: fullName,
+        customerEmail: email,
+        customerPhone: phone,
+        eventDate: eventDate,
+        packageDetails: packageDetails,
+        depositAmount: depositAmount,
+        totalInvestment: totalInvestment,
+        additionalNotes: additionalNotes,
+        holdExpiryTime: expiryTime.toISOString(),
+        requestTime: currentTime.toISOString(),
+        paymentMethod: 'Stripe'
       });
 
-      setHoldExpiryTime(expiryTime); // Set expiry time for success modal display
+      setHoldExpiryTime(expiryTime);
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error('Error processing Stripe success:', error);
+      alert('Payment successful but failed to send confirmation. Please contact us.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleHoldDateRequest = async (paymentMethod) => {
+    if (!email || !fullName) {
+      alert('Please enter your contact details');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setShowPaymentOptions(false);
+    const currentTime = new Date();
+    const expiryTime = addHours(currentTime, 48);
+
+    try {
+      let packageDetails;
+      if (eventType === 'virtual') {
+        packageDetails = {
+          type: 'Virtual Experience',
+          performer: 'Johnny Wu',
+          duration: `${virtualDuration} Minutes`,
+          tier: 'Virtual Show',
+          packagePrice: selectedPackagePrice.price,
+          addons: selectedAddons.length > 0 ? selectedAddons.map(id => {
+            const addon = pricingData?.app?.add_ons?.find(a => a.id === id);
+            return addon?.label;
+          }).join(', ') : 'None',
+          magicians: ''
+        };
+      } else {
+        packageDetails = {
+          type: selectedService === 'closeup' ? 'Close-Up Mingling Magic' :
+                selectedService === 'stage' ? 'Stage Show' :
+                selectedService === 'bundle' ? 'Bundle Package' : 'Unknown',
+          performer: selectedService === 'closeup' ? (closeUpPerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George') :
+            selectedService === 'stage' ? (stagePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George') :
+            selectedService === 'bundle' ? (bundlePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George') : 'Unknown',
+          duration: selectedService === 'closeup' ? `${closeUpDuration} ${parseInt(closeUpDuration) === 1 ? 'Hour' : 'Hours'}` :
+            selectedService === 'stage' ? `${stageDuration} Minutes` :
+            selectedService === 'bundle' ? `${bundleCloseUpDuration}hr Close-Up + ${bundleStageDuration}min Stage` : 'Unknown',
+          magicians: selectedService === 'closeup' ? closeUpMagicians : (selectedService === 'bundle' ? bundleNumMagicians : ''),
+          tier: selectedService === 'closeup' ? closeUpTier.charAt(0).toUpperCase() + closeUpTier.slice(1) :
+                selectedService === 'stage' ? stageTier.charAt(0).toUpperCase() + stageTier.slice(1) :
+                selectedService === 'bundle' ? bundleTier.charAt(0).toUpperCase() + bundleTier.slice(1) : 'Unknown',
+          packagePrice: selectedPackagePrice.price,
+          addons: selectedAddons.length > 0 ? selectedAddons.map(id => {
+            const addon = pricingData?.app?.add_ons?.find(a => a.id === id);
+            return addon?.label;
+          }).join(', ') : 'None'
+        };
+      }
+
+      await base44.functions.invoke('sendHoldDateConfirmation', {
+        customerName: fullName,
+        customerEmail: email,
+        customerPhone: phone,
+        eventDate: eventDate,
+        packageDetails: packageDetails,
+        depositAmount: depositAmount,
+        totalInvestment: totalInvestment,
+        additionalNotes: additionalNotes,
+        holdExpiryTime: expiryTime.toISOString(),
+        requestTime: currentTime.toISOString(),
+        paymentMethod: paymentMethod
+      });
+
+      setHoldExpiryTime(expiryTime);
       setShowSuccessModal(true);
     } catch (error) {
       console.error('Error sending hold request email:', error);
@@ -1303,10 +1375,38 @@ Omni Magic Pricing System
                   </button>
                 </div>
 
-                {bookingOption === 'hold' && !showContactModal && (
-                  <div className="space-y-3 mt-4 pt-4 border-t border-slate-600">
-                    <Label className="text-slate-200 text-[13px] block">Payment Options for Deposit</Label>
+                {showPaymentOptions && (
+                  <div className="space-y-4 mt-4 pt-4 border-t border-slate-600">
+                    <Label className="text-white text-[16px] block font-semibold">Choose Payment Method</Label>
                     
+                    {/* Stripe Payment */}
+                    <div className="p-4 bg-gradient-to-br from-indigo-900/30 to-slate-800/70 rounded-lg border-2 border-indigo-500/50">
+                      <div className="flex items-center gap-2 mb-3">
+                        <CreditCard className="w-6 h-6 text-indigo-400" />
+                        <span className="text-white text-[16px] font-semibold">Credit Card / Apple Pay</span>
+                      </div>
+                      <p className="text-slate-200 text-[13px] mb-4">
+                        Secure payment with Stripe • Instant confirmation
+                      </p>
+                      <Button
+                        onClick={handleStripePayment}
+                        disabled={isProcessingPayment}
+                        className="w-full bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-400 hover:to-indigo-500 text-white font-semibold"
+                      >
+                        {isProcessingPayment ? 'Processing...' : `Pay $${depositAmount.toLocaleString()} Now`}
+                      </Button>
+                    </div>
+
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-slate-600"></div>
+                      </div>
+                      <div className="relative flex justify-center text-sm">
+                        <span className="px-2 bg-slate-900 text-slate-400">Or pay manually</span>
+                      </div>
+                    </div>
+
+                    {/* Zelle */}
                     <div className="p-3 bg-slate-700/50 rounded border border-slate-600">
                       <div className="flex items-center gap-2 mb-2">
                         <DollarSign className="w-5 h-5 text-purple-400" />
@@ -1324,6 +1424,7 @@ Omni Magic Pricing System
                       <p className="text-slate-400 text-[11px] text-center mt-2">Click to enlarge</p>
                     </div>
 
+                    {/* Venmo */}
                     <div className="p-3 bg-slate-700/50 rounded border border-slate-600">
                       <div className="flex items-center gap-2 mb-2">
                         <DollarSign className="w-5 h-5 text-blue-400" />
@@ -1341,9 +1442,29 @@ Omni Magic Pricing System
                         @johnnywumagic <ExternalLink className="w-3 h-3" />
                       </a>
                     </div>
-                    <p className="text-slate-400 text-[11px] mt-2 text-center">
-                      After sending your deposit, we will confirm your booking via email.
-                    </p>
+
+                    {/* I Paid Button */}
+                    <div className="pt-4 border-t border-slate-600">
+                      <p className="text-amber-400 text-[13px] mb-3 text-center font-semibold">
+                        ⚠️ After completing Zelle or Venmo payment, click below:
+                      </p>
+                      <div className="flex gap-3">
+                        <Button
+                          onClick={() => handleManualPaymentConfirmation('Zelle')}
+                          disabled={isSubmitting}
+                          className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-400 hover:to-purple-500 text-white font-semibold"
+                        >
+                          {isSubmitting ? 'Processing...' : 'I Paid with Zelle'}
+                        </Button>
+                        <Button
+                          onClick={() => handleManualPaymentConfirmation('Venmo')}
+                          disabled={isSubmitting}
+                          className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-semibold"
+                        >
+                          {isSubmitting ? 'Processing...' : 'I Paid with Venmo'}
+                        </Button>
+                      </div>
+                    </div>
                   </div>
                 )}
 
