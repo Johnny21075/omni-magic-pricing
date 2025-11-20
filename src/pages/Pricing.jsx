@@ -632,7 +632,7 @@ export default function PricingPage() {
       <p>Our team at Omni Magic Entertainment is now reviewing your details and will prepare a personalized contract and invoice for you as soon as possible. You can expect to hear from us within 24 hours at the email address: <strong>${email}</strong>.</p>
       <p>In the meantime, feel free to visit our website or explore more of our magical offerings.</p>
       <div class="button-container">
-        <a href="https://www.omnimagic.co/" class="button">Visit Omni Magic</a>
+        <a href="https://omnimagic.co/" class="button">Visit Omni Magic</a>
       </div>
       <p>We're thrilled at the prospect of making your event truly magical!</p>
       <p>Sincerely,</p>
