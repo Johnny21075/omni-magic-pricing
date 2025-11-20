@@ -51,17 +51,13 @@ Deno.serve(async (req) => {
     const businessEmailBody = {
       type: "new_date_hold_request",
       requested_at: new Date(requestTime).toISOString(),
-      hold_expires_at: new Date(holdExpiryTime).toISOString(),
-      hold_hours: 48,
-      deposit_required: depositAmount,
-      deposit_percentage: 10,
-      payment_method: paymentMethod,
       event: {
         date: eventDate,
+        type: "Hold Request",
         performer: packageDetails.performer
       },
       package: {
-        type: packageDetails.type,
+        service_type: packageDetails.type,
         duration: packageDetails.duration,
         magicians: packageDetails.magicians || null,
         tier: packageDetails.tier,
@@ -79,11 +75,17 @@ Deno.serve(async (req) => {
         phone: customerPhone || null
       },
       notes: additionalNotes || null,
-      next_steps: [
-        paymentMethod === 'Stripe' ? 'Payment completed via Stripe – date secured' : `Contact client to collect $${depositAmount.toLocaleString()} deposit (${paymentMethod})`,
-        "Secure the date",
-        "Send confirmation email with payment details"
-      ]
+      next_steps: paymentMethod === 'Stripe' 
+        ? [
+            `Payment completed via Stripe ($${depositAmount.toLocaleString()})`,
+            "Date secured for 48 hours",
+            "Send confirmation email to customer"
+          ]
+        : [
+            `Collect $${depositAmount.toLocaleString()} deposit via ${paymentMethod}`,
+            "Date held for 48 hours (expires: ${formatDateTime(holdExpiryTime)})",
+            "Send payment instructions to customer"
+          ]
     };
 
     await base44.asServiceRole.integrations.Core.SendEmail({
