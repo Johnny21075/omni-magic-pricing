@@ -524,47 +524,38 @@ export default function PricingPage() {
         to: 'hello@omnimagic.co',
         subject: `📋 New Booking Request - ${packageDetails.type}`,
         body: `
-═══════════════════════════════════════════════════════
-              NEW BOOKING REQUEST RECEIVED
-═══════════════════════════════════════════════════════
+New Booking Request (${eventDateFormatted})
 
-EVENT DETAILS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Event Date:            ${eventDateFormatted}
-  Event Type:            ${eventTypeDisplay}
-  Performer:             ${packageDetails.performer}
+Event Details
 
-PACKAGE SELECTED
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Service Type:          ${packageDetails.type}
-  Duration:              ${packageDetails.duration}${packageDetails.magicians ? `\n  Number of Magicians:   ${packageDetails.magicians}` : ''}
-  Experience Tier:       ${tierName}
-  Package Price:         $${selectedPackagePrice.price.toLocaleString()}
+Date: ${eventDateFormatted}
+Type: ${eventTypeDisplay}
+Performer: ${packageDetails.performer}
 
-ADD-ONS SELECTED
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-${addonsText}
+Package Selected
 
-PRICING SUMMARY
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Package Price:         $${selectedPackagePrice.price.toLocaleString()}
-  Add-ons Total:         $${totalAddonsCost.toLocaleString()}
-  ───────────────────────────────────────────────────
-  TOTAL INVESTMENT:      $${totalInvestment.toLocaleString()}
+Service Type: ${packageDetails.type}
+Duration: ${packageDetails.duration}${packageDetails.magicians ? `\nNumber of Magicians: ${packageDetails.magicians}` : ''}
+Experience Tier: ${tierName}
+Package Price: $${selectedPackagePrice.price.toLocaleString()}
 
-CUSTOMER INFORMATION
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Full Name:             ${fullName}
-  Email:                 ${email}
-  Phone:                 ${phone || 'Not provided'}${additionalNotes ? `\n  Notes / Comments:      ${additionalNotes}` : ''}
+Add-ons: ${addonsText === 'None' ? 'None' : '\n' + addonsText}
 
-═══════════════════════════════════════════════════════
-⏰ NEXT STEPS: Send official contract and invoice to
-   ${email}
-═══════════════════════════════════════════════════════
+Pricing Summary
 
-—
-Omni Magic Pricing System
+Package Price: $${selectedPackagePrice.price.toLocaleString()}
+Add-ons Total: $${totalAddonsCost.toLocaleString()}
+Total Investment: $${totalInvestment.toLocaleString()}
+
+Customer Information
+
+Full Name: ${fullName}
+Email: ${email}
+Phone: ${phone || 'Not provided'}${additionalNotes ? `\nNotes: ${additionalNotes}` : ''}
+
+Next Steps
+
+Send official contract and invoice to ${email}
         `
       });
 
