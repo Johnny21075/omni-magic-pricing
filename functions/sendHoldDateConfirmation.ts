@@ -48,46 +48,48 @@ Deno.serve(async (req) => {
     };
 
     // Send email to business
+    const businessEmailBody = {
+      type: "new_date_hold_request",
+      requested_at: new Date(requestTime).toISOString(),
+      hold_expires_at: new Date(holdExpiryTime).toISOString(),
+      hold_hours: 48,
+      deposit_required: depositAmount,
+      deposit_percentage: 10,
+      payment_method: paymentMethod,
+      event: {
+        date: eventDate,
+        performer: packageDetails.performer
+      },
+      package: {
+        type: packageDetails.type,
+        duration: packageDetails.duration,
+        magicians: packageDetails.magicians || null,
+        tier: packageDetails.tier,
+        price: packageDetails.packagePrice
+      },
+      add_ons: packageDetails.addons && packageDetails.addons !== 'None' ? packageDetails.addons.split(', ') : [],
+      pricing: {
+        package_price: packageDetails.packagePrice,
+        add_ons_total: totalInvestment - packageDetails.packagePrice,
+        total: totalInvestment
+      },
+      customer: {
+        name: customerName,
+        email: customerEmail,
+        phone: customerPhone || null
+      },
+      notes: additionalNotes || null,
+      next_steps: [
+        paymentMethod === 'Stripe' ? 'Payment completed via Stripe – date secured' : `Contact client to collect $${depositAmount.toLocaleString()} deposit (${paymentMethod})`,
+        "Secure the date",
+        "Send confirmation email with payment details"
+      ]
+    };
+
     await base44.asServiceRole.integrations.Core.SendEmail({
       to: 'hello@omnimagic.co',
       subject: `🗓️ New Date Hold Request (${formatDate(eventDate)})`,
-      body: `
-New Date Hold Request (${formatDate(eventDate)})
-
-Hold Details
-
-Requested: ${formatDateTime(requestTime)}
-Held until: ${formatDateTime(holdExpiryTime)} (48-hour hold)
-Deposit required: $${depositAmount.toLocaleString()} (10% – secures the date)
-Payment method: ${paymentMethod}
-
-Event Details
-
-Date: ${formatDate(eventDate)}
-Performer: ${packageDetails.performer}
-
-Package Chosen
-
-Type: ${packageDetails.type}
-Magicians: ${packageDetails.magicians || 'Not specified'}
-Tier: ${packageDetails.tier}
-Price: $${packageDetails.packagePrice.toLocaleString()}
-
-Add-ons: ${packageDetails.addons || 'None'}
-Total: $${totalInvestment.toLocaleString()}
-
-Client Info
-
-Name: ${customerName}
-Email: ${customerEmail}
-Phone: ${customerPhone || 'Not provided'}
-${additionalNotes ? `Notes: ${additionalNotes}\n` : ''}
-Next Steps
-
-Contact ${customerName} immediately
-${paymentMethod === 'Stripe' ? 'Payment completed via Stripe' : `Collect $${depositAmount.toLocaleString()} deposit (${paymentMethod})`}
-Send confirmation + payment details once verified
-`
+      body: JSON.stringify(businessEmailBody, null, 2)
     });
 
     // Send email to customer
