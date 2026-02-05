@@ -17,7 +17,7 @@ export const pricingData = {
       {
         "id": "addon_champagne",
         "label": "Champagne Pop Celebration",
-        "price": 250,
+        "price": 350,
         "tooltip": "Guests 'open' a champagne bottle with their minds in a stunning group moment. Perfect for milestone celebrations or corporate launches where you want an unforgettable toast.",
         "preview_url": "https://www.instagram.com/reel/DGGj1Siy2xE/?igsh=NTc4MTIwNjQ2YQ%3D%3D",
         "event_types": ["corporate", "private", "wedding"],
