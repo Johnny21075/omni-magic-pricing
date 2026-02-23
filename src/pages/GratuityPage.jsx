@@ -58,7 +58,6 @@ export default function GratuityPage() {
 
   const resetForm = () => {
     setAmount('');
-    setSelectedTier(null);
     setEmail('');
     setPerformerName('');
     setMessage('');
