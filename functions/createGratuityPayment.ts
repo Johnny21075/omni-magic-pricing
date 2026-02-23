@@ -7,7 +7,6 @@ Deno.serve(async (req) => {
     try {
         const base44 = createClientFromRequest(req);
         
-        // Try to get user, but don't fail if not authenticated
         let user = null;
         try {
             user = await base44.auth.me();
@@ -16,64 +15,65 @@ Deno.serve(async (req) => {
         }
 
         const body = await req.json();
-        const { amount, email, performerName, message } = body;
+        const { amount, customerEmail, performerName, companyName, message, wantsPoster } = body;
 
-        console.log('Received gratuity payment request:', { amount, email, performerName });
-
-        // Validate required fields
-        if (!amount || !email) {
-            console.error('Missing required fields:', { amount, email });
+        if (!amount || !customerEmail) {
             return Response.json({ 
-                error: 'Missing required fields: amount and email' 
+                error: 'Missing required fields: amount and customerEmail' 
             }, { status: 400 });
         }
 
-        // Validate amount is a positive number
         if (typeof amount !== 'number' || amount < 1) {
-            console.error('Invalid amount:', amount);
             return Response.json({ 
                 error: 'Amount must be at least $1' 
             }, { status: 400 });
         }
 
-        console.log('Creating Stripe payment intent for gratuity amount:', amount);
+        const refererUrl = req.headers.get('referer') || 'https://omnimagic.co';
+        const baseUrl = refererUrl.split('?')[0];
+        const successUrl = `${baseUrl}?payment=success&type=gratuity`;
+        const cancelUrl = `${baseUrl}?payment=cancelled&type=gratuity`;
 
-        // Create a payment intent
-        const paymentIntent = await stripe.paymentIntents.create({
-            amount: Math.round(amount * 100), // Convert to cents
-            currency: 'usd',
-            receipt_email: email,
-            automatic_payment_methods: {
-                enabled: true,
-            },
-            metadata: {
-                payment_type: 'gratuity',
-                performer_name: performerName || 'Omni Magic Entertainment',
-                customer_email: email,
-                customer_message: message || 'No message provided',
-                user_id: user?.id || 'anonymous'
-            },
-            description: `Gratuity for ${performerName || 'Omni Magic Entertainment'}`
+        const metadata = {
+            payment_type: 'gratuity',
+            performer_name: performerName || 'Omni Magic Entertainment',
+            customer_email: customerEmail,
+            customer_message: message || 'No message provided',
+            user_id: user?.id || 'anonymous',
+            wants_poster: wantsPoster ? 'true' : 'false'
+        };
+
+        if (companyName) {
+            metadata.company_name = companyName;
+        }
+
+        const session = await stripe.checkout.sessions.create({
+            payment_method_types: ['card'],
+            line_items: [
+                {
+                    price_data: {
+                        currency: 'usd',
+                        product_data: {
+                            name: `Gratuity for ${performerName || 'Omni Magic Entertainment'}`,
+                        },
+                        unit_amount: Math.round(amount * 100),
+                    },
+                    quantity: 1,
+                },
+            ],
+            mode: 'payment',
+            success_url: successUrl,
+            cancel_url: cancelUrl,
+            customer_email: customerEmail,
+            metadata: metadata,
         });
 
-        console.log('Gratuity payment intent created successfully:', paymentIntent.id);
-
-        return Response.json({
-            clientSecret: paymentIntent.client_secret,
-            paymentIntentId: paymentIntent.id
-        });
+        return Response.json({ url: session.url });
 
     } catch (error) {
-        console.error('Error creating gratuity payment intent:', error);
-        console.error('Error details:', {
-            message: error.message,
-            type: error.type,
-            stack: error.stack
-        });
-        
+        console.error('Error creating gratuity checkout session:', error);
         return Response.json({ 
-            error: error.message || 'Failed to create payment intent',
-            details: error.type || 'unknown_error'
+            error: error.message || 'Failed to create checkout session' 
         }, { status: 500 });
     }
 });
