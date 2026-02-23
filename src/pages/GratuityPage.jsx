@@ -77,6 +77,33 @@ export default function GratuityPage() {
     setShowSuccess(false);
   };
 
+  const handleStripePayment = async () => {
+    setIsProcessingPayment(true);
+    setError('');
+
+    try {
+      const response = await base44.functions.invoke('createGratuityPayment', {
+        amount: parseInt(amount),
+        customerEmail: email,
+        performerName: performerName || 'Unknown',
+        companyName: isCorporateEvent ? companyName : null,
+        message: message,
+        wantsPoster: wantsPoster
+      });
+
+      if (response.data.url) {
+        window.location.href = response.data.url;
+      } else {
+        throw new Error('No checkout URL returned');
+      }
+    } catch (error) {
+      console.error('Error creating Stripe checkout:', error);
+      setError('Failed to process payment. Please try again or use Zelle/Venmo.');
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
+
   return (
     <>
       <style>{`
