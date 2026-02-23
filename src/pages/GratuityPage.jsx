@@ -30,6 +30,7 @@ export default function GratuityPage() {
   
   const [showSuccess, setShowSuccess] = useState(false);
   const [showZelleModal, setShowZelleModal] = useState(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
   useEffect(() => {
     const numericAmount = parseInt(amount);
