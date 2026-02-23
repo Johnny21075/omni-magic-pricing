@@ -244,30 +244,7 @@ export default function GratuityPage() {
                         />
                       </div>
 
-                      {parseInt(amount) >= POSTER_THRESHOLD && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          transition={{ duration: 0.3 }}
-                          className="mt-4 p-4 bg-amber-900/20 border border-amber-500/50 rounded-lg"
-                        >
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              id="wantsPoster"
-                              checked={wantsPoster}
-                              onChange={(e) => setWantsPoster(e.target.checked)}
-                              className="h-5 w-5 text-amber-500 bg-slate-800 border-amber-600 rounded focus:ring-amber-500"
-                            />
-                            <Label htmlFor="wantsPoster" className="luxury-body text-white text-lg flex items-center">
-                              <Package className="w-5 h-5 mr-2 text-amber-400" /> Yes, I'd like a FREE Omni Magic poster!
-                            </Label>
-                          </div>
-                          <p className="text-xs text-slate-300 mt-2 ml-7">
-                            We'll contact you for shipping details.
-                          </p>
-                        </motion.div>
-                      )}
+
 
                       {showPaymentOptions && (
                         <div className="pt-6">
