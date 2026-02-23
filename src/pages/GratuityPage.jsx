@@ -146,57 +146,20 @@ export default function GratuityPage() {
                 
                 <CardContent className="space-y-6">
                   <div>
-                    <Label htmlFor="amount" className="luxury-body text-white mb-2 block text-lg">
-                      Select Gratuity Amount *
+                    <Label htmlFor="customAmount" className="luxury-body text-white mb-2 block text-lg">
+                      Gratuity Amount *
                     </Label>
-                    <div className="grid grid-cols-3 md:grid-cols-4 gap-3 mb-4">
-                      {TIER_AMOUNTS.map((tier) => (
-                        <Button
-                          key={tier}
-                          onClick={() => handleTierSelect(tier)}
-                          className={`
-                            bg-slate-800 border-2 text-white font-bold text-lg py-3 rounded-lg
-                            hover:bg-amber-600 hover:border-amber-600 transition-all
-                            ${selectedTier === tier ? 'border-amber-500 bg-amber-700/50' : 'border-slate-600'}
-                          `}
-                        >
-                          ${tier}
-                        </Button>
-                      ))}
-                      <Button
-                          onClick={() => handleTierSelect('custom')}
-                          className={`
-                            bg-slate-800 border-2 text-white font-bold text-lg py-3 rounded-lg
-                            hover:bg-amber-600 hover:border-amber-600 transition-all
-                            ${selectedTier === 'custom' ? 'border-amber-500 bg-amber-700/50' : 'border-slate-600'}
-                          `}
-                      >
-                          Custom
-                      </Button>
+                    <div className="relative">
+                      <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-300" />
+                      <Input
+                        id="customAmount"
+                        type="text"
+                        value={amount}
+                        onChange={handleCustomAmountChange}
+                        placeholder="Enter amount"
+                        className="bg-slate-800 border-slate-600 text-white text-lg pl-10 placeholder-slate-400"
+                      />
                     </div>
-
-                    {selectedTier === 'custom' && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        transition={{ duration: 0.3 }}
-                      >
-                        <Label htmlFor="customAmount" className="luxury-body text-white mb-2 block text-sm">
-                          Enter Custom Amount
-                        </Label>
-                        <div className="relative">
-                          <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-300" />
-                          <Input
-                            id="customAmount"
-                            type="text"
-                            value={amount}
-                            onChange={handleCustomAmountChange}
-                            placeholder="Enter amount"
-                            className="bg-slate-800 border-slate-600 text-white text-lg pl-10 placeholder-slate-400"
-                          />
-                        </div>
-                      </motion.div>
-                    )}
                   </div>
 
                   <div>
