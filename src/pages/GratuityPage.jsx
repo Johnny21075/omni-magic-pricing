@@ -20,13 +20,13 @@ export default function GratuityPage() {
   const [performerName, setPerformerName] = useState('');
   const [message, setMessage] = useState('');
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
-  
+
   const [isCorporateEvent, setIsCorporateEvent] = useState(false);
   const [companyName, setCompanyName] = useState('');
   const [wantsPoster, setWantsPoster] = useState(false);
 
   const [error, setError] = useState('');
-  
+
   const [showSuccess, setShowSuccess] = useState(false);
   const [showZelleModal, setShowZelleModal] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
@@ -125,10 +125,10 @@ export default function GratuityPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="w-full max-w-3xl"
-          >
-            {!showSuccess ? (
-              <Card className="bg-gradient-to-br from-amber-900/30 to-slate-800/90 border-2 border-amber-500/50">
+            className="w-full max-w-3xl">
+
+            {!showSuccess ?
+            <Card className="bg-gradient-to-br from-amber-900/30 to-slate-800/90 border-2 border-amber-500/50">
                 <CardHeader className="text-center pb-4">
                   <div className="flex justify-center mb-4">
                     <div className="p-4 bg-amber-500/20 rounded-full">
@@ -151,13 +151,13 @@ export default function GratuityPage() {
                     <div className="relative">
                       <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-300" />
                       <Input
-                        id="customAmount"
-                        type="text"
-                        value={amount}
-                        onChange={handleCustomAmountChange}
-                        placeholder="Enter amount"
-                        className="bg-slate-800 border-slate-600 text-white text-lg pl-10 placeholder-slate-400"
-                      />
+                      id="customAmount"
+                      type="text"
+                      value={amount}
+                      onChange={handleCustomAmountChange}
+                      placeholder="Enter amount"
+                      className="bg-slate-800 border-slate-600 text-white text-lg pl-10 placeholder-slate-400" />
+
                     </div>
                   </div>
 
@@ -166,68 +166,68 @@ export default function GratuityPage() {
                       Your Email * <span className="text-slate-300 text-sm font-normal">(for confirmation)</span>
                     </Label>
                     <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={handleEmailChange}
-                      placeholder="your@email.com"
-                      required
-                      className="bg-slate-800 border-slate-600 text-white text-lg placeholder-slate-400"
-                    />
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={handleEmailChange}
+                    placeholder="your@email.com"
+                    required
+                    className="bg-slate-800 border-slate-600 text-white text-lg placeholder-slate-400" />
+
                   </div>
 
-                  {parseInt(amount) >= 1 && email && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      transition={{ duration: 0.3 }}
-                      className="space-y-4 pt-4 border-t border-slate-600"
-                    >
+                  {parseInt(amount) >= 1 && email &&
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-4 pt-4 border-t border-slate-600">
+
                       <div className="flex items-center space-x-2">
                         <input
-                          type="checkbox"
-                          id="isCorporateEvent"
-                          checked={isCorporateEvent}
-                          onChange={(e) => setIsCorporateEvent(e.target.checked)}
-                          className="h-5 w-5 text-amber-500 bg-slate-800 border-slate-600 rounded focus:ring-amber-500"
-                        />
+                      type="checkbox"
+                      id="isCorporateEvent"
+                      checked={isCorporateEvent}
+                      onChange={(e) => setIsCorporateEvent(e.target.checked)}
+                      className="h-5 w-5 text-amber-500 bg-slate-800 border-slate-600 rounded focus:ring-amber-500" />
+
                         <Label htmlFor="isCorporateEvent" className="luxury-body text-white text-lg flex items-center">
                           <BriefcaseBusiness className="w-5 h-5 mr-2 text-amber-400" /> This is for a corporate event
                         </Label>
                       </div>
 
-                      {isCorporateEvent && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          transition={{ duration: 0.3 }}
-                        >
+                      {isCorporateEvent &&
+                  <motion.div
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    transition={{ duration: 0.3 }}>
+
                           <Label htmlFor="companyName" className="luxury-body text-white mb-2 block">
                             Company Name <span className="text-slate-400 text-sm">(optional)</span>
                           </Label>
                           <Input
-                            id="companyName"
-                            type="text"
-                            value={companyName}
-                            onChange={(e) => setCompanyName(e.target.value)}
-                            placeholder="e.g. Acme Corp"
-                            className="bg-slate-800 border-slate-600 text-white placeholder-slate-400"
-                          />
+                      id="companyName"
+                      type="text"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      placeholder="e.g. Acme Corp"
+                      className="bg-slate-800 border-slate-600 text-white placeholder-slate-400" />
+
                         </motion.div>
-                      )}
+                  }
 
                       <div>
                         <Label htmlFor="performerName" className="luxury-body text-white mb-2 block">
                           Performer Name <span className="text-slate-400 text-sm">(optional)</span>
                         </Label>
                         <Input
-                          id="performerName"
-                          type="text"
-                          value={performerName}
-                          onChange={(e) => setPerformerName(e.target.value)}
-                          placeholder="e.g. Johnny Wu"
-                          className="bg-slate-800 border-slate-600 text-white placeholder-slate-400"
-                        />
+                      id="performerName"
+                      type="text"
+                      value={performerName}
+                      onChange={(e) => setPerformerName(e.target.value)}
+                      placeholder="e.g. Johnny Wu"
+                      className="bg-slate-800 border-slate-600 text-white placeholder-slate-400" />
+
                       </div>
 
                       <div>
@@ -235,19 +235,19 @@ export default function GratuityPage() {
                           Leave a Message <span className="text-slate-400 text-sm">(optional)</span>
                         </Label>
                         <textarea
-                          id="message"
-                          value={message}
-                          onChange={(e) => setMessage(e.target.value)}
-                          placeholder="Share your thoughts..."
-                          rows={3}
-                          className="w-full bg-slate-800 border-slate-600 text-white rounded-md p-3 luxury-body border placeholder-slate-400"
-                        />
+                      id="message"
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      placeholder="Share your thoughts..."
+                      rows={3}
+                      className="w-full bg-slate-800 border-slate-600 text-white rounded-md p-3 luxury-body border placeholder-slate-400" />
+
                       </div>
 
 
 
-                      {showPaymentOptions && (
-                        <div className="pt-6">
+                      {showPaymentOptions &&
+                  <div className="pt-6">
                           <h3 className="luxury-serif text-xl md:text-2xl font-bold text-white mb-4 text-center">
                             Send Gratuity
                           </h3>
@@ -258,10 +258,10 @@ export default function GratuityPage() {
                                 <CreditCard className="w-12 h-12 mx-auto text-indigo-400 mb-3" />
                                 <h4 className="luxury-serif text-lg font-bold text-white mb-3">Credit Card</h4>
                                 <Button
-                                  onClick={handleStripePayment}
-                                  disabled={isProcessingPayment}
-                                  className="w-full bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-400 hover:to-indigo-500 text-white font-semibold"
-                                >
+                            onClick={handleStripePayment}
+                            disabled={isProcessingPayment}
+                            className="w-full bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-400 hover:to-indigo-500 text-white font-semibold">
+
                                   {isProcessingPayment ? 'Processing...' : `Pay $${parseInt(amount).toLocaleString()}`}
                                 </Button>
                                 <p className="text-xs text-slate-300 mt-2">Secure Stripe payment</p>
@@ -270,12 +270,12 @@ export default function GratuityPage() {
 
                             <Card className="bg-slate-800/70 border-2 border-slate-600 hover:border-purple-500/50 transition-all">
                               <CardContent className="p-6 text-center">
-                                <img 
-                                  src={zelleQRCodeUrl} 
-                                  alt="Zelle QR Code" 
-                                  className="w-full max-w-[200px] mx-auto mb-4 rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
-                                  onClick={() => setShowZelleModal(true)}
-                                />
+                                <img
+                            src={zelleQRCodeUrl}
+                            alt="Zelle QR Code"
+                            className="w-full max-w-[200px] mx-auto mb-4 rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+                            onClick={() => setShowZelleModal(true)} />
+
                                 <h4 className="luxury-serif text-lg font-bold text-white mb-2">Pay with Zelle</h4>
                                 <p className="luxury-body text-sm text-slate-200 mb-2">
                                   Scan the QR code in your bank's app
@@ -291,21 +291,21 @@ export default function GratuityPage() {
                               <CardContent className="p-6 text-center flex flex-col justify-center h-full">
                                 <div className="mb-4">
                                   <svg className="w-16 h-16 mx-auto" viewBox="0 0 24 24" fill="#3D95CE">
-                                    <path d="M23.5 4.1c.4 1.1.6 2.3.6 3.6 0 8.1-6.9 18.3-12.5 18.3h-5L2 4.2l6.5-.6 3.1 17.4c2.5-3.6 5.9-10.4 5.9-14.8 0-1.3-.2-2.5-.6-3.5l6.6-.6z"/>
+                                    <path d="M23.5 4.1c.4 1.1.6 2.3.6 3.6 0 8.1-6.9 18.3-12.5 18.3h-5L2 4.2l6.5-.6 3.1 17.4c2.5-3.6 5.9-10.4 5.9-14.8 0-1.3-.2-2.5-.6-3.5l6.6-.6z" />
                                   </svg>
                                 </div>
                                 <h4 className="luxury-serif text-lg font-bold text-white mb-3">Pay with Venmo</h4>
                                 <a
-                                  href="https://venmo.com/johnnywumagic"
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="inline-flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-400 text-white font-bold px-6 py-3 rounded-lg transition-all"
-                                >
+                            href="https://venmo.com/johnnywumagic"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-400 text-white font-bold px-6 py-3 rounded-lg transition-all">
+
                                   Open Venmo <ExternalLink className="w-4 h-4" />
                                 </a>
-                                <p className="text-xs text-slate-300 mt-2">
-                                  @OmniMagicCo
-                                </p>
+                                <p className="text-xs text-slate-300 mt-2">@Johnnywumagic
+
+                          </p>
                               </CardContent>
                             </Card>
                           </div>
@@ -320,15 +320,15 @@ export default function GratuityPage() {
                             </p>
                           </div>
 
-                          {error && (
-                            <div className="mt-4 p-3 bg-red-900/30 border border-red-500 rounded-lg text-red-300 text-sm">
+                          {error &&
+                    <div className="mt-4 p-3 bg-red-900/30 border border-red-500 rounded-lg text-red-300 text-sm">
                               {error}
                             </div>
-                          )}
+                    }
                         </div>
-                      )}
+                  }
                     </motion.div>
-                  )}
+                }
 
                   <div className="border-t border-amber-500/30 pt-6">
                     <p className="luxury-body text-sm text-slate-200 text-center italic">
@@ -336,9 +336,9 @@ export default function GratuityPage() {
                     </p>
                   </div>
                 </CardContent>
-              </Card>
-            ) : (
-              <Card className="bg-gradient-to-br from-amber-900/30 to-slate-800/90 border-2 border-amber-500/50">
+              </Card> :
+
+            <Card className="bg-gradient-to-br from-amber-900/30 to-slate-800/90 border-2 border-amber-500/50">
                 <CardContent className="text-center py-12">
                   <CheckCircle className="w-20 h-20 text-amber-400 mx-auto mb-6" />
                   <h3 className="luxury-serif text-3xl font-bold text-white mb-4">
@@ -347,20 +347,20 @@ export default function GratuityPage() {
                   <p className="luxury-body text-lg text-slate-100 mb-6">
                     Your ${parseInt(amount).toLocaleString()} gratuity has been noted. Your generosity is deeply appreciated!
                   </p>
-                  {parseInt(amount) >= POSTER_THRESHOLD && wantsPoster && (
-                    <p className="luxury-body text-md text-amber-300 mb-6 font-semibold">
+                  {parseInt(amount) >= POSTER_THRESHOLD && wantsPoster &&
+                <p className="luxury-body text-md text-amber-300 mb-6 font-semibold">
                       We'll be in touch shortly to arrange delivery of your complimentary poster!
                     </p>
-                  )}
+                }
                   <Button
-                    onClick={resetForm}
-                    className="bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold px-8"
-                  >
+                  onClick={resetForm}
+                  className="bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold px-8">
+
                     Leave Another Gratuity
                   </Button>
                 </CardContent>
               </Card>
-            )}
+            }
           </motion.div>
         </div>
       </div>
@@ -374,11 +374,11 @@ export default function GratuityPage() {
             <p className="luxury-body text-slate-300 text-base mb-4">
               Scan this QR code in your bank's app to send ${parseInt(amount).toLocaleString()}
             </p>
-            <img 
-              src={zelleQRCodeUrl} 
-              alt="Zelle QR Code" 
-              className="w-full max-w-sm mx-auto rounded-lg shadow-2xl"
-            />
+            <img
+              src={zelleQRCodeUrl}
+              alt="Zelle QR Code"
+              className="w-full max-w-sm mx-auto rounded-lg shadow-2xl" />
+
             <p className="text-white font-bold text-lg mt-4">
               Send to: 626-242-7710
             </p>
@@ -388,6 +388,6 @@ export default function GratuityPage() {
           </div>
         </DialogContent>
       </Dialog>
-    </>
-  );
+    </>);
+
 }
