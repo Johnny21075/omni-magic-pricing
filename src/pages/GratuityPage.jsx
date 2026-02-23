@@ -321,7 +321,22 @@ export default function GratuityPage() {
                             Send Gratuity
                           </h3>
 
-                          <div className="grid md:grid-cols-2 gap-4">
+                          <div className="grid md:grid-cols-3 gap-4">
+                            <Card className="bg-slate-800/70 border-2 border-slate-600 hover:border-indigo-500/50 transition-all">
+                              <CardContent className="p-6 text-center flex flex-col justify-center h-full">
+                                <CreditCard className="w-12 h-12 mx-auto text-indigo-400 mb-3" />
+                                <h4 className="luxury-serif text-lg font-bold text-white mb-3">Credit Card</h4>
+                                <Button
+                                  onClick={handleStripePayment}
+                                  disabled={isProcessingPayment}
+                                  className="w-full bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-400 hover:to-indigo-500 text-white font-semibold"
+                                >
+                                  {isProcessingPayment ? 'Processing...' : `Pay $${parseInt(amount).toLocaleString()}`}
+                                </Button>
+                                <p className="text-xs text-slate-300 mt-2">Secure Stripe payment</p>
+                              </CardContent>
+                            </Card>
+
                             <Card className="bg-slate-800/70 border-2 border-slate-600 hover:border-purple-500/50 transition-all">
                               <CardContent className="p-6 text-center">
                                 <img 
