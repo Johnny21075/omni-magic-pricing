@@ -16,7 +16,6 @@ const POSTER_THRESHOLD = 100;
 
 export default function GratuityPage() {
   const [amount, setAmount] = useState('');
-  const [selectedTier, setSelectedTier] = useState(null);
   const [email, setEmail] = useState('');
   const [performerName, setPerformerName] = useState('');
   const [message, setMessage] = useState('');
@@ -44,12 +43,6 @@ export default function GratuityPage() {
       setWantsPoster(false);
     }
   }, [amount, email]);
-
-  const handleTierSelect = (tierValue) => {
-    setSelectedTier(tierValue);
-    setAmount(tierValue.toString());
-    setError('');
-  };
 
   const handleCustomAmountChange = (e) => {
     const value = e.target.value.replace(/[^0-9]/g, '');
