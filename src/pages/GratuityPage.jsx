@@ -46,7 +46,6 @@ export default function GratuityPage() {
 
   const handleCustomAmountChange = (e) => {
     const value = e.target.value.replace(/[^0-9]/g, '');
-    setSelectedTier('custom');
     setAmount(value);
     setError('');
   };
