@@ -296,7 +296,7 @@ export default function GratuityPage() {
                                 </div>
                                 <h4 className="luxury-serif text-lg font-bold text-white mb-3">Pay with Venmo</h4>
                                 <a
-                                  href="https://venmo.com/u/OmniMagicCo"
+                                  href="https://venmo.com/johnnywumagic"
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="inline-flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-400 text-white font-bold px-6 py-3 rounded-lg transition-all"
