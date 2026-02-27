@@ -23,6 +23,21 @@ Deno.serve(async (req) => {
 
     // Get the app host from the request
     const host = req.headers.get('origin') || 'https://omnimagic.base44.com';
+    
+    // Construct the base URL for the pricing page
+    const urlParams = new URL(req.headers.get('referer') || host);
+    const eventType = urlParams.searchParams.get('eventType') || '';
+    const eventSize = urlParams.searchParams.get('eventSize') || '';
+    const eventScale = urlParams.searchParams.get('eventScale') || '';
+    
+    let pricingUrl = `${host}`;
+    if (eventType) {
+      const params = new URLSearchParams();
+      params.set('eventType', eventType);
+      if (eventSize) params.set('eventSize', eventSize);
+      if (eventScale) params.set('eventScale', eventScale);
+      pricingUrl = `${host}?${params.toString()}`;
+    }
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card', 'us_bank_account'],
@@ -40,8 +55,8 @@ Deno.serve(async (req) => {
         },
       ],
       mode: 'payment',
-      success_url: `${host}/pages/DepositPaymentThankYou?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${host}/pages/Pricing`,
+      success_url: `${pricingUrl}${pricingUrl.includes('?') ? '&' : '?'}payment=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${pricingUrl}${pricingUrl.includes('?') ? '&' : '?'}payment=cancelled`,
       customer_email: customerEmail,
       metadata: {
         type: 'hold_date_deposit',
