@@ -46,6 +46,10 @@ Deno.serve(async (req) => {
     const remainingBalance = packageDetails.totalInvestment - depositAmount;
 
     // Email to customer
+    const addonsDisplay = metadata.addons && metadata.addons !== 'None' 
+      ? metadata.addons 
+      : 'None';
+    
     const customerEmailBody = `
 <!DOCTYPE html>
 <html>
@@ -59,7 +63,9 @@ Deno.serve(async (req) => {
     .section { margin-bottom: 20px; }
     .section-title { font-size: 16px; font-weight: bold; margin-bottom: 10px; color: #333; }
     .section-content { margin-left: 20px; line-height: 1.6; }
+    .detail-row { margin-bottom: 8px; }
     .highlight { background-color: #fff3cd; padding: 5px 10px; border-radius: 4px; }
+    .hold-expiry { background-color: #ffe6e6; padding: 15px; border-left: 4px solid #e74c3c; border-radius: 4px; margin-top: 10px; }
     .footer { text-align: center; padding-top: 20px; margin-top: 30px; border-top: 1px solid #eee; font-size: 12px; color: #777; }
   </style>
 </head>
@@ -71,31 +77,63 @@ Deno.serve(async (req) => {
     </div>
 
     <div class="section">
-      <div class="section-title">Hold Details</div>
+      <div class="section-title">🎭 Your Selected Package</div>
       <div class="section-content">
-        <div><strong>Event Date:</strong> ${metadata.event_date || 'N/A'}</div>
-        <div><strong>Event Type:</strong> ${metadata.package_type || 'N/A'}</div>
-        <div><strong>Performer:</strong> ${metadata.package_performer || 'N/A'}</div>
+        <div class="detail-row"><strong>Service Type:</strong> ${metadata.package_type || 'N/A'}</div>
+        <div class="detail-row"><strong>Performer:</strong> ${metadata.package_performer || 'N/A'}</div>
+        <div class="detail-row"><strong>Duration:</strong> ${metadata.package_duration || 'N/A'}</div>
+        <div class="detail-row"><strong>Experience Tier:</strong> ${metadata.package_tier || 'N/A'}</div>
+        ${metadata.package_magicians ? `<div class="detail-row"><strong>Number of Magicians:</strong> ${metadata.package_magicians}</div>` : ''}
+        <div class="detail-row"><strong>Package Price:</strong> $${parseFloat(metadata.package_price || '0').toLocaleString()}</div>
       </div>
     </div>
 
     <div class="section">
-      <div class="section-title">Payment Received</div>
+      <div class="section-title">✨ Add-Ons</div>
       <div class="section-content">
-        <div><strong>Deposit Paid:</strong> <span class="highlight">$${depositAmount.toLocaleString()}</span></div>
-        <div><strong>Remaining Balance:</strong> $${remainingBalance.toLocaleString()}</div>
-        <div><strong>Total Investment:</strong> $${parseFloat(metadata.total_investment || '0').toLocaleString()}</div>
+        <div class="detail-row">${addonsDisplay}</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">📅 Event Details</div>
+      <div class="section-content">
+        <div class="detail-row"><strong>Event Date:</strong> ${metadata.event_date || 'N/A'}</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">💰 Payment Summary</div>
+      <div class="section-content">
+        <div class="detail-row"><strong>Deposit Paid:</strong> <span class="highlight">$${depositAmount.toLocaleString()}</span></div>
+        <div class="detail-row"><strong>Remaining Balance:</strong> $${remainingBalance.toLocaleString()}</div>
+        <div class="detail-row"><strong>Total Investment:</strong> $${parseFloat(metadata.total_investment || '0').toLocaleString()}</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">⏰ Your Hold Expires In 48 Hours</div>
+      <div class="hold-expiry">
+        <p style="margin: 0 0 10px 0; font-weight: bold; color: #e74c3c;">
+          Your date hold expires on:
+        </p>
+        <p style="margin: 0; font-size: 18px; font-weight: bold; color: #333;">
+          ${expiryTime.toLocaleString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+        </p>
+        <p style="margin: 10px 0 0 0; font-size: 13px; color: #666;">
+          Please complete your full payment before this time to secure your booking.
+        </p>
       </div>
     </div>
 
     <div class="section">
       <div class="section-title">Next Steps</div>
       <div class="section-content">
-        <p>Your 10% deposit has been received and your date is now on hold for 48 hours. To finalize your booking:</p>
+        <p>To finalize your booking and secure your date:</p>
         <div style="background-color: #f0f4ff; padding: 15px; border-left: 4px solid #3b82f6; border-radius: 4px; margin-top: 10px;">
-          <p><strong>1.</strong> Review your package details</p>
-          <p><strong>2.</strong> Contact us at <a href="mailto:hello@omnimagic.co">hello@omnimagic.co</a> to discuss final payment options</p>
-          <p><strong>3.</strong> Complete the remaining balance: <strong>$${remainingBalance.toLocaleString()}</strong></p>
+          <p><strong>1.</strong> Complete the remaining balance of <strong>$${remainingBalance.toLocaleString()}</strong></p>
+          <p><strong>2.</strong> Contact us at <a href="mailto:hello@omnimagic.co">hello@omnimagic.co</a> to finalize payment</p>
+          <p><strong>3.</strong> We'll send you the official contract once payment is received</p>
         </div>
       </div>
     </div>
@@ -103,7 +141,7 @@ Deno.serve(async (req) => {
     <div class="section">
       <div class="section-title">Questions?</div>
       <div class="section-content">
-        <p>If you have any questions about your booking or need to make changes, please don't hesitate to reach out:</p>
+        <p>If you have any questions about your booking or need to make changes, please contact us:</p>
         <p><strong>Email:</strong> <a href="mailto:hello@omnimagic.co">hello@omnimagic.co</a></p>
       </div>
     </div>
