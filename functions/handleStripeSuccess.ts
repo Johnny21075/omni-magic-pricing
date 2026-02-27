@@ -23,6 +23,9 @@ Deno.serve(async (req) => {
       }, { status: 400 });
     }
 
+    // Verify the session is valid and hasn't been processed before
+    // (Optional: could add a stored record check here in future)
+
     // Extract booking details from metadata
     const metadata = session.metadata;
     const currentTime = new Date();

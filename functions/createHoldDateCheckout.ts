@@ -30,13 +30,13 @@ Deno.serve(async (req) => {
     const eventSize = urlParams.searchParams.get('eventSize') || '';
     const eventScale = urlParams.searchParams.get('eventScale') || '';
     
-    let pricingUrl = `${host}`;
+    let pricingPageUrl = `${host}/pricing`;
     if (eventType) {
       const params = new URLSearchParams();
       params.set('eventType', eventType);
       if (eventSize) params.set('eventSize', eventSize);
       if (eventScale) params.set('eventScale', eventScale);
-      pricingUrl = `${host}?${params.toString()}`;
+      pricingPageUrl = `${host}/pricing?${params.toString()}`;
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -55,8 +55,8 @@ Deno.serve(async (req) => {
         },
       ],
       mode: 'payment',
-      success_url: `${pricingUrl}${pricingUrl.includes('?') ? '&' : '?'}payment=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${pricingUrl}${pricingUrl.includes('?') ? '&' : '?'}payment=cancelled`,
+      success_url: `${pricingPageUrl}${pricingPageUrl.includes('?') ? '&' : '?'}payment=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${pricingPageUrl}${pricingPageUrl.includes('?') ? '&' : '?'}payment=cancelled`,
       customer_email: customerEmail,
       metadata: {
         type: 'hold_date_deposit',
