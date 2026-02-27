@@ -44,6 +44,15 @@ Deno.serve(async (req) => {
       totalInvestment: parseFloat(metadata.total_investment || '0')
     };
 
+    // Send notification email to business
+    const emailBody = `New Hold Date Deposit Payment Received\n\nCustomer Name: ${metadata.customer_name}\nCustomer Email: ${metadata.customer_email}\nCustomer Phone: ${metadata.customer_phone || 'N/A'}\nDeposit Amount: $${parseFloat(metadata.deposit_amount)}\nEvent Date: ${metadata.event_date || 'N/A'}\n\nPackage Details:\nType: ${metadata.package_type || 'N/A'}\nPerformer: ${metadata.package_performer || 'N/A'}\nDuration: ${metadata.package_duration || 'N/A'}\nTier: ${metadata.package_tier || 'N/A'}\nNumber of Magicians: ${metadata.package_magicians || 'N/A'}\nPackage Price: $${parseFloat(metadata.package_price || '0')}\nAddons: ${metadata.addons || 'None'}\nTotal Investment: $${parseFloat(metadata.total_investment || '0')}\n\nAdditional Notes: ${metadata.additional_notes || 'None'}`;
+
+    await base44.integrations.Core.SendEmail({
+      to: 'hello@omnimagic.co',
+      subject: `Deposit Payment Received - ${metadata.customer_name}`,
+      body: emailBody
+    });
+
     // Send confirmation emails
     await base44.asServiceRole.functions.invoke('sendHoldDateConfirmation', {
       customerName: metadata.customer_name,

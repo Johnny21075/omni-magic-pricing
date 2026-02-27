@@ -58,14 +58,6 @@ Deno.serve(async (req) => {
 
         console.log('Custom deposit payment intent created successfully:', paymentIntent.id);
 
-        const emailBody = `New Custom Deposit Initiated\n\nCustomer Name: ${fullName}\nCustomer Email: ${email}\nDeposit Amount: $${amount}\nDescription: ${description || 'No description provided'}\nCustomer Message: ${message || 'No message provided'}`;
-        
-        await base44.integrations.Core.SendEmail({
-            to: 'hello@omnimagic.co',
-            subject: `New Custom Deposit - ${fullName}`,
-            body: emailBody
-        });
-
         return Response.json({
             clientSecret: paymentIntent.client_secret,
             paymentIntentId: paymentIntent.id
