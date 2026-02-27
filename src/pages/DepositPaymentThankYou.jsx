@@ -174,7 +174,7 @@ export default function DepositPaymentThankYou() {
           onClick={handleCreditCardConfirmation}
           disabled={isConfirming}
           className="w-full bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-400 hover:to-indigo-500 text-white font-semibold mb-3">
-          {isConfirming ? 'Sending Confirmation...' : 'I Just Made a Payment with My Credit Card'}
+          {isConfirming ? 'Sending Confirmation...' : 'Please Click Here If You\'ve Already Made the Payment on Stripe'}
         </Button>
 
         {/* Email Reminder */}
