@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -5,7 +6,6 @@ import { Building2, Users, Heart, Video, Instagram, Youtube, Globe, Star } from 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { motion } from 'framer-motion';
 import FAQ from '../components/pricing/FAQ';
-import GratuityPage from './GratuityPage';
 import { createPageUrl } from '@/utils';
 
 const backgroundImageUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/e620330f2_IMG_1641.jpg";
@@ -183,10 +183,6 @@ export default function Home() {
                 );
               })}
             </div>
-          </div>
-
-          <div className="max-w-6xl mx-auto px-4 py-12">
-            <GratuityPage />
           </div>
 
           <div className="max-w-4xl mx-auto px-4 py-12">
