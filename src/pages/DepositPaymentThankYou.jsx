@@ -126,7 +126,7 @@ export default function DepositPaymentThankYou() {
 
         {/* Main Message */}
         <p className="text-slate-200 text-sm leading-relaxed mb-6">
-          Thank you! Your request to hold the date has been received. To secure your booking, your payment of <span className="text-amber-400 font-bold">${sessionData?.amount.toLocaleString()}</span> has been processed.
+          Thank you for making the deposit payment! Your request to hold the date has been received. To secure your booking, please complete your 10% deposit of <span className="text-amber-400 font-bold">${(sessionData?.totalInvestment ? (sessionData.totalInvestment * 0.1).toFixed(2) : sessionData?.amount).toLocaleString()}</span>.
         </p>
 
         {/* Expiry Info */}
