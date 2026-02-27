@@ -39,28 +39,172 @@ Deno.serve(async (req) => {
       totalInvestment: parseFloat(metadata.total_investment || '0')
     };
 
-    // Send notification email to business
-    const emailBody = `New Hold Date Deposit Payment Received\n\nCustomer Name: ${metadata.customer_name}\nCustomer Email: ${metadata.customer_email}\nCustomer Phone: ${metadata.customer_phone || 'N/A'}\nDeposit Amount: $${parseFloat(metadata.deposit_amount)}\nEvent Date: ${metadata.event_date || 'N/A'}\n\nPackage Details:\nType: ${metadata.package_type || 'N/A'}\nPerformer: ${metadata.package_performer || 'N/A'}\nDuration: ${metadata.package_duration || 'N/A'}\nTier: ${metadata.package_tier || 'N/A'}\nNumber of Magicians: ${metadata.package_magicians || 'N/A'}\nPackage Price: $${parseFloat(metadata.package_price || '0')}\nAddons: ${metadata.addons || 'None'}\nTotal Investment: $${parseFloat(metadata.total_investment || '0')}\n\nAdditional Notes: ${metadata.additional_notes || 'None'}`;
+    const depositAmount = parseFloat(metadata.deposit_amount);
+    const remainingBalance = packageDetails.totalInvestment - depositAmount;
+
+    // Email to customer
+    const customerEmailBody = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: 'Inter', sans-serif; background-color: #f5f5f5; padding: 20px; color: #333; }
+    .container { background-color: white; padding: 30px; max-width: 600px; margin: 0 auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
+    .header { text-align: center; padding-bottom: 20px; border-bottom: 1px solid #eee; margin-bottom: 20px; }
+    .header img { max-width: 150px; margin-bottom: 15px; }
+    .header h1 { font-size: 24px; color: #333; margin: 0; }
+    .section { margin-bottom: 20px; }
+    .section-title { font-size: 16px; font-weight: bold; margin-bottom: 10px; color: #333; }
+    .section-content { margin-left: 20px; line-height: 1.6; }
+    .highlight { background-color: #fff3cd; padding: 5px 10px; border-radius: 4px; }
+    .footer { text-align: center; padding-top: 20px; margin-top: 30px; border-top: 1px solid #eee; font-size: 12px; color: #777; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/705652e3a_logowhitewordstransparent.png" alt="Omni Magic Entertainment">
+      <h1>Date Hold Confirmed! 🎉</h1>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Hold Details</div>
+      <div class="section-content">
+        <div><strong>Event Date:</strong> ${metadata.event_date || 'N/A'}</div>
+        <div><strong>Event Type:</strong> ${metadata.package_type || 'N/A'}</div>
+        <div><strong>Performer:</strong> ${metadata.package_performer || 'N/A'}</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Payment Received</div>
+      <div class="section-content">
+        <div><strong>Deposit Paid:</strong> <span class="highlight">$${depositAmount.toLocaleString()}</span></div>
+        <div><strong>Remaining Balance:</strong> $${remainingBalance.toLocaleString()}</div>
+        <div><strong>Total Investment:</strong> $${parseFloat(metadata.total_investment || '0').toLocaleString()}</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Next Steps</div>
+      <div class="section-content">
+        <p>Your 10% deposit has been received and your date is now on hold for 48 hours. To finalize your booking:</p>
+        <div style="background-color: #f0f4ff; padding: 15px; border-left: 4px solid #3b82f6; border-radius: 4px; margin-top: 10px;">
+          <p><strong>1.</strong> Review your package details</p>
+          <p><strong>2.</strong> Contact us at <a href="mailto:hello@omnimagic.co">hello@omnimagic.co</a> to discuss final payment options</p>
+          <p><strong>3.</strong> Complete the remaining balance: <strong>$${remainingBalance.toLocaleString()}</strong></p>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Questions?</div>
+      <div class="section-content">
+        <p>If you have any questions about your booking or need to make changes, please don't hesitate to reach out:</p>
+        <p><strong>Email:</strong> <a href="mailto:hello@omnimagic.co">hello@omnimagic.co</a></p>
+      </div>
+    </div>
+
+    <div class="footer">
+      &copy; 2025 Omni Magic Entertainment. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>
+    `;
 
     await base44.integrations.Core.SendEmail({
-      to: 'hello@omnimagic.co',
-      subject: `Deposit Payment Received - ${metadata.customer_name}`,
-      body: emailBody
+      to: metadata.customer_email,
+      subject: `✨ Your Date Hold Confirmed - Omni Magic Entertainment`,
+      body: customerEmailBody
     });
 
-    // Send confirmation emails
-    await base44.asServiceRole.functions.invoke('sendHoldDateConfirmation', {
-      customerName: metadata.customer_name,
-      customerEmail: metadata.customer_email,
-      customerPhone: metadata.customer_phone,
-      eventDate: metadata.event_date,
-      packageDetails: packageDetails,
-      depositAmount: parseFloat(metadata.deposit_amount),
-      totalInvestment: packageDetails.totalInvestment,
-      additionalNotes: metadata.additional_notes,
-      holdExpiryTime: expiryTime.toISOString(),
-      requestTime: currentTime.toISOString(),
-      paymentMethod: 'Stripe'
+    // Email to business
+    const businessEmailBody = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: 'Courier New', monospace; background-color: #f5f5f5; padding: 20px; }
+    .container { background-color: white; padding: 30px; max-width: 700px; margin: 0 auto; border: 2px solid #333; }
+    .header { text-align: center; border-top: 3px solid #333; border-bottom: 3px solid #333; padding: 15px 0; margin-bottom: 30px; font-size: 20px; font-weight: bold; }
+    .section { margin-bottom: 25px; }
+    .section-title { font-size: 16px; font-weight: bold; margin-bottom: 10px; color: #333; }
+    .section-content { margin-left: 20px; line-height: 1.8; }
+    .highlight { background-color: #fff3cd; padding: 2px 5px; }
+    .footer { text-align: center; border-top: 3px solid #333; border-bottom: 3px solid #333; padding: 15px 0; margin-top: 30px; font-size: 12px; color: #666; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      💳 NEW DEPOSIT PAYMENT RECEIVED
+    </div>
+
+    <div class="section">
+      <div class="section-title">💰 Payment Details</div>
+      <div class="section-content">
+        <div><strong>Deposit Amount:</strong> <span class="highlight">$${depositAmount.toLocaleString()}</span></div>
+        <div><strong>Payment Method:</strong> Stripe (Credit Card)</div>
+        <div><strong>Status:</strong> ✓ Paid</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">👤 Customer Information</div>
+      <div class="section-content">
+        <div><strong>Name:</strong> ${metadata.customer_name}</div>
+        <div><strong>Email:</strong> ${metadata.customer_email}</div>
+        <div><strong>Phone:</strong> ${metadata.customer_phone || 'N/A'}</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">📅 Event Details</div>
+      <div class="section-content">
+        <div><strong>Date:</strong> ${metadata.event_date || 'N/A'}</div>
+        <div><strong>Service Type:</strong> ${metadata.package_type || 'N/A'}</div>
+        <div><strong>Performer:</strong> ${metadata.package_performer || 'N/A'}</div>
+        <div><strong>Duration:</strong> ${metadata.package_duration || 'N/A'}</div>
+        <div><strong>Tier:</strong> ${metadata.package_tier || 'N/A'}</div>
+        ${metadata.package_magicians ? `<div><strong>Magicians:</strong> ${metadata.package_magicians}</div>` : ''}
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">💵 Pricing Breakdown</div>
+      <div class="section-content">
+        <div><strong>Package Price:</strong> $${parseFloat(metadata.package_price || '0').toLocaleString()}</div>
+        <div><strong>Add-ons:</strong> ${metadata.addons || 'None'}</div>
+        <div><strong>Total Investment:</strong> $${parseFloat(metadata.total_investment || '0').toLocaleString()}</div>
+        <div style="border-top: 2px solid #333; margin: 10px 0; padding-top: 10px;">
+          <strong>Deposit Received: <span class="highlight">$${depositAmount.toLocaleString()}</span></strong>
+        </div>
+        <div><strong>Remaining Balance:</strong> $${remainingBalance.toLocaleString()}</div>
+      </div>
+    </div>
+
+    ${metadata.additional_notes ? `
+    <div class="section">
+      <div class="section-title">📝 Customer Notes</div>
+      <div class="section-content">
+        ${metadata.additional_notes}
+      </div>
+    </div>
+    ` : ''}
+
+    <div class="footer">
+      Omni Magic Entertainment System
+    </div>
+  </div>
+</body>
+</html>
+    `;
+
+    await base44.integrations.Core.SendEmail({
+      to: 'johnnywuevents@gmail.com',
+      subject: `💳 Deposit Received - ${metadata.customer_name} (${metadata.event_date || 'Date TBD'})`,
+      body: businessEmailBody
     });
 
     return Response.json({ 
