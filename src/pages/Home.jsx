@@ -5,6 +5,7 @@ import { Building2, Users, Heart, Video, Instagram, Youtube, Globe, Star } from 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { motion } from 'framer-motion';
 import FAQ from '../components/pricing/FAQ';
+import GratuityPage from './GratuityPage';
 import { createPageUrl } from '@/utils';
 
 const backgroundImageUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/e620330f2_IMG_1641.jpg";
