@@ -67,7 +67,13 @@ Deno.serve(async (req) => {
       success: true,
       expiryTime: expiryTime.toISOString(),
       customerEmail: metadata.customer_email,
-      depositAmount: parseFloat(metadata.deposit_amount)
+      customerName: metadata.customer_name,
+      customerPhone: metadata.customer_phone,
+      eventDate: metadata.event_date,
+      depositAmount: parseFloat(metadata.deposit_amount),
+      totalInvestment: parseFloat(metadata.total_investment || '0'),
+      packageDetails: packageDetails,
+      metadata: metadata
     });
   } catch (error) {
     console.error('Error handling Stripe success:', error);
