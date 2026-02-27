@@ -126,7 +126,7 @@ export default function DepositPaymentThankYou() {
 
         {/* Main Message */}
         <p className="text-slate-200 text-sm leading-relaxed mb-6">
-          Thank you for making the deposit payment! Your request to hold the date has been received. To secure your booking, please complete your 10% deposit of <span className="text-amber-400 font-bold">${(sessionData?.totalInvestment ? (sessionData.totalInvestment * 0.1).toFixed(2) : sessionData?.amount).toLocaleString()}</span>.
+          Payment received. Your deposit has been successfully processed, and your event date is now reserved for 48 hours. This temporary hold ensures your date is protected while we finalize your booking. To fully confirm your event, please complete the remaining balance within the 48-hour window. We look forward to delivering an extraordinary experience.
         </p>
 
         {/* Expiry Info */}
