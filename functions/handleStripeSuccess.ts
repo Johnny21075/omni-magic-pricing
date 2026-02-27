@@ -116,9 +116,17 @@ Deno.serve(async (req) => {
 </html>
     `;
 
+    // Send confirmation email to customer
     await base44.integrations.Core.SendEmail({
       to: metadata.customer_email,
       subject: `✨ Your Date Hold Confirmed - Omni Magic Entertainment`,
+      body: customerEmailBody
+    });
+
+    // Send confirmation email to business as well
+    await base44.integrations.Core.SendEmail({
+      to: 'hello@omnimagic.co',
+      subject: `✨ Date Hold Confirmation - ${metadata.customer_name}`,
       body: customerEmailBody
     });
 
