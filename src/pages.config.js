@@ -50,8 +50,9 @@
 import DepositPaymentPage from './pages/DepositPaymentPage';
 import EventSelection from './pages/EventSelection';
 import GratuityPage from './pages/GratuityPage';
-import Home from './pages/Home';
 import Pricing from './pages/Pricing';
+import Home from './pages/Home';
+import DepositPaymentThankYou from './pages/DepositPaymentThankYou';
 import __Layout from './Layout.jsx';
 
 
@@ -59,8 +60,9 @@ export const PAGES = {
     "DepositPaymentPage": DepositPaymentPage,
     "EventSelection": EventSelection,
     "GratuityPage": GratuityPage,
-    "Home": Home,
     "Pricing": Pricing,
+    "Home": Home,
+    "DepositPaymentThankYou": DepositPaymentThankYou,
 }
 
 export const pagesConfig = {
