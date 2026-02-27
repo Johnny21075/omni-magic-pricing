@@ -68,6 +68,14 @@ Deno.serve(async (req) => {
             metadata: metadata,
         });
 
+        const emailBody = `New Gratuity Payment Initiated\n\nCustomer Email: ${customerEmail}\nGratuity Amount: $${amount}\nPerformer Name: ${performerName || 'Omni Magic Entertainment'}\n${companyName ? `Company Name: ${companyName}\n` : ''}Customer Message: ${message || 'No message provided'}\nWants Poster: ${wantsPoster ? 'Yes' : 'No'}`;
+        
+        await base44.integrations.Core.SendEmail({
+            to: 'hello@omnimagic.co',
+            subject: `New Gratuity Payment - ${customerEmail}`,
+            body: emailBody
+        });
+
         return Response.json({ url: session.url });
 
     } catch (error) {

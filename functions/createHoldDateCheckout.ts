@@ -77,6 +77,15 @@ Deno.serve(async (req) => {
       },
     });
 
+    const base44 = createClientFromRequest(req);
+    const emailBody = `New Hold Date Deposit Initiated\n\nCustomer Name: ${customerName}\nCustomer Email: ${customerEmail}\nCustomer Phone: ${phone || 'N/A'}\nDeposit Amount: $${amount}\nEvent Date: ${eventDate || 'N/A'}\n\nPackage Details:\nType: ${packageDetails?.type || 'N/A'}\nPerformer: ${packageDetails?.performer || 'N/A'}\nDuration: ${packageDetails?.duration || 'N/A'}\nTier: ${packageDetails?.tier || 'N/A'}\nNumber of Magicians: ${packageDetails?.magicians || 'N/A'}\nPackage Price: $${packageDetails?.packagePrice || 'N/A'}\nAddons: ${packageDetails?.addons || 'None'}\nTotal Investment: $${packageDetails?.totalInvestment || 'N/A'}\n\nAdditional Notes: ${additionalNotes || 'None'}`;
+    
+    await base44.integrations.Core.SendEmail({
+      to: 'hello@omnimagic.co',
+      subject: `New Deposit - ${customerName}`,
+      body: emailBody
+    });
+
     return Response.json({ 
       sessionId: session.id,
       url: session.url 
