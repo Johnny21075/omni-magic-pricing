@@ -1,11 +1,31 @@
-import { createClientFromRequest } from 'npm:@base44/sdk@0.8.20';
 import Stripe from 'npm:stripe@17.5.0';
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY"));
+const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+
+async function sendEmail({ to, subject, body }) {
+  const res = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${RESEND_API_KEY}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      from: "Omni Magic <noreply@omnimagic.co>",
+      to: [to],
+      subject,
+      html: body
+    })
+  });
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(`Email failed: ${JSON.stringify(err)}`);
+  }
+  return res.json();
+}
 
 Deno.serve(async (req) => {
   try {
-    const base44 = createClientFromRequest(req);
 
     const { sessionId } = await req.json();
 
