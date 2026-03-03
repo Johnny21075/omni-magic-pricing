@@ -175,7 +175,7 @@ Deno.serve(async (req) => {
 </html>
 `;
 
-    await base44.asServiceRole.integrations.Core.SendEmail({
+    await sendEmail({
       to: 'hello@omnimagic.co',
       subject: `🗓️ New Date Hold Request (${formatDate(eventDate)})`,
       body: businessEmailBody
@@ -284,7 +284,7 @@ Deno.serve(async (req) => {
 </html>
 `;
 
-    await base44.asServiceRole.integrations.Core.SendEmail({
+    await sendEmail({
       to: customerEmail,
       subject: `🗓️ Your Omni Magic Date Hold Confirmation`,
       body: customerEmailBody

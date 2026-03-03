@@ -175,14 +175,13 @@ Deno.serve(async (req) => {
     `;
 
     // Send confirmation email to customer (use service role to allow external recipients)
-    await base44.asServiceRole.integrations.Core.SendEmail({
+    await sendEmail({
       to: metadata.customer_email,
       subject: `✨ Your Date Hold Confirmed - Omni Magic Entertainment`,
       body: customerEmailBody
     });
 
-    // Send confirmation email to business as well
-    await base44.asServiceRole.integrations.Core.SendEmail({
+    await sendEmail({
       to: 'hello@omnimagic.co',
       subject: `✨ Date Hold Confirmation - ${metadata.customer_name}`,
       body: customerEmailBody
@@ -270,7 +269,7 @@ Deno.serve(async (req) => {
 </html>
     `;
 
-    await base44.asServiceRole.integrations.Core.SendEmail({
+    await sendEmail({
       to: 'johnnywuevents@gmail.com',
       subject: `💳 Deposit Received - ${metadata.customer_name} (${metadata.event_date || 'Date TBD'})`,
       body: businessEmailBody
