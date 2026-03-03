@@ -125,6 +125,7 @@ Deno.serve(async (req) => {
     <div class="section">
       <div class="section-title">💰 Payment Summary</div>
       <div class="section-content">
+        <div class="detail-row"><strong>Payment Method:</strong> Stripe (Credit Card / Apple Pay)</div>
         <div class="detail-row"><strong>Deposit Paid:</strong> <span class="highlight">$${depositAmount.toLocaleString()}</span></div>
         <div class="detail-row"><strong>Remaining Balance:</strong> $${remainingBalance.toLocaleString()}</div>
         <div class="detail-row"><strong>Total Investment:</strong> $${parseFloat(metadata.total_investment || '0').toLocaleString()}</div>
