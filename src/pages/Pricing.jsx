@@ -329,7 +329,8 @@ export default function PricingPage() {
       }
     } catch (error) {
       console.error('Error processing Stripe success:', error);
-      alert('Payment successful but failed to send confirmation. Please contact us at hello@omnimagic.co');
+      // Payment was successful - show confirmation even if email fails
+      setShowSuccessModal(true);
     } finally {
       setIsSubmitting(false);
     }
