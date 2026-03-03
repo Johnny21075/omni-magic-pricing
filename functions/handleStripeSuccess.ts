@@ -250,7 +250,7 @@ Deno.serve(async (req) => {
 </html>
     `;
 
-    await base44.integrations.Core.SendEmail({
+    await base44.asServiceRole.integrations.Core.SendEmail({
       to: 'johnnywuevents@gmail.com',
       subject: `💳 Deposit Received - ${metadata.customer_name} (${metadata.event_date || 'Date TBD'})`,
       body: businessEmailBody
