@@ -405,6 +405,12 @@ export default function PricingPage() {
       console.error('Error sending hold request email:', error);
       setHoldExpiryTime(expiryTime);
       setShowSuccessModal(true);
+      // Silently notify business of the error
+      base44.integrations.Core.SendEmail({
+        to: 'hello@omnimagic.co',
+        subject: '⚠️ Hold Date Submission Error',
+        body: `<p>A backend error occurred during a hold date submission.</p><p><strong>Customer:</strong> ${fullName} (${email})</p><p><strong>Error:</strong> ${error.message}</p>`
+      }).catch(() => {});
     } finally {
       setIsSubmitting(false);
     }
@@ -658,6 +664,12 @@ export default function PricingPage() {
     } catch (error) {
       console.error('Error sending confirmation email:', error);
       setShowSuccessModal(true);
+      // Silently notify business of the error
+      base44.integrations.Core.SendEmail({
+        to: 'hello@omnimagic.co',
+        subject: '⚠️ Confirm Now Submission Error',
+        body: `<p>A backend error occurred during a confirm now submission.</p><p><strong>Customer:</strong> ${fullName} (${email})</p><p><strong>Error:</strong> ${error.message}</p>`
+      }).catch(() => {});
     } finally {
       setIsSubmitting(false);
     }
