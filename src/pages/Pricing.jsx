@@ -1019,7 +1019,9 @@ export default function PricingPage() {
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="1">1 Hour (Great for 30-40 people)</SelectItem>
+                            <SelectItem value="1.5">1.5 Hours (Great for 40-60 people)</SelectItem>
                             <SelectItem value="2">2 Hours (Great for 60-80 people)</SelectItem>
+                            <SelectItem value="2.5">2.5 Hours (Great for 75-100 people)</SelectItem>
                             <SelectItem value="3">3 Hours (Great for 90-120 people)</SelectItem>
                             <SelectItem value="4">4 Hours (Great for 150+ people)</SelectItem>
                           </SelectContent>
