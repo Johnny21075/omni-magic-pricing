@@ -253,7 +253,7 @@ export default function PricingPage() {
           performer: selectedService === 'closeup' ? closeUpPerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George' :
           selectedService === 'stage' ? stagePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George' :
           selectedService === 'bundle' ? bundlePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George' : 'Unknown',
-          duration: selectedService === 'closeup' ? `${closeUpDuration} ${parseInt(closeUpDuration) === 1 ? 'Hour' : 'Hours'}` :
+          duration: selectedService === 'closeup' ? `${closeUpDuration} ${parseFloat(closeUpDuration) === 1 ? 'Hour' : 'Hours'}` :
           selectedService === 'stage' ? `${stageDuration} Minutes` :
           selectedService === 'bundle' ? `${bundleCloseUpDuration}hr Close-Up + ${bundleStageDuration}min Stage` : 'Unknown',
           magicians: selectedService === 'closeup' ? closeUpMagicians : selectedService === 'bundle' ? bundleNumMagicians : '',
@@ -707,7 +707,7 @@ export default function PricingPage() {
     if (selectedService === 'closeup') {
       summary.type = 'Close-Up Mingling Magic';
       summary.performer = closeUpPerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George';
-      summary.duration = `${closeUpDuration} ${parseInt(closeUpDuration) === 1 ? 'Hour' : 'Hours'}`;
+      summary.duration = `${closeUpDuration} ${parseFloat(closeUpDuration) === 1 ? 'Hour' : 'Hours'}`;
       summary.magicians = closeUpMagicians ? `${closeUpMagicians} ${parseInt(closeUpMagicians) === 1 ? 'Magician' : 'Magicians'}` : '';
       summary.tier = closeUpTier ? closeUpTier.charAt(0).toUpperCase() + closeUpTier.slice(1) : '';
     } else if (selectedService === 'stage') {
