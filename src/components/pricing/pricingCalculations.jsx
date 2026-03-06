@@ -164,7 +164,7 @@ export const calculateCloseUpPrice = (performer, tier, closeUpHours, numMagician
   if (!closeUpHours) return 0;
   const pricing = getPerformerPricing(performer, tier, eventType, eventScale);
   
-  let basePrice = pricing.close_up_per_hr * parseInt(closeUpHours);
+  let basePrice = pricing.close_up_per_hr * parseFloat(closeUpHours);
   
   // Apply team discount (10% off per additional magician)
   const magicianCount = parseInt(numMagicians);
