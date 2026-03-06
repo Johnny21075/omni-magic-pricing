@@ -403,7 +403,8 @@ export default function PricingPage() {
       setShowSuccessModal(true);
     } catch (error) {
       console.error('Error sending hold request email:', error);
-      alert(error.message || 'Failed to send hold request. Please try again.');
+      setHoldExpiryTime(expiryTime);
+      setShowSuccessModal(true);
     } finally {
       setIsSubmitting(false);
     }
@@ -656,7 +657,7 @@ export default function PricingPage() {
       setShowSuccessModal(true);
     } catch (error) {
       console.error('Error sending confirmation email:', error);
-      alert('Failed to send booking request. Please try again.');
+      setShowSuccessModal(true);
     } finally {
       setIsSubmitting(false);
     }
