@@ -35,7 +35,7 @@ export const pricingData = {
       {
         "id": "addon_poster",
         "label": "Impossible Poster Souvenir",
-        "price": 200,
+        "price": 250,
         "tooltip": "A guest-signed poster is revealed in a magical, impossible way — a keepsake that captures the moment forever.",
         "preview_url": "https://youtu.be/PkjA2dtGNjk?t=635",
         "event_types": ["corporate", "private", "wedding"],
