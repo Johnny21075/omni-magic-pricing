@@ -117,6 +117,8 @@ Deno.serve(async (req) => {
       <div class="section-title">📅 EVENT DETAILS</div>
       <div class="section-content">
         <div><strong>Date:</strong> ${formatDate(eventDate)}</div>
+        ${eventTime ? `<div><strong>Time:</strong> ${eventTime}</div>` : ''}
+        ${venueAddress ? `<div><strong>Venue:</strong> ${venueAddress}</div>` : ''}
         <div><strong>Performer:</strong> ${packageDetails.performer}</div>
       </div>
     </div>
@@ -219,6 +221,8 @@ Deno.serve(async (req) => {
       <div class="section-title">📅 EVENT DETAILS</div>
       <div class="section-content">
         <div><strong>Date:</strong> ${formatDate(eventDate)}</div>
+        ${eventTime ? `<div><strong>Time:</strong> ${eventTime}</div>` : ''}
+        ${venueAddress ? `<div><strong>Venue:</strong> ${venueAddress}</div>` : ''}
         <div><strong>Performer:</strong> ${packageDetails.performer}</div>
       </div>
     </div>
