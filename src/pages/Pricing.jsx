@@ -1642,7 +1642,7 @@ export default function PricingPage() {
             </div>
 
             <div>
-              <Label htmlFor="modalPhone" className="text-slate-200 text-[13px] mb-1 block">Phone (Optional)</Label>
+              <Label htmlFor="modalPhone" className="text-slate-200 text-[13px] mb-1 block">Phone</Label>
               <Input
                 id="modalPhone"
                 type="tel"
@@ -1654,7 +1654,7 @@ export default function PricingPage() {
             </div>
 
             <div>
-              <Label htmlFor="modalEventTime" className="text-slate-200 text-[13px] mb-1 block">Event Time (Optional)</Label>
+              <Label htmlFor="modalEventTime" className="text-slate-200 text-[13px] mb-1 block">Event Time</Label>
               <Input
                 id="modalEventTime"
                 type="time"
@@ -1665,7 +1665,7 @@ export default function PricingPage() {
             </div>
 
             <div>
-              <Label htmlFor="modalVenueAddress" className="text-slate-200 text-[13px] mb-1 block">Venue Address (Optional)</Label>
+              <Label htmlFor="modalVenueAddress" className="text-slate-200 text-[13px] mb-1 block">Venue Address</Label>
               <Input
                 id="modalVenueAddress"
                 type="text"
