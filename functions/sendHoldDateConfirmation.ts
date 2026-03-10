@@ -29,6 +29,8 @@ Deno.serve(async (req) => {
       customerEmail,
       customerPhone,
       eventDate,
+      eventTime,
+      venueAddress,
       packageDetails,
       depositAmount,
       totalInvestment,
@@ -36,7 +38,7 @@ Deno.serve(async (req) => {
       holdExpiryTime,
       requestTime,
       paymentMethod
-    } = await req.json();
+      } = await req.json();
 
     if (!customerName || !customerEmail || !packageDetails || !depositAmount) {
       return Response.json({ 

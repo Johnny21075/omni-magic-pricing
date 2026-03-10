@@ -51,6 +51,8 @@ export default function PricingPage() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [eventTime, setEventTime] = useState('');
+  const [venueAddress, setVenueAddress] = useState('');
   const [additionalNotes, setAdditionalNotes] = useState('');
 
   const [bookingOption, setBookingOption] = useState(null);
@@ -199,6 +201,8 @@ export default function PricingPage() {
     setFullName('');
     setEmail('');
     setPhone('');
+    setEventTime('');
+    setVenueAddress('');
     setAdditionalNotes('');
     setShowContactModal(true);
   };
@@ -208,6 +212,8 @@ export default function PricingPage() {
     setFullName('');
     setEmail('');
     setPhone('');
+    setEventTime('');
+    setVenueAddress('');
     setAdditionalNotes('');
     setShowContactModal(true);
   };
@@ -393,6 +399,8 @@ export default function PricingPage() {
         packageDetails: packageDetails,
         depositAmount: depositAmount,
         totalInvestment: totalInvestment,
+        eventTime: eventTime,
+        venueAddress: venueAddress,
         additionalNotes: additionalNotes,
         holdExpiryTime: expiryTime.toISOString(),
         requestTime: currentTime.toISOString(),
@@ -541,6 +549,8 @@ export default function PricingPage() {
       <div class="section-title">📅 EVENT DETAILS</div>
       <div class="section-content">
         <div><strong>Date:</strong> ${eventDateFormatted}</div>
+        ${eventTime ? `<div><strong>Time:</strong> ${eventTime}</div>` : ''}
+        ${venueAddress ? `<div><strong>Venue:</strong> ${venueAddress}</div>` : ''}
         <div><strong>Type:</strong> ${eventTypeDisplay}</div>
         <div><strong>Performer:</strong> ${packageDetails.performer}</div>
       </div>
@@ -784,9 +794,16 @@ export default function PricingPage() {
             <h1 className="text-white text-[22px] md:text-[28px] font-semibold text-center mb-2">
               Reserve Your Experience
             </h1>
-            <p className="text-slate-200 text-[13px] md:text-[15px] text-center max-w-2xl">
+            <p className="text-slate-200 text-[13px] md:text-[15px] text-center max-w-2xl mb-3">
               Select your service, choose add-ons, and secure your date
             </p>
+            <a
+              href="https://omnimagic.co"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-900 font-medium text-[13px] rounded-lg transition-all">
+              Visit Omnimagic.co <ExternalLink className="w-4 h-4" />
+            </a>
           </div>
 
           <div className="max-w-[900px] mx-auto px-4 pb-24">
@@ -1632,6 +1649,29 @@ export default function PricingPage() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="(555) 123-4567"
+                className="bg-slate-700 border-slate-600 text-white text-[14px] placeholder-slate-500 h-9" />
+
+            </div>
+
+            <div>
+              <Label htmlFor="modalEventTime" className="text-slate-200 text-[13px] mb-1 block">Event Time (Optional)</Label>
+              <Input
+                id="modalEventTime"
+                type="time"
+                value={eventTime}
+                onChange={(e) => setEventTime(e.target.value)}
+                className="bg-slate-700 border-slate-600 text-white text-[14px] placeholder-slate-500 h-9" />
+
+            </div>
+
+            <div>
+              <Label htmlFor="modalVenueAddress" className="text-slate-200 text-[13px] mb-1 block">Venue Address (Optional)</Label>
+              <Input
+                id="modalVenueAddress"
+                type="text"
+                value={venueAddress}
+                onChange={(e) => setVenueAddress(e.target.value)}
+                placeholder="123 Main St, Los Angeles, CA 90001"
                 className="bg-slate-700 border-slate-600 text-white text-[14px] placeholder-slate-500 h-9" />
 
             </div>
