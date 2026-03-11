@@ -154,12 +154,21 @@ export default function PricingPage() {
 
   const includesFreePoster = selectedService === 'stage' && bookingOption === 'confirm';
 
+  // Check if this is a corporate high-end gala (large or vip scale)
+  const isCorporateGala = eventType === 'corporate' && (eventScale === 'large' || eventScale === 'vip');
+
+  // Helper function to get adjusted addon price
+  const getAddonPrice = (addon) => {
+    const basePrice = addon.price;
+    return isCorporateGala ? basePrice * 2 : basePrice;
+  };
+
   const totalAddonsCost = selectedAddons.reduce((sum, id) => {
     const addon = pricingData?.app?.add_ons?.find((a) => a.id === id);
     if (id === 'addon_poster' && includesFreePoster) {
       return sum;
     }
-    return sum + (addon ? addon.price : 0);
+    return sum + (addon ? getAddonPrice(addon) : 0);
   }, 0);
 
   const totalInvestment = selectedPackagePrice.price + totalAddonsCost;
@@ -1357,7 +1366,7 @@ export default function PricingPage() {
                 <div className="space-y-2">
                   {filteredAddons.map((addon) => {
                   const isFreePoster = addon.id === 'addon_poster' && includesFreePoster;
-                  const displayPrice = isFreePoster ? 0 : addon.price;
+                  const displayPrice = isFreePoster ? 0 : getAddonPrice(addon);
 
                   return (
                     <div
