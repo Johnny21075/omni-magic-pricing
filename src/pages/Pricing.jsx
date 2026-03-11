@@ -1062,6 +1062,7 @@ export default function PricingPage() {
                             <SelectItem value="2">2 Hours (Great for 60-80 people)</SelectItem>
                             <SelectItem value="2.5">2.5 Hours (Great for 75-100 people)</SelectItem>
                             <SelectItem value="3">3 Hours (Great for 90-120 people)</SelectItem>
+                            <SelectItem value="3.5">3.5 Hours (Great for 120-150 people)</SelectItem>
                             <SelectItem value="4">4 Hours (Great for 150+ people)</SelectItem>
                           </SelectContent>
                         </Select>
@@ -1241,6 +1242,7 @@ export default function PricingPage() {
                                 <SelectItem value="2">2 Hours (Great for 60-80 people)</SelectItem>
                                 <SelectItem value="2.5">2.5 Hours (Great for 75-100 people)</SelectItem>
                                 <SelectItem value="3">3 Hours (Great for 90-120 people)</SelectItem>
+                                <SelectItem value="3.5">3.5 Hours (Great for 120-150 people)</SelectItem>
                                 <SelectItem value="4">4 Hours (Great for 150+ people)</SelectItem>
                               </SelectContent>
                             </Select>
