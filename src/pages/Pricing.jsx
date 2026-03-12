@@ -73,6 +73,8 @@ export default function PricingPage() {
   const eventSize = urlParams.get('eventSize');
   const eventScale = urlParams.get('eventScale');
 
+  console.log('URL Parameters:', { eventType, eventSize, eventScale });
+
   const availableTiers = getAvailableTiers(eventType, eventSize, eventScale);
 
   // Check if this is a kids birthday party
