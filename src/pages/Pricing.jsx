@@ -1101,9 +1101,9 @@ export default function PricingPage() {
                           const tierDesc = TIER_DESCRIPTIONS.close_up[tier];
                           return (
                             <SelectItem key={tier} value={tier}>
-                                  <div className="py-2 pr-2 max-w-full">
-                                    <div className="font-semibold text-sm text-white">{tierDesc?.title || tier.charAt(0).toUpperCase() + tier.slice(1)}</div>
-                                    <div className="text-[12px] text-slate-200 mt-1.5 whitespace-pre-wrap leading-relaxed">{tierDesc?.description}</div>
+                                  <div className="py-1 pr-2">
+                                    <div className="font-semibold text-sm">{tierDesc?.title || tier.charAt(0).toUpperCase() + tier.slice(1)}</div>
+                                    <div className="text-[11px] text-slate-400 mt-1 whitespace-normal">{tierDesc?.description}</div>
                                   </div>
                                 </SelectItem>);
 
@@ -1191,9 +1191,9 @@ export default function PricingPage() {
                           const tierDesc = TIER_DESCRIPTIONS.stage[tier];
                           return (
                             <SelectItem key={tier} value={tier}>
-                                  <div className="py-2 pr-2 max-w-full">
-                                    <div className="font-semibold text-sm text-white">{tierDesc?.title || tier.charAt(0).toUpperCase() + tier.slice(1)}</div>
-                                    <div className="text-[12px] text-slate-200 mt-1.5 whitespace-pre-wrap leading-relaxed">{tierDesc?.description}</div>
+                                  <div className="py-1 pr-2">
+                                    <div className="font-semibold text-sm">{tierDesc?.title || tier.charAt(0).toUpperCase() + tier.slice(1)}</div>
+                                    <div className="text-[11px] text-slate-400 mt-1 whitespace-normal">{tierDesc?.description}</div>
                                   </div>
                                 </SelectItem>);
 
@@ -1330,10 +1330,10 @@ export default function PricingPage() {
                           const stageDesc = TIER_DESCRIPTIONS.stage[tier];
                           return (
                             <SelectItem key={tier} value={tier}>
-                                  <div className="py-2 pr-2 max-w-full">
-                                    <div className="font-semibold text-sm text-white">{tier.charAt(0).toUpperCase() + tier.slice(1)} Bundle</div>
-                                    <div className="text-[12px] text-slate-200 mt-1.5 whitespace-pre-wrap leading-relaxed">Close-Up: {closeUpDesc?.description}</div>
-                                    <div className="text-[12px] text-slate-200 whitespace-pre-wrap leading-relaxed">Stage: {stageDesc?.description}</div>
+                                  <div className="py-1 pr-2">
+                                    <div className="font-semibold text-sm">{tier.charAt(0).toUpperCase() + tier.slice(1)} Bundle</div>
+                                    <div className="text-[11px] text-slate-400 mt-1 whitespace-normal">Close-Up: ${closeUpDesc?.description}</div>
+                                    <div className="text-[11px] text-slate-400 whitespace-normal">Stage: ${stageDesc?.description}</div>
                                   </div>
                                 </SelectItem>);
 
