@@ -10,60 +10,60 @@ import { createPageUrl } from '@/utils';
 const backgroundImageUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/e620330f2_IMG_1641.jpg";
 
 const eventTypes = [
-  {
-    id: 'corporate',
-    title: 'Corporate Event',
-    icon: Building2,
-    description: 'Corporate events, conferences, holiday parties',
-    color: 'from-blue-500 to-blue-600'
-  },
-  {
-    id: 'private',
-    title: 'Private Event',
-    icon: Users,
-    description: 'Birthday parties, anniversaries, celebrations',
-    color: 'from-purple-500 to-purple-600'
-  },
-  {
-    id: 'wedding',
-    title: 'Wedding',
-    icon: Heart,
-    description: 'Cocktail hour, reception dinner',
-    color: 'from-pink-500 to-pink-600'
-  }
-];
+{
+  id: 'corporate',
+  title: 'Corporate Event',
+  icon: Building2,
+  description: 'Corporate events, conferences, holiday parties',
+  color: 'from-blue-500 to-blue-600'
+},
+{
+  id: 'private',
+  title: 'Private Event',
+  icon: Users,
+  description: 'Birthday parties, anniversaries, celebrations',
+  color: 'from-purple-500 to-purple-600'
+},
+{
+  id: 'wedding',
+  title: 'Wedding',
+  icon: Heart,
+  description: 'Cocktail hour, reception dinner',
+  color: 'from-pink-500 to-pink-600'
+}];
+
 
 const socialLinks = [
-  {
-    name: 'Instagram',
-    icon: Instagram,
-    url: 'https://www.instagram.com/johnnywumagic/',
-    handle: '@johnnywumagic'
-  },
-  {
-    name: 'YouTube',
-    icon: Youtube,
-    url: 'https://www.youtube.com/channel/UCdbSu6lwRyJFZhG2f7tpDyw',
-    handle: 'Johnny Wu Magic'
-  },
-  {
-    name: 'Website',
-    icon: Globe,
-    url: 'https://www.omnimagic.co/',
-    handle: 'omnimagic.co'
-  },
-  {
-    name: 'Yelp',
-    icon: Star,
-    url: 'https://www.yelp.com/biz/omni-magic-entertainment-los-angeles',
-    handle: '1,000+ Reviews'
-  }
-];
+{
+  name: 'Instagram',
+  icon: Instagram,
+  url: 'https://www.instagram.com/johnnywumagic/',
+  handle: '@johnnywumagic'
+},
+{
+  name: 'YouTube',
+  icon: Youtube,
+  url: 'https://www.youtube.com/channel/UCdbSu6lwRyJFZhG2f7tpDyw',
+  handle: 'Johnny Wu Magic'
+},
+{
+  name: 'Website',
+  icon: Globe,
+  url: 'https://www.omnimagic.co/',
+  handle: 'omnimagic.co'
+},
+{
+  name: 'Yelp',
+  icon: Star,
+  url: 'https://www.yelp.com/biz/omni-magic-entertainment-los-angeles',
+  handle: '1,000+ Reviews'
+}];
+
 
 export default function Home() {
   const [showCorporateModal, setShowCorporateModal] = useState(false);
   const [corporateSize, setCorporateSize] = useState(null);
-  
+
   const [showPrivateModal, setShowPrivateModal] = useState(false);
   const [showWeddingModal, setShowWeddingModal] = useState(false);
 
@@ -111,8 +111,8 @@ export default function Home() {
       <div className="min-h-screen bg-slate-900">
         <div
           style={{ backgroundImage: `url(${backgroundImageUrl})` }}
-          className="fixed inset-0 bg-cover bg-center filter brightness-[0.3] z-0"
-        />
+          className="fixed inset-0 bg-cover bg-center filter brightness-[0.3] z-0" />
+
 
         <div className="relative z-10">
           <div className="min-h-[60vh] flex flex-col items-center justify-center px-4 py-12">
@@ -122,15 +122,15 @@ export default function Home() {
               transition={{ duration: 0.6 }}
               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/705652e3a_logowhitewordstransparent.png"
               alt="Omni Magic Entertainment"
-              className="h-20 md:h-24 mb-6 drop-shadow-2xl"
-            />
+              className="h-20 md:h-24 mb-6 drop-shadow-2xl" />
+
             
             <motion.h1
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-white text-[28px] md:text-[36px] font-bold text-center mb-3"
-            >
+              className="text-white text-[28px] md:text-[36px] font-bold text-center mb-3">
+
               What Type of Event Are You Planning?
             </motion.h1>
             
@@ -138,8 +138,8 @@ export default function Home() {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
-              className="text-slate-200 text-[15px] md:text-[17px] text-center max-w-2xl mb-8"
-            >
+              className="text-slate-200 text-[15px] md:text-[17px] text-center max-w-2xl mb-8">
+
               Select your event type to get started with personalized pricing and options
             </motion.p>
 
@@ -151,12 +151,12 @@ export default function Home() {
                     key={type.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.4 + index * 0.1 }}
-                  >
+                    transition={{ duration: 0.5, delay: 0.4 + index * 0.1 }}>
+
                     <Card
                       onClick={() => handleEventTypeSelect(type.id)}
-                      className="bg-slate-800/90 border-2 border-slate-600 hover:border-amber-500 cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-105 h-full flex flex-col"
-                    >
+                      className="bg-slate-800/90 border-2 border-slate-600 hover:border-amber-500 cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-105 h-full flex flex-col">
+
                       <CardHeader className="text-center pb-3 flex-1 flex flex-col justify-center">
                         <div className={`w-16 h-16 mx-auto mb-3 rounded-full bg-gradient-to-br ${type.color} flex items-center justify-center`}>
                           <IconComponent className="w-8 h-8 text-white" />
@@ -169,8 +169,8 @@ export default function Home() {
                         <p className="text-slate-200 text-[13px]">{type.description}</p>
                       </CardContent>
                     </Card>
-                  </motion.div>
-                );
+                  </motion.div>);
+
               })}
             </div>
           </div>
@@ -188,13 +188,13 @@ export default function Home() {
                     href={social.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="bg-slate-800/90 border border-slate-600 rounded-lg p-4 hover:border-amber-500 transition-all duration-300 hover:shadow-lg text-center group"
-                  >
+                    className="bg-slate-800/90 border border-slate-600 rounded-lg p-4 hover:border-amber-500 transition-all duration-300 hover:shadow-lg text-center group">
+
                     <IconComponent className="w-8 h-8 mx-auto mb-2 text-slate-400 group-hover:text-amber-400 transition-colors" />
                     <p className="text-white text-[13px] font-medium mb-1">{social.name}</p>
                     <p className="text-slate-400 text-[11px]">{social.handle}</p>
-                  </a>
-                );
+                  </a>);
+
               })}
             </div>
           </div>
@@ -206,7 +206,7 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start justify-items-center">
               {/* Google Recognition */}
               <div className="flex flex-col items-center text-center">
-                <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/0827b5f25_Google_2015_logo.png" alt="Google" className="h-10 mb-2" />
+                <img src="https://media.base44.com/images/public/68b9fdb80e10eb3dae94dfbf/bc46bf2ad_Google_2015_logosvg1.png" alt="Google" className="h-10 mb-2" />
                 <div className="flex mb-1">
                   <Star fill="#FBBF24" strokeWidth={0} className="w-5 h-5 text-yellow-400" />
                   <Star fill="#FBBF24" strokeWidth={0} className="w-5 h-5 text-yellow-400" />
@@ -219,7 +219,7 @@ export default function Home() {
 
               {/* Yelp Recognition */}
               <div className="flex flex-col items-center text-center">
-                <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/981358d34_yelp.png" alt="Yelp" className="h-10 mb-2" />
+                <img src="https://media.base44.com/images/public/68b9fdb80e10eb3dae94dfbf/36e8646f9_Yelp_Logosvg.png" alt="Yelp" className="h-10 mb-2" />
                 <div className="flex mb-1">
                   <Star fill="#FBBF24" strokeWidth={0} className="w-5 h-5 text-yellow-400" />
                   <Star fill="#FBBF24" strokeWidth={0} className="w-5 h-5 text-yellow-400" />
@@ -232,7 +232,7 @@ export default function Home() {
 
               {/* Netflix Recognition */}
               <div className="flex flex-col items-center text-center">
-                <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/eb0dd132d_netflix.png" alt="Netflix" className="h-10 mb-2" />
+                <img src="https://media.base44.com/images/public/68b9fdb80e10eb3dae94dfbf/77d485a14_Netflix_2015_logo.svg" alt="Netflix" className="h-10 mb-2" />
                 <p className="text-slate-200 text-sm mt-5">As Seen On Netflix Star Search</p>
               </div>
             </div>
@@ -267,21 +267,21 @@ export default function Home() {
                   onClick={() => setCorporateSize('under100')}
                   className={`
                     rounded-xl p-5 border-2 transition-all duration-300 hover:scale-102
-                    ${corporateSize === 'under100'
-                      ? 'bg-gradient-to-br from-amber-500 to-amber-600 border-amber-400 shadow-lg'
-                      : 'bg-slate-800 border-slate-600 hover:border-slate-500'
-                    }
-                  `}
-                >
+                    ${corporateSize === 'under100' ?
+                  'bg-gradient-to-br from-amber-500 to-amber-600 border-amber-400 shadow-lg' :
+                  'bg-slate-800 border-slate-600 hover:border-slate-500'}
+                  `
+                  }>
+
                   <div className="text-center">
                     <p className={`font-bold text-[20px] mb-2 ${
-                      corporateSize === 'under100' ? 'text-slate-900' : 'text-white'
-                    }`}>
+                    corporateSize === 'under100' ? 'text-slate-900' : 'text-white'}`
+                    }>
                       Under 100
                     </p>
                     <p className={`text-[14px] ${
-                      corporateSize === 'under100' ? 'text-slate-800' : 'text-slate-200'
-                    }`}>
+                    corporateSize === 'under100' ? 'text-slate-800' : 'text-slate-200'}`
+                    }>
                       Smaller gathering
                     </p>
                   </div>
@@ -291,21 +291,21 @@ export default function Home() {
                   onClick={() => setCorporateSize('over100')}
                   className={`
                     rounded-xl p-5 border-2 transition-all duration-300 hover:scale-102
-                    ${corporateSize === 'over100'
-                      ? 'bg-gradient-to-br from-amber-500 to-amber-600 border-amber-400 shadow-lg'
-                      : 'bg-slate-800 border-slate-600 hover:border-slate-500'
-                    }
-                  `}
-                >
+                    ${corporateSize === 'over100' ?
+                  'bg-gradient-to-br from-amber-500 to-amber-600 border-amber-400 shadow-lg' :
+                  'bg-slate-800 border-slate-600 hover:border-slate-500'}
+                  `
+                  }>
+
                   <div className="text-center">
                     <p className={`font-bold text-[20px] mb-2 ${
-                      corporateSize === 'over100' ? 'text-slate-900' : 'text-white'
-                    }`}>
+                    corporateSize === 'over100' ? 'text-slate-900' : 'text-white'}`
+                    }>
                       Over 100
                     </p>
                     <p className={`text-[14px] ${
-                      corporateSize === 'over100' ? 'text-slate-800' : 'text-slate-200'
-                    }`}>
+                    corporateSize === 'over100' ? 'text-slate-800' : 'text-slate-200'}`
+                    }>
                       Larger audience
                     </p>
                   </div>
@@ -314,22 +314,22 @@ export default function Home() {
             </div>
 
             {/* Step 2: Event Type */}
-            {corporateSize && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4 }}
-                className="space-y-3"
-              >
+            {corporateSize &&
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4 }}
+              className="space-y-3">
+
                 <h3 className="text-[18px] md:text-[20px] font-bold text-white text-center mb-4">
                   What type of corporate event?
                 </h3>
                 <div className="space-y-3">
                   {/* Small Team Meeting */}
                   <button
-                    onClick={() => handleCorporateSelection(corporateSize, 'small')}
-                    className="w-full rounded-xl p-5 bg-slate-800 border-2 border-slate-600 hover:border-blue-500 hover:bg-slate-750 transition-all duration-300 text-left group"
-                  >
+                  onClick={() => handleCorporateSelection(corporateSize, 'small')}
+                  className="w-full rounded-xl p-5 bg-slate-800 border-2 border-slate-600 hover:border-blue-500 hover:bg-slate-750 transition-all duration-300 text-left group">
+
                     <div>
                       <p className="font-bold text-[17px] md:text-[18px] text-white mb-2 group-hover:text-blue-400 transition-colors">
                         Small Team Meeting / Networking Event
@@ -342,9 +342,9 @@ export default function Home() {
 
                   {/* High-End Gala */}
                   <button
-                    onClick={() => handleCorporateSelection(corporateSize, 'large')}
-                    className="w-full rounded-xl p-5 bg-slate-800 border-2 border-slate-600 hover:border-purple-500 hover:bg-slate-750 transition-all duration-300 text-left group"
-                  >
+                  onClick={() => handleCorporateSelection(corporateSize, 'large')}
+                  className="w-full rounded-xl p-5 bg-slate-800 border-2 border-slate-600 hover:border-purple-500 hover:bg-slate-750 transition-all duration-300 text-left group">
+
                     <div>
                       <p className="font-bold text-[17px] md:text-[18px] text-white mb-2 group-hover:text-purple-400 transition-colors">
                         High-End Gala / Conference
@@ -356,11 +356,11 @@ export default function Home() {
                   </button>
 
                   {/* VIP Option (only for under 100) */}
-                  {corporateSize === 'under100' && (
-                    <button
-                      onClick={() => handleCorporateSelection(corporateSize, 'vip')}
-                      className="w-full rounded-xl p-5 bg-gradient-to-br from-amber-900/40 to-amber-800/40 border-2 border-amber-500 hover:border-amber-400 hover:shadow-lg transition-all duration-300 text-left group"
-                    >
+                  {corporateSize === 'under100' &&
+                <button
+                  onClick={() => handleCorporateSelection(corporateSize, 'vip')}
+                  className="w-full rounded-xl p-5 bg-gradient-to-br from-amber-900/40 to-amber-800/40 border-2 border-amber-500 hover:border-amber-400 hover:shadow-lg transition-all duration-300 text-left group">
+
                       <div>
                         <p className="font-bold text-[17px] md:text-[18px] text-amber-300 mb-2 group-hover:text-amber-200 transition-colors">
                           High-End VIP Experience
@@ -370,10 +370,10 @@ export default function Home() {
                         </p>
                       </div>
                     </button>
-                  )}
+                }
                 </div>
               </motion.div>
-            )}
+            }
           </div>
         </DialogContent>
       </Dialog>
@@ -394,8 +394,8 @@ export default function Home() {
             {/* Kids Birthday */}
             <button
               onClick={() => handlePrivateSelection('kids')}
-              className="w-full rounded-xl p-5 bg-slate-800 border-2 border-slate-600 hover:border-pink-500 hover:bg-slate-750 transition-all duration-300 text-left group"
-            >
+              className="w-full rounded-xl p-5 bg-slate-800 border-2 border-slate-600 hover:border-pink-500 hover:bg-slate-750 transition-all duration-300 text-left group">
+
               <div>
                 <p className="font-bold text-[17px] md:text-[18px] text-white mb-2 group-hover:text-pink-400 transition-colors">
                   Kids Birthday Party (mainly kids under 11 years old)
@@ -409,8 +409,8 @@ export default function Home() {
             {/* Adult Celebration */}
             <button
               onClick={() => handlePrivateSelection('adult')}
-              className="w-full rounded-xl p-5 bg-slate-800 border-2 border-slate-600 hover:border-purple-500 hover:bg-slate-750 transition-all duration-300 text-left group"
-            >
+              className="w-full rounded-xl p-5 bg-slate-800 border-2 border-slate-600 hover:border-purple-500 hover:bg-slate-750 transition-all duration-300 text-left group">
+
               <div>
                 <p className="font-bold text-[17px] md:text-[18px] text-white mb-2 group-hover:text-purple-400 transition-colors">
                   Adult Celebration (over 12 years old)
@@ -424,8 +424,8 @@ export default function Home() {
             {/* VIP Experience */}
             <button
               onClick={() => handlePrivateSelection('vip')}
-              className="w-full rounded-xl p-5 bg-gradient-to-br from-amber-900/40 to-amber-800/40 border-2 border-amber-500 hover:border-amber-400 hover:shadow-lg transition-all duration-300 text-left group"
-            >
+              className="w-full rounded-xl p-5 bg-gradient-to-br from-amber-900/40 to-amber-800/40 border-2 border-amber-500 hover:border-amber-400 hover:shadow-lg transition-all duration-300 text-left group">
+
               <div>
                 <p className="font-bold text-[17px] md:text-[18px] text-amber-300 mb-2 group-hover:text-amber-200 transition-colors">
                   High-End VIP Experience
@@ -458,8 +458,8 @@ export default function Home() {
             {/* Standard Experience */}
             <button
               onClick={() => handleWeddingSelection('standard')}
-              className="w-full rounded-xl p-5 bg-slate-800 border-2 border-slate-600 hover:border-pink-500 hover:bg-slate-750 transition-all duration-300 text-left group"
-            >
+              className="w-full rounded-xl p-5 bg-slate-800 border-2 border-slate-600 hover:border-pink-500 hover:bg-slate-750 transition-all duration-300 text-left group">
+
               <div>
                 <p className="font-bold text-[17px] md:text-[18px] text-white mb-2 group-hover:text-pink-400 transition-colors">
                   Standard Experience
@@ -473,8 +473,8 @@ export default function Home() {
             {/* Elite Experience */}
             <button
               onClick={() => handleWeddingSelection('elite')}
-              className="w-full rounded-xl p-5 bg-gradient-to-br from-amber-900/40 to-amber-800/40 border-2 border-amber-500 hover:border-amber-400 hover:shadow-lg transition-all duration-300 text-left group"
-            >
+              className="w-full rounded-xl p-5 bg-gradient-to-br from-amber-900/40 to-amber-800/40 border-2 border-amber-500 hover:border-amber-400 hover:shadow-lg transition-all duration-300 text-left group">
+
               <div>
                 <p className="font-bold text-[17px] md:text-[18px] text-amber-300 mb-2 group-hover:text-amber-200 transition-colors">
                   Elite Experience
@@ -490,6 +490,6 @@ export default function Home() {
           </div>
         </DialogContent>
       </Dialog>
-    </>
-  );
+    </>);
+
 }
