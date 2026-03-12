@@ -51,18 +51,18 @@ export const pricingData = {
         "service_types": ["stage", "bundle"]
       },
       {
-        "id": "addon_virtual_logo",
-        "label": "Customized Logo Reveal",
-        "price": 350,
-        "tooltip": "Integrate your company logo or event branding into the magic for a personalized surprise moment.",
+        "id": "addon_virtual_plus",
+        "label": "Virtual Plus Bundle",
+        "price": 500,
+        "tooltip": "Includes Customized Logo Reveal + 15-Minute Magic Masterclass.",
         "event_types": ["virtual"],
         "service_types": ["virtual"]
       },
       {
-        "id": "addon_virtual_masterclass",
-        "label": "15-Minute Magic Masterclass",
-        "price": 500,
-        "tooltip": "A fun, hands-on bonus segment where guests learn a secret and perform it live — perfect for team bonding or conference wrap-ups.",
+        "id": "addon_virtual_elite",
+        "label": "Virtual Elite Bundle",
+        "price": 1000,
+        "tooltip": "Includes Customized Logo Reveal + 15-Minute Magic Masterclass + Custom Impossible Prediction.",
         "event_types": ["virtual"],
         "service_types": ["virtual"]
       }
