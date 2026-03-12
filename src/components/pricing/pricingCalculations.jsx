@@ -3,55 +3,55 @@ export const PRICING = {
   johnny_wu: {
     private: {
       gold: { close_up_per_hr: 1499, stage_30: 1499, stage_45: 1999, stage_60: 2499 },
-      elite: { close_up_per_hr: 2499, stage_30: 1999, stage_45: 2499, stage_60: 2999 },
-      platinum: { close_up_per_hr: 4999, stage_30: 4999, stage_45: 7499, stage_60: 9999 }
+      signature: { close_up_per_hr: 2499, stage_30: 1999, stage_45: 2499, stage_60: 2999 },
+      diamond: { close_up_per_hr: 4999, stage_30: 4999, stage_45: 7499, stage_60: 9999 }
     },
     wedding: {
       gold: { close_up_per_hr: 1499, stage_20: 1499 },
-      elite: { close_up_per_hr: 2499, stage_20: 2499 },
-      platinum: { close_up_per_hr: 4999, stage_20: 4999 }
+      signature: { close_up_per_hr: 2499, stage_20: 2499 },
+      diamond: { close_up_per_hr: 4999, stage_20: 4999 }
     },
     corporate_small: {
       gold: { close_up_per_hr: 1499, stage_30: 1499, stage_45: 1999, stage_60: 2499 },
-      elite: { close_up_per_hr: 2499, stage_30: 1999, stage_45: 2499, stage_60: 2999 },
-      platinum: { close_up_per_hr: 4999, stage_30: 4999, stage_45: 7499, stage_60: 9999 }
+      signature: { close_up_per_hr: 2499, stage_30: 1999, stage_45: 2499, stage_60: 2999 },
+      diamond: { close_up_per_hr: 4999, stage_30: 4999, stage_45: 7499, stage_60: 9999 }
     },
     corporate_gala: {
       gold: { close_up_per_hr: 2999, stage_30: 2999, stage_45: 4499, stage_60: 5999 },
-      elite: { close_up_per_hr: 3999, stage_30: 3999, stage_45: 5499, stage_60: 6999 },
-      platinum: { close_up_per_hr: 4999, stage_30: 4999, stage_45: 7499, stage_60: 9999 }
+      signature: { close_up_per_hr: 3999, stage_30: 3999, stage_45: 5499, stage_60: 6999 },
+      diamond: { close_up_per_hr: 4999, stage_30: 4999, stage_45: 7499, stage_60: 9999 }
     },
     kids_birthday: {
       gold: { stage_30: 1499, stage_45: 1999, stage_60: 2499 },
-      elite: { stage_30: 1999, stage_45: 2499, stage_60: 2999 },
-      platinum: { stage_30: 4999, stage_45: 7499, stage_60: 9999 }
+      signature: { stage_30: 1999, stage_45: 2499, stage_60: 2999 },
+      diamond: { stage_30: 4999, stage_45: 7499, stage_60: 9999 }
     }
   },
   dylan_george: {
     private: {
       gold: { close_up_per_hr: 849, stage_30: 849, stage_45: 1249, stage_60: 1499 },
-      elite: { close_up_per_hr: 1499, stage_30: 1499, stage_45: 1999, stage_60: 2499 },
-      platinum: { close_up_per_hr: 2999, stage_30: 2999, stage_45: 4499, stage_60: 5999 }
+      signature: { close_up_per_hr: 1499, stage_30: 1499, stage_45: 1999, stage_60: 2499 },
+      diamond: { close_up_per_hr: 2999, stage_30: 2999, stage_45: 4499, stage_60: 5999 }
     },
     wedding: {
       gold: { close_up_per_hr: 849, stage_20: 1249 },
-      elite: { close_up_per_hr: 1499, stage_20: 1999 },
-      platinum: { close_up_per_hr: 2999, stage_20: 2999 }
+      signature: { close_up_per_hr: 1499, stage_20: 1999 },
+      diamond: { close_up_per_hr: 2999, stage_20: 2999 }
     },
     corporate_small: {
       gold: { close_up_per_hr: 849, stage_30: 849, stage_45: 1249, stage_60: 1499 },
-      elite: { close_up_per_hr: 1499, stage_30: 1499, stage_45: 1999, stage_60: 2499 },
-      platinum: { close_up_per_hr: 2999, stage_30: 2999, stage_45: 4499, stage_60: 5999 }
+      signature: { close_up_per_hr: 1499, stage_30: 1499, stage_45: 1999, stage_60: 2499 },
+      diamond: { close_up_per_hr: 2999, stage_30: 2999, stage_45: 4499, stage_60: 5999 }
     },
     corporate_gala: {
       gold: { close_up_per_hr: 1849, stage_30: 1849, stage_45: 2749, stage_60: 3849 },
-      elite: { close_up_per_hr: 2449, stage_30: 2449, stage_45: 3349, stage_60: 4249 },
-      platinum: { close_up_per_hr: 2999, stage_30: 2999, stage_45: 4499, stage_60: 5999 }
+      signature: { close_up_per_hr: 2449, stage_30: 2449, stage_45: 3349, stage_60: 4249 },
+      diamond: { close_up_per_hr: 2999, stage_30: 2999, stage_45: 4499, stage_60: 5999 }
     },
     kids_birthday: {
       gold: { stage_30: 649, stage_45: 749, stage_60: 849 },
-      elite: { stage_30: 999, stage_45: 1099, stage_60: 1199 },
-      platinum: { stage_30: 1499, stage_45: 1799, stage_60: 1999 }
+      signature: { stage_30: 999, stage_45: 1099, stage_60: 1199 },
+      diamond: { stage_30: 1499, stage_45: 1799, stage_60: 1999 }
     }
   }
 };
@@ -150,13 +150,13 @@ export const calculateVirtualPrice = (duration) => {
 
 // Filter available tiers based on event type and scale
 export const getAvailableTiers = (eventType, eventSize, eventScale) => {
-  // For high-end VIP events, only show elite and platinum
+  // For high-end VIP events, only show signature and diamond
   if (eventScale === 'vip' || eventScale === 'elite') {
-    return ['elite', 'platinum'];
+    return ['signature', 'diamond'];
   }
 
-  // For all other events (including kids parties), show gold, elite, and platinum
-  return ['gold', 'elite', 'platinum'];
+  // For all other events (including kids parties), show gold, signature, and diamond
+  return ['gold', 'signature', 'diamond'];
 };
 
 // 1. Close-Up Mingling Magic Calculation
@@ -209,18 +209,18 @@ export const calculateBundlePrice = (performer, tier, closeUpHours, numMagicians
 // Tier descriptions - Updated with shorter, easier-to-read descriptions
 export const TIER_DESCRIPTIONS = {
   close_up: {
-    platinum: {
-      title: "Bespoke (Platinum) — Close-Up Magic",
+    diamond: {
+      title: "Diamond — Close-Up Magic",
       description: "Ultra-exclusive experience with telepathy and instant hypnosis. Reserved for the most elite gatherings.",
       startingPrice: 4999
     },
-    elite: {
-      title: "Premier (Elite) — Close-Up Magic",
+    signature: {
+      title: "Signature — Close-Up Magic",
       description: "Advanced magic, mentalism, and telepathy. The most impactful experience we offer — unforgettable for years.",
       startingPrice: 2499
     },
     gold: {
-      title: "Signature (Gold) — Close-Up Magic",
+      title: "Gold — Close-Up Magic",
       description: "Sleight-of-hand combined with mind-reading. Predicting thoughts and creating magical moments.",
       startingPrice: 1499
     },
@@ -231,18 +231,18 @@ export const TIER_DESCRIPTIONS = {
     }
   },
   stage: {
-    platinum: {
-      title: "Bespoke (Platinum) — Stage Magic",
+    diamond: {
+      title: "Diamond — Stage Magic",
       description: "Fully customized production with branded illusions, personalized scripts, and your company's message.",
       startingPrice: 4999
     },
-    elite: {
-      title: "Premier (Elite) — Stage Magic",
+    signature: {
+      title: "Signature — Stage Magic",
       description: "World-class performance featuring hypnosis, telepathy, and the Golden Buzzer illusion from AGT.",
       startingPrice: 1999
     },
     gold: {
-      title: "Signature (Gold) — Stage Magic",
+      title: "Gold — Stage Magic",
       description: "Dynamic blend of magic and mentalism that amazes and engages your audience.",
       startingPrice: 1499
     },

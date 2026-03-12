@@ -20,8 +20,8 @@ export const magicExperiencesComparison = {
         best_for: "Intimate gatherings",
       },
       {
-        name: "Elite",
-        label: "Elite",
+        name: "Signature",
+        label: "Signature",
         badge: "Most Popular",
         features: {
           sleight_of_hand_magic: true,
@@ -38,8 +38,8 @@ export const magicExperiencesComparison = {
         best_for: "Corporate and VIP events",
       },
       {
-        name: "Bespoke",
-        label: "Bespoke",
+        name: "Diamond",
+        label: "Diamond",
         features: {
           sleight_of_hand_magic: true,
           cards_coins_rings_visual_magic: true,
@@ -78,8 +78,8 @@ export const magicExperiencesComparison = {
         best_for: "Entertainment focused events",
       },
       {
-        name: "Elite",
-        label: "Elite",
+        name: "Signature",
+        label: "Signature",
         badge: "Most Popular",
         features: {
           high_energy_stage_magic: true,
@@ -97,8 +97,8 @@ export const magicExperiencesComparison = {
         best_for: "Corporate shows and galas",
       },
       {
-        name: "Bespoke",
-        label: "Bespoke",
+        name: "Diamond",
+        label: "Diamond",
         features: {
           high_energy_stage_magic: true,
           visual_illusions: true,
