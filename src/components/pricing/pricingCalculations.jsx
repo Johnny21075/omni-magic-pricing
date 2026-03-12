@@ -206,22 +206,22 @@ export const calculateBundlePrice = (performer, tier, closeUpHours, numMagicians
   return withDiscount;
 };
 
-// Tier descriptions - Updated with shorter, easier-to-read descriptions
+// Tier descriptions - Updated with detailed descriptions
 export const TIER_DESCRIPTIONS = {
   close_up: {
     diamond: {
-      title: "Diamond — Close-Up Magic",
-      description: "Ultra-exclusive experience with telepathy and instant hypnosis. Reserved for the most elite gatherings.",
+      title: "Diamond",
+      description: "Reserved for ultra luxury events and high profile audiences seeking a fully customized magical experience.\n\nJohnny collaborates with your team before the event to design moments specifically tailored to your audience, VIP guests, or brand.\n\nOften chosen by luxury brands, Fortune 500 companies, and exclusive private events.",
       startingPrice: 4999
     },
     signature: {
-      title: "Signature — Close-Up Magic",
-      description: "Advanced magic, mentalism, and telepathy. The most impactful experience we offer — unforgettable for years.",
+      title: "Signature ⭐ Most Popular",
+      description: "Johnny Wu's signature experience and what he is best known for.\n\nThis experience combines advanced magic, mind reading, psychological illusions, and interactive moments that create unforgettable reactions right in your guests' hands.\n\nGuests don't just watch magic. They experience the impossible.\n\nMost requested for corporate events, VIP receptions, and upscale private celebrations.",
       startingPrice: 2499
     },
     gold: {
-      title: "Gold — Close-Up Magic",
-      description: "Sleight-of-hand combined with mind-reading. Predicting thoughts and creating magical moments.",
+      title: "Gold",
+      description: "Perfect for intimate gatherings and private celebrations where guests can enjoy elegant sleight of hand magic performed inches away from them.\n\nIncludes refined close up magic using cards, coins, rings, and everyday objects to create astonishing visual moments.\n\nBest for cocktail hours, mixers, and smaller private events.",
       startingPrice: 1499
     },
     silver: {
@@ -232,18 +232,18 @@ export const TIER_DESCRIPTIONS = {
   },
   stage: {
     diamond: {
-      title: "Diamond — Stage Magic",
-      description: "Fully customized production with branded illusions, personalized scripts, and your company's message.",
+      title: "Diamond",
+      description: "A fully customized stage experience designed specifically for your event.\n\nJohnny works with your team before the event to tailor the show to your audience, brand message, or special guests.\n\nReserved for luxury productions, large audiences, and high profile corporate events.",
       startingPrice: 4999
     },
     signature: {
-      title: "Signature — Stage Magic",
-      description: "World-class performance featuring hypnosis, telepathy, and the Golden Buzzer illusion from AGT.",
+      title: "Signature ⭐ Most Popular",
+      description: "Johnny Wu's signature stage experience combining magic, mind reading, telepathy demonstrations, and powerful audience interaction.\n\nGuests become part of the magic as impossible moments unfold live on stage creating laughter, suspense, and unforgettable reactions.\n\nMost requested for corporate events, conferences, and gala audiences.",
       startingPrice: 1999
     },
     gold: {
-      title: "Gold — Stage Magic",
-      description: "Dynamic blend of magic and mentalism that amazes and engages your audience.",
+      title: "Gold",
+      description: "A high energy stage show filled with visual magic and audience participation designed to entertain and amaze.\n\nPerfect for smaller events and private celebrations looking for a fun and engaging magical performance.",
       startingPrice: 1499
     },
     silver: {
