@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Star, Gift, CheckCircle, DollarSign, ExternalLink, Play, CreditCard } from 'lucide-react';
+import { Users, Star, Gift, CheckCircle, DollarSign, ExternalLink, Play, CreditCard, Table2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { format, addHours } from 'date-fns';
 import {
@@ -20,6 +20,8 @@ import {
   TIER_DESCRIPTIONS } from
 '../components/pricing/pricingCalculations';
 import { pricingData } from '../components/pricing/pricingData';
+import { magicExperiencesComparison } from '../components/pricing/tierComparisonData';
+import TierComparisonTable from '../components/pricing/TierComparisonTable';
 import { createPageUrl } from '@/utils';
 
 const backgroundImageUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/e620330f2_IMG_1641.jpg";
@@ -67,6 +69,8 @@ export default function PricingPage() {
   const [showZelleModal, setShowZelleModal] = useState(false);
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [showComparisonModal, setShowComparisonModal] = useState(false);
+  const [comparisonDataType, setComparisonDataType] = useState(null);
 
   const urlParams = new URLSearchParams(window.location.search);
   const eventType = urlParams.get('eventType');
@@ -1186,6 +1190,16 @@ export default function PricingPage() {
                         })}
                           </SelectContent>
                         </Select>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setComparisonDataType('stage_magic');
+                            setShowComparisonModal(true);
+                          }}
+                          className="mt-3 w-full bg-slate-700 border-slate-600 text-white hover:bg-slate-600">
+                          <Table2 className="w-4 h-4 mr-2" /> Compare Tiers
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -1316,6 +1330,16 @@ export default function PricingPage() {
                         })}
                           </SelectContent>
                         </Select>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setComparisonDataType('close_up_magic');
+                            setShowComparisonModal(true);
+                          }}
+                          className="mt-3 w-full bg-slate-700 border-slate-600 text-white hover:bg-slate-600">
+                          <Table2 className="w-4 h-4 mr-2" /> Compare Tiers
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -1841,6 +1865,24 @@ export default function PricingPage() {
             <p className="text-white font-bold text-[16px] mt-4">
               Send to: 626-242-7710
             </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Tier Comparison Modal */}
+      <Dialog open={showComparisonModal} onOpenChange={setShowComparisonModal}>
+        <DialogContent className="bg-slate-900 border-2 border-amber-500/50 text-white max-w-5xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-[20px] md:text-[24px] font-semibold text-center text-white">
+              Experience Tier Comparison
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            {comparisonDataType && magicExperiencesComparison[comparisonDataType] ? (
+              <TierComparisonTable data={magicExperiencesComparison[comparisonDataType]} />
+            ) : (
+              <p className="text-white text-center">Select a service to compare tiers.</p>
+            )}
           </div>
         </DialogContent>
       </Dialog>
