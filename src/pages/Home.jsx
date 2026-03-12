@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -83,8 +82,8 @@ export default function Home() {
       setShowPrivateModal(true);
     } else if (eventType === 'wedding') {
       setShowWeddingModal(true);
-    } else {
-      window.location.href = createPageUrl(`Pricing?eventType=${eventType}`);
+    } else if (eventType === 'virtual') {
+      window.location.href = createPageUrl(`Pricing?eventType=virtual`);
     }
   };
 
