@@ -155,9 +155,9 @@ export default function Home() {
                   >
                     <Card
                       onClick={() => handleEventTypeSelect(type.id)}
-                      className="bg-slate-800/90 border-2 border-slate-600 hover:border-amber-500 cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-105"
+                      className="bg-slate-800/90 border-2 border-slate-600 hover:border-amber-500 cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-105 h-full flex flex-col"
                     >
-                      <CardHeader className="text-center pb-3">
+                      <CardHeader className="text-center pb-3 flex-1 flex flex-col justify-center">
                         <div className={`w-16 h-16 mx-auto mb-3 rounded-full bg-gradient-to-br ${type.color} flex items-center justify-center`}>
                           <IconComponent className="w-8 h-8 text-white" />
                         </div>
