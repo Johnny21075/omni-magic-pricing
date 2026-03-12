@@ -1110,6 +1110,16 @@ export default function PricingPage() {
                         })}
                           </SelectContent>
                         </Select>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setComparisonDataType('close_up_magic');
+                            setShowComparisonModal(true);
+                          }}
+                          className="mt-3 w-full bg-slate-700 border-slate-600 text-white hover:bg-slate-600">
+                          <Table2 className="w-4 h-4 mr-2" /> Compare Tiers
+                        </Button>
                       </div>
                     </div>
                   </div>
