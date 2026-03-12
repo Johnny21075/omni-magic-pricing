@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, Users, Heart, Video, Instagram, Youtube, Globe, Star } from 'lucide-react';
+import { Building2, Users, Heart, Instagram, Youtube, Globe, Star } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { motion } from 'framer-motion';
 import FAQ from '../components/pricing/FAQ';
@@ -30,13 +30,6 @@ const eventTypes = [
     icon: Heart,
     description: 'Cocktail hour, reception dinner',
     color: 'from-pink-500 to-pink-600'
-  },
-  {
-    id: 'virtual',
-    title: 'Virtual Event',
-    icon: Video,
-    description: 'Online shows, virtual meetings, livestreams',
-    color: 'from-green-500 to-green-600'
   }
 ];
 
@@ -82,8 +75,6 @@ export default function Home() {
       setShowPrivateModal(true);
     } else if (eventType === 'wedding') {
       setShowWeddingModal(true);
-    } else if (eventType === 'virtual') {
-      window.location.href = createPageUrl(`Pricing?eventType=virtual`);
     }
   };
 
@@ -152,7 +143,7 @@ export default function Home() {
               Select your event type to get started with personalized pricing and options
             </motion.p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 max-w-6xl w-full px-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl w-full px-4">
               {eventTypes.map((type, index) => {
                 const IconComponent = type.icon;
                 return (
