@@ -200,6 +200,45 @@ export default function Home() {
           </div>
 
           <div className="max-w-4xl mx-auto px-4 py-12">
+            <h2 className="text-white text-[20px] md:text-[24px] font-semibold text-center mb-8">
+              Trusted by Industry Leaders
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start justify-items-center">
+              {/* Google Recognition */}
+              <div className="flex flex-col items-center text-center">
+                <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/0827b5f25_Google_2015_logo.png" alt="Google" className="h-10 mb-2" />
+                <div className="flex mb-1">
+                  <Star fill="#FBBF24" strokeWidth={0} className="w-5 h-5 text-yellow-400" />
+                  <Star fill="#FBBF24" strokeWidth={0} className="w-5 h-5 text-yellow-400" />
+                  <Star fill="#FBBF24" strokeWidth={0} className="w-5 h-5 text-yellow-400" />
+                  <Star fill="#FBBF24" strokeWidth={0} className="w-5 h-5 text-yellow-400" />
+                  <Star fill="#FBBF24" strokeWidth={0} className="w-5 h-5 text-yellow-400" />
+                </div>
+                <p className="text-slate-200 text-sm">5.0 Based on 1048 Reviews</p>
+              </div>
+
+              {/* Yelp Recognition */}
+              <div className="flex flex-col items-center text-center">
+                <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/981358d34_yelp.png" alt="Yelp" className="h-10 mb-2" />
+                <div className="flex mb-1">
+                  <Star fill="#FBBF24" strokeWidth={0} className="w-5 h-5 text-yellow-400" />
+                  <Star fill="#FBBF24" strokeWidth={0} className="w-5 h-5 text-yellow-400" />
+                  <Star fill="#FBBF24" strokeWidth={0} className="w-5 h-5 text-yellow-400" />
+                  <Star fill="#FBBF24" strokeWidth={0} className="w-5 h-5 text-yellow-400" />
+                  <Star fill="#FBBF24" strokeWidth={0} className="w-5 h-5 text-yellow-400" />
+                </div>
+                <p className="text-slate-200 text-sm">5.0 Based on 1000 Reviews</p>
+              </div>
+
+              {/* Netflix Recognition */}
+              <div className="flex flex-col items-center text-center">
+                <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/eb0dd132d_netflix.png" alt="Netflix" className="h-10 mb-2" />
+                <p className="text-slate-200 text-sm mt-5">As Seen On Netflix Star Search</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="max-w-4xl mx-auto px-4 py-12">
             <FAQ />
           </div>
         </div>
