@@ -197,6 +197,14 @@ export default function Home() {
 
               })}
             </div>
+            <div className="flex justify-center mt-8">
+              <Button
+                onClick={() => window.location.href = createPageUrl('GratuityPage')}
+                className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-900 font-semibold px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                Leave a Gratuity
+              </Button>
+            </div>
           </div>
 
           <div className="max-w-4xl mx-auto px-4 py-12">
