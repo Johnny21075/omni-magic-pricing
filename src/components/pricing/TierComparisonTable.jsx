@@ -26,14 +26,12 @@ export default function TierComparisonTable({ data }) {
             {data.tiers.map((tier) => (
               <th key={tier.name} className="p-3 border-b border-slate-600 text-white font-semibold text-center text-sm md:text-base">
                 <div className="flex flex-col items-center gap-1">
-                  <div>
-                    {tier.label}
-                    {tier.badge && (
-                      <span className="text-[10px] bg-amber-500 text-slate-900 px-1.5 py-0.5 rounded-full font-medium ml-1">
-                        {tier.badge}
-                      </span>
-                    )}
-                  </div>
+                  {tier.badge && (
+                    <span className="text-[10px] bg-amber-500 text-slate-900 px-1.5 py-0.5 rounded-full font-medium">
+                      {tier.badge}
+                    </span>
+                  )}
+                  <div>{tier.label}</div>
                   <p className="text-slate-400 text-xs font-normal">{tier.best_for}</p>
                 </div>
               </th>
