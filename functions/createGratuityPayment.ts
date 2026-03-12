@@ -15,7 +15,7 @@ Deno.serve(async (req) => {
         }
 
         const body = await req.json();
-        const { amount, customerEmail, performerName, companyName, message, wantsPoster } = body;
+        const { amount, customerEmail, address, performerName, companyName, message, wantsPoster } = body;
 
         if (!amount || !customerEmail) {
             return Response.json({ 
@@ -38,6 +38,7 @@ Deno.serve(async (req) => {
             payment_type: 'gratuity',
             performer_name: performerName || 'Omni Magic Entertainment',
             customer_email: customerEmail,
+            customer_address: address || 'Not provided',
             customer_message: message || 'No message provided',
             user_id: user?.id || 'anonymous',
             wants_poster: wantsPoster ? 'true' : 'false'

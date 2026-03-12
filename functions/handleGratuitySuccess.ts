@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
     const amount = session.amount_total / 100; // Convert from cents
 
     // Send notification email to business
-    const emailBody = `New Gratuity Payment Received\n\nCustomer Email: ${metadata.customer_email}\nGratuity Amount: $${amount}\nPerformer Name: ${metadata.performer_name || 'Omni Magic Entertainment'}\n${metadata.company_name ? `Company Name: ${metadata.company_name}\n` : ''}Customer Message: ${metadata.customer_message || 'No message provided'}\nWants Poster: ${metadata.wants_poster === 'true' ? 'Yes' : 'No'}`;
+    const emailBody = `New Gratuity Payment Received\n\nCustomer Email: ${metadata.customer_email}\n${metadata.customer_address && metadata.customer_address !== 'Not provided' ? `Customer Address: ${metadata.customer_address}\n` : ''}Gratuity Amount: $${amount}\nPerformer Name: ${metadata.performer_name || 'Omni Magic Entertainment'}\n${metadata.company_name ? `Company Name: ${metadata.company_name}\n` : ''}Customer Message: ${metadata.customer_message || 'No message provided'}\nWants Poster: ${metadata.wants_poster === 'true' ? 'Yes' : 'No'}`;
     
     await base44.integrations.Core.SendEmail({
       to: 'hello@omnimagic.co',
