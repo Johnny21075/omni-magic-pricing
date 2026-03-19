@@ -7,9 +7,9 @@ export const PRICING = {
       diamond: { close_up_per_hr: 4999, stage_30: 4999, stage_45: 7499, stage_60: 9999 }
     },
     wedding: {
-      gold: { close_up_per_hr: 1499, stage_20: 1499 },
-      signature: { close_up_per_hr: 2499, stage_20: 2499 },
-      diamond: { close_up_per_hr: 4999, stage_20: 4999 }
+      gold: { close_up_per_hr: 2499, stage_20: 2499 },
+      signature: { close_up_per_hr: 3499, stage_20: 3499 },
+      diamond: { close_up_per_hr: 5999, stage_20: 5999 }
     },
     corporate_small: {
       gold: { close_up_per_hr: 1499, stage_30: 1499, stage_45: 1999, stage_60: 2499 },
@@ -34,9 +34,9 @@ export const PRICING = {
       diamond: { close_up_per_hr: 2999, stage_30: 2999, stage_45: 4499, stage_60: 5999 }
     },
     wedding: {
-      gold: { close_up_per_hr: 849, stage_20: 1249 },
-      signature: { close_up_per_hr: 1499, stage_20: 1999 },
-      diamond: { close_up_per_hr: 2999, stage_20: 2999 }
+      gold: { close_up_per_hr: 1849, stage_20: 2249 },
+      signature: { close_up_per_hr: 2499, stage_20: 2999 },
+      diamond: { close_up_per_hr: 3999, stage_20: 3999 }
     },
     corporate_small: {
       gold: { close_up_per_hr: 849, stage_30: 849, stage_45: 1249, stage_60: 1499 },
