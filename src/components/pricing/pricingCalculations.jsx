@@ -176,11 +176,19 @@ export const calculatePackagePrice = ({
   return { price, multiplier };
 };
 
-// Kids birthday hardcoded public prices (Dylan George only on UI)
+// Kids birthday pricing
 export const KIDS_PRICING = {
-  weekday: 595,  // Mon–Thu
-  weekend: 695,  // Fri–Sun
-  closeup_addon: 250, // +30m close-up add-on
+  johnny_wu: {
+    stage_30: 1499,
+    stage_45: 1999,
+    stage_60: 2499,
+    closeup_addon: 799,
+  },
+  dylan_george: {
+    weekday: { stage_30: 599, stage_45: 799, stage_60: 999 },
+    weekend: { stage_30: 699, stage_45: 899, stage_60: 1199 },
+    closeup_addon: 299,
+  },
 };
 
 // Virtual show pricing (flat rates, no performer selection)

@@ -60,6 +60,8 @@ export default function PricingPage() {
   const [closeUpHours, setCloseUpHours] = useState(1);                // 1 or 2 (close_up_only)
 
   // Kids state
+  const [kidsPerformer, setKidsPerformer] = useState('dylan_george');
+  const [kidsDuration, setKidsDuration] = useState(30);
   const [kidsCloseUpAddon, setKidsCloseUpAddon] = useState(false);
 
   // Virtual state
@@ -115,9 +117,15 @@ export default function PricingPage() {
       return calculateFinalPrice(base, eventDate);
     }
 
-    if (isKidsBirthday && eventDate) {
-      const base = isWeekend(eventDate) ? KIDS_PRICING.weekend : KIDS_PRICING.weekday;
-      return calculateFinalPrice(base, eventDate);
+    if (isKidsBirthday) {
+      if (kidsPerformer === 'johnny_wu') {
+        const base = KIDS_PRICING.johnny_wu[`stage_${kidsDuration}`] || 0;
+        return { price: base, multiplier: 1 };
+      } else {
+        const dayType = eventDate && isWeekend(eventDate) ? 'weekend' : 'weekday';
+        const base = KIDS_PRICING.dylan_george[dayType][`stage_${kidsDuration}`] || 0;
+        return { price: base, multiplier: 1 };
+      }
     }
 
     if (isAdult && performer) {
@@ -159,7 +167,9 @@ export default function PricingPage() {
   const selectedPackagePrice = getSelectedPackagePrice();
 
   // For kids: base + optional close-up add-on
-  const kidsAddonCost = isKidsBirthday && kidsCloseUpAddon ? KIDS_PRICING.closeup_addon : 0;
+  const kidsAddonCost = isKidsBirthday && kidsCloseUpAddon
+    ? (kidsPerformer === 'johnny_wu' ? KIDS_PRICING.johnny_wu.closeup_addon : KIDS_PRICING.dylan_george.closeup_addon)
+    : 0;
 
   const isCorporateGala = eventType === 'corporate' && (eventScale === 'large' || eventScale === 'vip');
 
@@ -184,7 +194,7 @@ export default function PricingPage() {
   const isFormValid = () => {
     if (!eventDate) return false;
     if (isVirtual) return !!virtualDuration;
-    if (isKidsBirthday) return true;
+    if (isKidsBirthday) return !!kidsPerformer;
     if (!performer) return false;
     if (packageType === 'bundle') return !!bundleType;
     if (packageType === 'close_up_only') return true;
@@ -225,13 +235,15 @@ export default function PricingPage() {
       };
     }
     if (isKidsBirthday) {
+      const kidsPerformerName = kidsPerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George';
+      const addonPrice = kidsPerformer === 'johnny_wu' ? 799 : 299;
       return {
         type: "Kids Birthday Stage Show",
-        performer: "Dylan George",
-        duration: "30 Minutes",
+        performer: kidsPerformerName,
+        duration: `${kidsDuration} Minutes`,
         tier: "Kids Show",
         packagePrice: selectedPackagePrice.price,
-        addons: kidsCloseUpAddon ? '+30m Close-Up Add-on ($250)' : 'None',
+        addons: kidsCloseUpAddon ? `+30m Close-Up Add-on ($${addonPrice})` : 'None',
         magicians: '',
         totalInvestment,
       };
@@ -533,7 +545,7 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
                 )}
                 {isKidsBirthday && eventDate && (
                   <div className="mt-3 p-3 bg-slate-700/50 border border-slate-500 rounded-lg text-slate-200 text-[13px] text-center max-w-md mx-auto">
-                    {isWeekend(eventDate) ? '📅 Weekend rate: $695' : '📅 Weekday rate: $595'}
+                    {isWeekend(eventDate) ? '📅 Weekend selected' : '📅 Weekday selected'}
                   </div>
                 )}
               </div>
@@ -584,27 +596,79 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
             {/* ── KIDS BIRTHDAY ─────────────────────────────────────────────── */}
             {isKidsBirthday && (
               <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-6 mb-4 shadow-sm">
-                <h2 className="text-white text-[20px] md:text-[24px] font-bold mb-2 text-center">Kids' Birthday Magic (Dylan George)</h2>
+                <h2 className="text-white text-[20px] md:text-[24px] font-bold mb-2 text-center">Kids' Birthday Magic</h2>
                 <p className="text-slate-300 text-[14px] text-center mb-6 max-w-2xl mx-auto">
-                  A high‑energy, kid‑friendly show that parents love and kids talk about for weeks.
+                  Modern, high‑energy kids' shows that parents love and kids talk about for weeks.
                 </p>
 
-                <div className="max-w-md mx-auto space-y-4">
-                  <div className="bg-slate-700/60 rounded-lg p-4 border border-slate-600">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="text-white font-semibold text-[16px]">30-Minute Stage Show</p>
-                        <p className="text-slate-300 text-[13px]">Performer: Dylan George</p>
+                {/* Performer Selection */}
+                <div className="mb-6">
+                  <Label className="text-white text-[14px] mb-3 block font-semibold">Step 1 — Choose Your Performer</Label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Dylan – main offer */}
+                    <button onClick={() => { setKidsPerformer('dylan_george'); setKidsCloseUpAddon(false); }}
+                      className={`p-4 rounded-lg border-2 text-left transition-all ${kidsPerformer === 'dylan_george' ? 'border-amber-500 bg-amber-500/10' : 'border-slate-600 hover:border-slate-500'}`}>
+                      <div className="flex justify-between items-start mb-1">
+                        <p className="text-white font-bold text-[15px]">Dylan George</p>
+                        <span className="text-[11px] bg-green-600/70 text-white px-2 py-0.5 rounded font-medium whitespace-nowrap">Most Booked</span>
                       </div>
-                      <div className="text-right">
-                        <p className="text-amber-400 font-bold text-[20px]">
-                          ${eventDate ? (isWeekend(eventDate) ? KIDS_PRICING.weekend : KIDS_PRICING.weekday).toLocaleString() : '595–695'}
-                        </p>
-                        <p className="text-slate-400 text-[11px]">{eventDate ? (isWeekend(eventDate) ? 'Weekend' : 'Weekday') : 'Weekday / Weekend'}</p>
+                      <p className="text-slate-400 text-[12px] italic mb-2">Kids Birthday Shows</p>
+                      <p className="text-amber-300 text-[13px] font-medium">From $599 weekdays / $699 weekends</p>
+                      <div className={`mt-3 text-center text-[13px] font-semibold px-3 py-2 rounded transition-all ${kidsPerformer === 'dylan_george' ? 'bg-amber-500 text-slate-900' : 'bg-slate-700 text-white'}`}>
+                        {kidsPerformer === 'dylan_george' ? '✓ Selected' : 'Select Dylan'}
                       </div>
-                    </div>
-                  </div>
+                    </button>
 
+                    {/* Johnny – VIP anchor */}
+                    <button onClick={() => { setKidsPerformer('johnny_wu'); setKidsCloseUpAddon(false); }}
+                      className={`p-4 rounded-lg border-2 text-left transition-all ${kidsPerformer === 'johnny_wu' ? 'border-amber-500 bg-amber-500/10' : 'border-slate-600 hover:border-slate-500'}`}>
+                      <div className="flex justify-between items-start mb-1">
+                        <p className="text-white font-bold text-[15px]">Johnny Wu</p>
+                        <span className="text-[11px] bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded font-medium whitespace-nowrap">VIP</span>
+                      </div>
+                      <p className="text-slate-400 text-[12px] italic mb-2">VIP Kids Experience</p>
+                      <p className="text-amber-300 text-[13px] font-medium">From $1,499+ (limited availability)</p>
+                      <div className={`mt-3 text-center text-[13px] font-semibold px-3 py-2 rounded transition-all ${kidsPerformer === 'johnny_wu' ? 'bg-amber-500 text-slate-900' : 'bg-slate-700 text-white'}`}>
+                        {kidsPerformer === 'johnny_wu' ? '✓ Selected' : 'Select Johnny'}
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Duration Selection */}
+                <div className="mb-5">
+                  <Label className="text-white text-[14px] mb-3 block font-semibold">Step 2 — Select Duration</Label>
+                  <div className="space-y-2">
+                    {[30, 45, 60].map((dur) => {
+                      let price;
+                      if (kidsPerformer === 'johnny_wu') {
+                        price = KIDS_PRICING.johnny_wu[`stage_${dur}`];
+                      } else {
+                        const dayType = eventDate && isWeekend(eventDate) ? 'weekend' : 'weekday';
+                        price = KIDS_PRICING.dylan_george[dayType][`stage_${dur}`];
+                      }
+                      return (
+                        <button key={dur} onClick={() => setKidsDuration(dur)}
+                          className={`w-full text-left px-4 py-3 rounded border-2 text-[13px] transition-all flex justify-between items-center ${kidsDuration === dur ? 'border-amber-500 bg-amber-500/10 text-white font-medium' : 'border-slate-600 hover:border-slate-500 text-slate-300'}`}>
+                          <span>{dur}-Minute Stage Show</span>
+                          <span className="text-amber-400 font-semibold">${price.toLocaleString()}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {kidsPerformer === 'dylan_george' && eventDate && (
+                    <p className="text-slate-400 text-[12px] mt-2 text-center">
+                      {isWeekend(eventDate) ? '📅 Weekend pricing applied' : '📅 Weekday pricing applied'}
+                    </p>
+                  )}
+                  {kidsPerformer === 'johnny_wu' && (
+                    <p className="text-slate-400 text-[12px] mt-2 text-center">No weekday/weekend split — same premium rate any day.</p>
+                  )}
+                </div>
+
+                {/* Close-Up Add-On */}
+                <div>
+                  <Label className="text-white text-[14px] mb-3 block font-semibold">Step 3 — Optional Add-On</Label>
                   <div
                     onClick={() => setKidsCloseUpAddon(!kidsCloseUpAddon)}
                     className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${kidsCloseUpAddon ? 'border-amber-500 bg-amber-500/10' : 'border-slate-600 hover:border-slate-500'}`}>
@@ -612,9 +676,11 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
                     <div className="flex-1">
                       <div className="flex justify-between items-center">
                         <span className="text-white text-[14px] font-medium">Add +30 Minutes Close-Up Magic</span>
-                        <span className="text-amber-400 text-[14px] font-semibold">+$250</span>
+                        <span className="text-amber-400 text-[14px] font-semibold">
+                          +${(kidsPerformer === 'johnny_wu' ? KIDS_PRICING.johnny_wu.closeup_addon : KIDS_PRICING.dylan_george.closeup_addon).toLocaleString()}
+                        </span>
                       </div>
-                      <p className="text-slate-300 text-[12px] mt-1">Intimate magic mingling before or after the show.</p>
+                      <p className="text-slate-300 text-[12px] mt-1">Intimate table-side magic mingling before or after the show.</p>
                     </div>
                   </div>
                 </div>
@@ -987,13 +1053,19 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
                   {isKidsBirthday && (
                     <>
                       <div className="flex justify-between">
-                        <span className="text-slate-300">Service</span>
-                        <span className="text-white font-medium">30-Minute Kids Stage Show</span>
+                        <span className="text-slate-300">Performer</span>
+                        <span className="text-white font-medium">{kidsPerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George'}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-300">Performer</span>
-                        <span className="text-white font-medium">Dylan George</span>
+                        <span className="text-slate-300">Show Duration</span>
+                        <span className="text-white font-medium">{kidsDuration} minutes</span>
                       </div>
+                      {kidsPerformer === 'dylan_george' && eventDate && (
+                        <div className="flex justify-between">
+                          <span className="text-slate-300">Day Type</span>
+                          <span className="text-white font-medium">{isWeekend(eventDate) ? 'Weekend' : 'Weekday'}</span>
+                        </div>
+                      )}
                     </>
                   )}
                   {selectedPackagePrice.multiplier > 1 && (
