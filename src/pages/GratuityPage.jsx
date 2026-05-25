@@ -17,7 +17,6 @@ const POSTER_THRESHOLD = 100;
 export default function GratuityPage() {
   const [amount, setAmount] = useState('');
   const [email, setEmail] = useState('');
-  const [address, setAddress] = useState('');
   const [performerName, setPerformerName] = useState('');
   const [message, setMessage] = useState('');
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
@@ -59,7 +58,6 @@ export default function GratuityPage() {
   const resetForm = () => {
     setAmount('');
     setEmail('');
-    setAddress('');
     setPerformerName('');
     setMessage('');
     setIsCorporateEvent(false);
@@ -78,7 +76,6 @@ export default function GratuityPage() {
       const response = await base44.functions.invoke('createGratuityPayment', {
         amount: parseInt(amount),
         customerEmail: email,
-        address: address,
         performerName: performerName || 'Unknown',
         companyName: isCorporateEvent ? companyName : null,
         message: message,
@@ -175,20 +172,6 @@ export default function GratuityPage() {
                     onChange={handleEmailChange}
                     placeholder="your@email.com"
                     required
-                    className="bg-slate-800 border-slate-600 text-white text-lg placeholder-slate-400" />
-
-                  </div>
-
-                  <div>
-                    <Label htmlFor="address" className="luxury-body text-white mb-2 block text-lg">
-                      Your Address <span className="text-slate-300 text-sm font-normal">(optional)</span>
-                    </Label>
-                    <Input
-                    id="address"
-                    type="text"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    placeholder="123 Main St, City, State, Zip"
                     className="bg-slate-800 border-slate-600 text-white text-lg placeholder-slate-400" />
 
                   </div>
