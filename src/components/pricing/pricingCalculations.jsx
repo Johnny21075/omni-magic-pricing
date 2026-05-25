@@ -25,6 +25,11 @@ export const PRICING = {
       gold: { stage_30: 1499, stage_45: 1999, stage_60: 2499 },
       signature: { stage_30: 1999, stage_45: 2499, stage_60: 2999 },
       diamond: { stage_30: 5999, stage_45: 7499, stage_60: 8999 }
+    },
+    bar_bat_mitzvah: {
+      gold: { close_up_per_hr: 1500, stage_30: 1999, stage_45: 2499, stage_60: 2999 },
+      signature: { close_up_per_hr: 3000, stage_30: 2999, stage_45: 3999, stage_60: 4999 },
+      diamond: { close_up_per_hr: 5000, stage_30: 6999, stage_45: 8999, stage_60: 10999 }
     }
   },
   dylan_george: {
@@ -52,6 +57,11 @@ export const PRICING = {
       gold: { stage_30: 649, stage_45: 749, stage_60: 849 },
       signature: { stage_30: 999, stage_45: 1099, stage_60: 1199 },
       diamond: { stage_30: 1499, stage_45: 1799, stage_60: 1999 }
+    },
+    bar_bat_mitzvah: {
+      gold: { close_up_per_hr: 1500, stage_30: 1299, stage_45: 1699, stage_60: 1999 },
+      signature: { close_up_per_hr: 3000, stage_30: 1799, stage_45: 2299, stage_60: 2799 },
+      diamond: { close_up_per_hr: 5000, stage_30: 2999, stage_45: 3999, stage_60: 4999 }
     }
   }
 };
@@ -69,6 +79,10 @@ export const getPricingCategory = (eventType, eventScale) => {
     return 'wedding';
   }
   
+  if (eventType === 'bar_bat_mitzvah') {
+    return 'bar_bat_mitzvah';
+  }
+
   if (eventType === 'private') {
     // Check if it's a kids birthday party
     if (eventScale === 'kids') {
