@@ -2,24 +2,24 @@
 export const PRICING = {
   johnny_wu: {
     private: {
-      gold: { close_up_per_hr: 1499, stage_30: 1499, stage_45: 1999, stage_60: 2499 },
-      signature: { close_up_per_hr: 2499, stage_30: 1999, stage_45: 2499, stage_60: 2999 },
-      diamond: { close_up_per_hr: 7499, stage_30: 5999, stage_45: 7499, stage_60: 8999 }
+      gold:      { close_up_per_hr: 1499, stage_30: 1499, stage_45: 1999, stage_60: 2499 },
+      signature: { close_up_per_hr: 3000, stage_30: 2500, stage_45: 3000, stage_60: 3500 },
+      diamond:   { close_up_per_hr: 7499, stage_30: 5999, stage_45: 7499, stage_60: 8999 }
     },
     wedding: {
-      gold: { close_up_per_hr: 1499, stage_20: 1499 },
-      signature: { close_up_per_hr: 2999, stage_20: 2999 },
-      diamond: { close_up_per_hr: 8999, stage_20: 8999 }
+      gold:      { close_up_per_hr: 1499, stage_20: 1499 },
+      signature: { close_up_per_hr: 3000, stage_20: 3000 },
+      diamond:   { close_up_per_hr: 8999, stage_20: 8999 }
     },
     corporate_small: {
-      gold: { close_up_per_hr: 1499, stage_30: 1499, stage_45: 1999, stage_60: 2499 },
-      signature: { close_up_per_hr: 2499, stage_30: 1999, stage_45: 2499, stage_60: 2999 },
-      diamond: { close_up_per_hr: 7499, stage_30: 5999, stage_45: 7499, stage_60: 8999 }
+      gold:      { close_up_per_hr: 1499, stage_30: 1499, stage_45: 1999, stage_60: 2499 },
+      signature: { close_up_per_hr: 3000, stage_30: 2500, stage_45: 3000, stage_60: 3500 },
+      diamond:   { close_up_per_hr: 7499, stage_30: 5999, stage_45: 7499, stage_60: 8999 }
     },
     corporate_gala: {
-      gold: { close_up_per_hr: 2999, stage_30: 2999, stage_45: 4499, stage_60: 5999 },
-      signature: { close_up_per_hr: 3999, stage_30: 3999, stage_45: 5499, stage_60: 6999 },
-      diamond: { close_up_per_hr: 11999, stage_30: 11999, stage_45: 16499, stage_60: 20999 }
+      gold:      { close_up_per_hr: 2999, stage_30: 2999, stage_45: 4499, stage_60: 5999 },
+      signature: { close_up_per_hr: 4000, stage_30: 3500, stage_45: 4500, stage_60: 5500 },
+      diamond:   { close_up_per_hr: 11999, stage_30: 11999, stage_45: 16499, stage_60: 20999 }
     },
     kids_birthday: {
       gold: { stage_30: 1499, stage_45: 1999, stage_60: 2499 },
@@ -27,31 +27,31 @@ export const PRICING = {
       diamond: { stage_30: 5999, stage_45: 7499, stage_60: 8999 }
     },
     bar_bat_mitzvah: {
-      gold: { close_up_per_hr: 1500, stage_30: 1999, stage_45: 2499, stage_60: 2999 },
-      signature: { close_up_per_hr: 3000, stage_30: 2999, stage_45: 3999, stage_60: 4999 },
-      diamond: { close_up_per_hr: 5000, stage_30: 6999, stage_45: 8999, stage_60: 10999 }
+      gold:      { close_up_per_hr: 1500, stage_30: 1999, stage_45: 2499, stage_60: 2999 },
+      signature: { close_up_per_hr: 3000, stage_30: 2500, stage_45: 3000, stage_60: 3500 },
+      diamond:   { close_up_per_hr: 5000, stage_30: 6999, stage_45: 8999, stage_60: 10999 }
     }
   },
   dylan_george: {
     private: {
-      gold: { close_up_per_hr: 849, stage_30: 849, stage_45: 1249, stage_60: 1499 },
-      signature: { close_up_per_hr: 1499, stage_30: 1499, stage_45: 1999, stage_60: 2499 },
-      diamond: { close_up_per_hr: 2999, stage_30: 2999, stage_45: 4499, stage_60: 5999 }
+      gold:      { close_up_per_hr: 849,  stage_30: 849,  stage_45: 1249, stage_60: 1499 },
+      signature: { close_up_per_hr: 1250, stage_30: 900,  stage_45: 1250, stage_60: 1500 },
+      diamond:   { close_up_per_hr: 2999, stage_30: 2999, stage_45: 4499, stage_60: 5999 }
     },
     wedding: {
-      gold: { close_up_per_hr: 999, stage_20: 999 },
-      signature: { close_up_per_hr: 1999, stage_20: 1999 },
-      diamond: { close_up_per_hr: 2999, stage_20: 2999 }
+      gold:      { close_up_per_hr: 999,  stage_20: 999  },
+      signature: { close_up_per_hr: 1750, stage_20: 1750 },
+      diamond:   { close_up_per_hr: 2999, stage_20: 2999 }
     },
     corporate_small: {
-      gold: { close_up_per_hr: 849, stage_30: 849, stage_45: 1249, stage_60: 1499 },
-      signature: { close_up_per_hr: 1499, stage_30: 1499, stage_45: 1999, stage_60: 2499 },
-      diamond: { close_up_per_hr: 2999, stage_30: 2999, stage_45: 4499, stage_60: 5999 }
+      gold:      { close_up_per_hr: 849,  stage_30: 849,  stage_45: 1249, stage_60: 1499 },
+      signature: { close_up_per_hr: 1250, stage_30: 900,  stage_45: 1250, stage_60: 1500 },
+      diamond:   { close_up_per_hr: 2999, stage_30: 2999, stage_45: 4499, stage_60: 5999 }
     },
     corporate_gala: {
-      gold: { close_up_per_hr: 1849, stage_30: 1849, stage_45: 2749, stage_60: 3849 },
-      signature: { close_up_per_hr: 2449, stage_30: 2449, stage_45: 3349, stage_60: 4249 },
-      diamond: { close_up_per_hr: 2999, stage_30: 2999, stage_45: 4499, stage_60: 5999 }
+      gold:      { close_up_per_hr: 1849, stage_30: 1849, stage_45: 2749, stage_60: 3849 },
+      signature: { close_up_per_hr: 1750, stage_30: 1500, stage_45: 1900, stage_60: 2250 },
+      diamond:   { close_up_per_hr: 2999, stage_30: 2999, stage_45: 4499, stage_60: 5999 }
     },
     kids_birthday: {
       gold:      { stage_30: 599,  stage_45: 799,  stage_60: 999  },
@@ -59,9 +59,9 @@ export const PRICING = {
       diamond:   { stage_30: 1499, stage_45: 1799, stage_60: 1999 },
     },
     bar_bat_mitzvah: {
-      gold: { close_up_per_hr: 1500, stage_30: 1299, stage_45: 1699, stage_60: 1999 },
-      signature: { close_up_per_hr: 3000, stage_30: 1799, stage_45: 2299, stage_60: 2799 },
-      diamond: { close_up_per_hr: 5000, stage_30: 2999, stage_45: 3999, stage_60: 4999 }
+      gold:      { close_up_per_hr: 1500, stage_30: 1299, stage_45: 1699, stage_60: 1999 },
+      signature: { close_up_per_hr: 1250, stage_30: 900,  stage_45: 1250, stage_60: 1500 },
+      diamond:   { close_up_per_hr: 5000, stage_30: 2999, stage_45: 3999, stage_60: 4999 }
     }
   }
 };

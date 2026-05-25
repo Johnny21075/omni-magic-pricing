@@ -1125,7 +1125,12 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
                 {kidsCloseUpAddon && (
                   <div className="flex justify-between text-[14px] mb-2">
                     <span className="text-slate-300">+30m Close-Up Add-on</span>
-                    <span className="text-amber-400 font-medium">+${KIDS_PRICING.closeup_addon.toLocaleString()}</span>
+                    <span className="text-amber-400 font-medium">
+                      +${(kidsPerformer === 'johnny_wu'
+                            ? KIDS_PRICING.johnny_wu.closeup_addon
+                            : KIDS_PRICING.dylan_george.closeup_addon
+                          ).toLocaleString()}
+                    </span>
                   </div>
                 )}
 
