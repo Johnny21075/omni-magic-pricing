@@ -37,7 +37,8 @@ const eventTypes = [
   icon: Cake,
   description: 'Coming of age celebration',
   color: 'from-amber-500 to-amber-600'
-}];
+}
+];
 
 
 const socialLinks = [
@@ -130,102 +131,103 @@ export default function Home() {
 
         <div className="relative z-10">
           <div className="min-h-[60vh] flex flex-col items-center justify-center px-4 py-12">
-            <motion.img
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
-              src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/705652e3a_logowhitewordstransparent.png"
-              alt="Omni Magic Entertainment"
-              className="h-20 md:h-24 mb-6 drop-shadow-2xl" />
+             <motion.img
+               initial={{ opacity: 0, y: -20 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ duration: 0.6 }}
+               src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/705652e3a_logowhitewordstransparent.png"
+               alt="Omni Magic Entertainment"
+               className="h-20 md:h-24 mb-6 drop-shadow-2xl" />
 
-            
-            <motion.h1
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-white text-[28px] md:text-[36px] font-bold text-center mb-3">
 
-              What Type of Event Are You Planning?
-            </motion.h1>
-            
-            <motion.p
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="text-slate-200 text-[15px] md:text-[17px] text-center max-w-2xl mb-8">
+             <motion.h1
+               initial={{ opacity: 0, y: -20 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ duration: 0.6, delay: 0.2 }}
+               className="text-white text-[28px] md:text-[36px] font-bold text-center mb-3">
 
-              Select your event type to get started with personalized pricing and options
-            </motion.p>
+               What Type of Event Are You Planning?
+             </motion.h1>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-4xl w-full px-4">
-              {eventTypes.map((type, index) => {
-                const IconComponent = type.icon;
-                return (
-                  <motion.div
-                    key={type.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.5, delay: 0.4 + index * 0.1 }}>
+             <motion.p
+               initial={{ opacity: 0, y: -20 }}
+               animate={{ opacity: 1, y: 0 }}
+               transition={{ duration: 0.6, delay: 0.3 }}
+               className="text-slate-200 text-[15px] md:text-[17px] text-center max-w-2xl mb-8">
 
-                    <Card
-                      onClick={() => handleEventTypeSelect(type.id)}
-                      className="bg-slate-800/90 border-2 border-slate-600 hover:border-amber-500 cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-105 h-full flex flex-col">
+               Select your event type to get started with personalized pricing and options
+             </motion.p>
 
-                      <CardHeader className="text-center pb-3 flex-1 flex flex-col justify-center">
-                        <div className={`w-16 h-16 mx-auto mb-3 rounded-full bg-gradient-to-br ${type.color} flex items-center justify-center`}>
-                          <IconComponent className="w-8 h-8 text-white" />
-                        </div>
-                        <CardTitle className="text-white text-[18px] font-semibold">
-                          {type.title}
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent className="text-center pb-6">
-                        <p className="text-slate-200 text-[13px]">{type.description}</p>
-                      </CardContent>
-                    </Card>
-                  </motion.div>);
+             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 max-w-6xl w-full px-4">
+               {eventTypes.map((type, index) => {
+                 const IconComponent = type.icon;
+                 return (
+                   <motion.div
+                     key={type.id}
+                     initial={{ opacity: 0, y: 20 }}
+                     animate={{ opacity: 1, y: 0 }}
+                     transition={{ duration: 0.5, delay: 0.4 + index * 0.1 }}>
 
-              })}
-            </div>
-          </div>
+                     <Card
+                       onClick={() => handleEventTypeSelect(type.id)}
+                       className="bg-slate-800/90 border-2 border-slate-600 hover:border-amber-500 cursor-pointer transition-all duration-300 hover:shadow-2xl hover:scale-105 h-full flex flex-col">
 
-          <div className="max-w-4xl mx-auto px-4 py-12">
-            <h2 className="text-white text-[20px] md:text-[24px] font-semibold text-center mb-6">
-              Connect With Us
-            </h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {socialLinks.map((social) => {
-                const IconComponent = social.icon;
-                return (
-                  <a
-                    key={social.name}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="bg-slate-800/90 border border-slate-600 rounded-lg p-4 hover:border-amber-500 transition-all duration-300 hover:shadow-lg text-center group">
+                       <CardHeader className="text-center pb-3 flex-1 flex flex-col justify-center">
+                         <div className={`w-16 h-16 mx-auto mb-3 rounded-full bg-gradient-to-br ${type.color} flex items-center justify-center`}>
+                           <IconComponent className="w-8 h-8 text-white" />
+                         </div>
+                         <CardTitle className="text-white text-[18px] font-semibold">
+                           {type.title}
+                         </CardTitle>
+                       </CardHeader>
+                       <CardContent className="text-center pb-6">
+                         <p className="text-slate-200 text-[13px]">{type.description}</p>
+                       </CardContent>
+                     </Card>
+                   </motion.div>);
 
-                    <IconComponent className="w-8 h-8 mx-auto mb-2 text-slate-400 group-hover:text-amber-400 transition-colors" />
-                    <p className="text-white text-[13px] font-medium mb-1">{social.name}</p>
-                    <p className="text-slate-400 text-[11px]">{social.handle}</p>
-                  </a>);
+               })}
+             </div>
+           </div>
 
-              })}
-            </div>
-            <div className="flex justify-center gap-4 mt-8 flex-wrap">
-              <Button
-                onClick={() => window.location.href = createPageUrl('GratuityPage')}
-                className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-900 font-semibold px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                Leave a Gratuity
-              </Button>
-              <Button
-                onClick={() => window.location.href = createPageUrl('Pricing')}
-                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                Deposit & Hold My Date
-              </Button>
-            </div>
-          </div>
+           <div className="max-w-4xl mx-auto px-4 py-12">
+             <div className="flex justify-center gap-4 mb-8 flex-wrap">
+               <Button
+                 onClick={() => window.location.href = createPageUrl('GratuityPage')}
+                 className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-900 font-semibold px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+               >
+                 Leave a Gratuity
+               </Button>
+               <Button
+                 onClick={() => window.location.href = createPageUrl('Pricing')}
+                 className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+               >
+                 Deposit & Hold My Date
+               </Button>
+             </div>
+
+             <h2 className="text-white text-[20px] md:text-[24px] font-semibold text-center mb-6">
+               Connect With Us
+             </h2>
+             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+               {socialLinks.map((social) => {
+                 const IconComponent = social.icon;
+                 return (
+                   <a
+                     key={social.name}
+                     href={social.url}
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     className="bg-slate-800/90 border border-slate-600 rounded-lg p-4 hover:border-amber-500 transition-all duration-300 hover:shadow-lg text-center group">
+
+                     <IconComponent className="w-8 h-8 mx-auto mb-2 text-slate-400 group-hover:text-amber-400 transition-colors" />
+                     <p className="text-white text-[13px] font-medium mb-1">{social.name}</p>
+                     <p className="text-slate-400 text-[11px]">{social.handle}</p>
+                   </a>);
+
+               })}
+             </div>
+           </div>
 
           <div className="max-w-4xl mx-auto px-4 py-12">
             <h2 className="text-white text-[20px] md:text-[24px] font-semibold text-center mb-8">
