@@ -487,7 +487,7 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
         <div className="relative z-10">
           {/* Header */}
           <div className="h-[200px] md:h-[250px] flex flex-col items-center justify-center px-4">
-            <a href={createPageUrl('Home')} className="cursor-pointer">
+            <a href="/" className="cursor-pointer">
               <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/705652e3a_logowhitewordstransparent.png"
                 alt="Omni Magic Entertainment"
                 className="h-16 md:h-20 mb-3 drop-shadow-2xl hover:opacity-80 transition-opacity" />

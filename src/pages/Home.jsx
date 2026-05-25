@@ -90,19 +90,19 @@ export default function Home() {
   };
 
   const handleCorporateSelection = (size, scale) => {
-    window.location.href = `/pricing?eventType=corporate&eventSize=${size}&eventScale=${scale}`;
+    window.location.href = `/Pricing?eventType=corporate&eventSize=${size}&eventScale=${scale}`;
   };
 
   const handlePrivateSelection = (scale) => {
-    window.location.href = `/pricing?eventType=private&eventScale=${scale}`;
+    window.location.href = `/Pricing?eventType=private&eventScale=${scale}`;
   };
 
   const handleWeddingSelection = (scale) => {
-    window.location.href = `/pricing?eventType=wedding&eventScale=${scale}`;
+    window.location.href = `/Pricing?eventType=wedding&eventScale=${scale}`;
   };
 
   const handleMitzvahSelection = (scale) => {
-    window.location.href = `/pricing?eventType=bar_bat_mitzvah&eventScale=${scale}`;
+    window.location.href = `/Pricing?eventType=bar_bat_mitzvah&eventScale=${scale}`;
   };
 
   return (
@@ -193,13 +193,13 @@ export default function Home() {
            <div className="max-w-4xl mx-auto px-4 py-12">
              <div className="flex justify-center gap-4 mb-8 flex-wrap">
                <Button
-                 onClick={() => window.location.href = createPageUrl('GratuityPage')}
+                 onClick={() => window.location.href = '/GratuityPage'}
                  className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-900 font-semibold px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
                >
                  Leave a Gratuity
                </Button>
                <Button
-                 onClick={() => window.location.href = createPageUrl('Pricing')}
+                 onClick={() => window.location.href = '/Pricing'}
                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
                >
                  Deposit & Hold My Date
