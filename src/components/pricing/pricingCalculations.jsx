@@ -54,14 +54,14 @@ export const PRICING = {
       diamond:   { close_up_per_hr: 2999, stage_30: 2999, stage_45: 4499, stage_60: 5999 }
     },
     corporate_gala: {
-      gold:      { close_up_per_hr: 900,  stage_30: 900,  stage_45: 1350, stage_60: 1800 },
-      signature: { close_up_per_hr: 1200, stage_30: 1050, stage_45: 1350, stage_60: 1650 },
-      diamond:   { close_up_per_hr: 3600, stage_30: 3600, stage_45: 4950, stage_60: 6300 }
+      gold:      { close_up_per_hr: 1500, stage_30: 1500, stage_45: 2250, stage_60: 3000 },
+      signature: { close_up_per_hr: 2000, stage_30: 1750, stage_45: 2250, stage_60: 2750 },
+      diamond:   { close_up_per_hr: 6000, stage_30: 6000, stage_45: 8250, stage_60: 10500 }
     },
     corporate_vip_gala: {
-      gold:      { close_up_per_hr: 1800, stage_30: 1800, stage_45: 2700, stage_60: 3600 },
-      signature: { close_up_per_hr: 2400, stage_30: 2100, stage_45: 2700, stage_60: 3300 },
-      diamond:   { close_up_per_hr: 7200, stage_30: 7200, stage_45: 9900, stage_60: 12600 }
+      gold:      { close_up_per_hr: 3000, stage_30: 3000, stage_45: 4500, stage_60: 6000 },
+      signature: { close_up_per_hr: 4000, stage_30: 3500, stage_45: 4500, stage_60: 5500 },
+      diamond:   { close_up_per_hr: 12000, stage_30: 12000, stage_45: 16500, stage_60: 21000 }
     },
     kids_birthday: {
       gold:      { stage_30: 599,  stage_45: 799,  stage_60: 999  },
@@ -120,12 +120,12 @@ export const BUNDLES = {
       premium:  { closeUpHours: 2, stageDuration: 30, basePrice: 2250 },
     },
     corporate_gala: {
-      standard: { closeUpHours: 1, stageDuration: 30, basePrice: 1350 },
-      premium:  { closeUpHours: 2, stageDuration: 30, basePrice: 1950 },
+      standard: { closeUpHours: 1, stageDuration: 30, basePrice: 2250 },
+      premium:  { closeUpHours: 2, stageDuration: 30, basePrice: 3250 },
     },
     corporate_vip_gala: {
-      standard: { closeUpHours: 1, stageDuration: 30, basePrice: 2700 },
-      premium:  { closeUpHours: 2, stageDuration: 30, basePrice: 3900 },
+      standard: { closeUpHours: 1, stageDuration: 30, basePrice: 4500 },
+      premium:  { closeUpHours: 2, stageDuration: 30, basePrice: 6500 },
     },
     bar_bat_mitzvah: {
       standard: { closeUpHours: 1, stageDuration: 30, basePrice: 1750 },
