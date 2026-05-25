@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -424,16 +424,14 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
           <div className="max-w-[900px] mx-auto px-4 pb-24">
 
             {/* Event Date */}
-            <div className="bg-slate-800/90 rounded-xl border-2 border-slate-600 mb-6 shadow-xl overflow-hidden">
-              <div className="p-4 md:p-6">
-                <h2 className="text-white text-[18px] md:text-[22px] font-bold mb-1 text-center">Event Date</h2>
-                <p className="text-amber-400 text-[13px] text-center mb-4">* Required to calculate accurate pricing</p>
-                <div className="max-w-md mx-auto">
-                   <div className="relative cursor-pointer" onClick={(e) => { const inp = e.currentTarget.querySelector('input'); if (inp) { inp.focus(); try { inp.showPicker && inp.showPicker(); } catch (_) {} } }}>
-                     <Input type="date" value={eventDate} onChange={handleDateChange} min={getTodayDate()} required
-                       className="w-full bg-slate-700 border-2 border-slate-500 focus:border-amber-500 text-white text-[13px] md:text-[14px] h-10 px-3 rounded-lg cursor-pointer pointer-events-none" />
-                   </div>
-                 </div>
+             <div className="bg-slate-800/90 rounded-xl border-2 border-slate-600 mb-6 shadow-xl overflow-hidden cursor-pointer" onClick={(e) => { if (e.target === e.currentTarget || e.target.closest('.max-w-md')) { const inp = document.querySelector('input[type="date"]'); if (inp) { inp.focus(); try { inp.showPicker && inp.showPicker(); } catch (_) {} } } }}>
+               <div className="p-4 md:p-6">
+                 <h2 className="text-white text-[18px] md:text-[22px] font-bold mb-1 text-center">Event Date</h2>
+                 <p className="text-amber-400 text-[13px] text-center mb-4">* Required to calculate accurate pricing</p>
+                 <div className="max-w-md mx-auto">
+                    <Input type="date" value={eventDate} onChange={handleDateChange} min={getTodayDate()} required
+                      className="w-full bg-slate-700 border-2 border-slate-500 focus:border-amber-500 text-white text-[13px] md:text-[14px] h-10 px-3 rounded-lg cursor-pointer pointer-events-auto" />
+                  </div>
                 {eventDate && isPeakDate(eventDate) && (
                   <div className="mt-3 p-3 bg-amber-500/20 border-2 border-amber-500/40 rounded-lg text-amber-300 text-[13px] text-center max-w-md mx-auto">
                     🔥 <span className="font-semibold">High demand date</span> — 1.5× pricing applies
