@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Building2, Users, Heart, Instagram, Youtube, Globe, Star } from 'lucide-react';
+import { Building2, Users, Heart, Cake, Instagram, Youtube, Globe, Star } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { motion } from 'framer-motion';
 import FAQ from '../components/pricing/FAQ';
@@ -30,6 +30,13 @@ const eventTypes = [
   icon: Heart,
   description: 'Cocktail hour, reception dinner',
   color: 'from-pink-500 to-pink-600'
+},
+{
+  id: 'bar_bat_mitzvah',
+  title: 'Bar/Bat Mitzvah',
+  icon: Cake,
+  description: 'Coming of age celebration',
+  color: 'from-amber-500 to-amber-600'
 }];
 
 
@@ -66,6 +73,7 @@ export default function Home() {
 
   const [showPrivateModal, setShowPrivateModal] = useState(false);
   const [showWeddingModal, setShowWeddingModal] = useState(false);
+  const [showMitzvahModal, setShowMitzvahModal] = useState(false);
 
   const handleEventTypeSelect = (eventType) => {
     if (eventType === 'corporate') {
@@ -75,6 +83,8 @@ export default function Home() {
       setShowPrivateModal(true);
     } else if (eventType === 'wedding') {
       setShowWeddingModal(true);
+    } else if (eventType === 'bar_bat_mitzvah') {
+      setShowMitzvahModal(true);
     }
   };
 
@@ -88,6 +98,10 @@ export default function Home() {
 
   const handleWeddingSelection = (scale) => {
     window.location.href = createPageUrl(`Pricing?eventType=wedding&eventScale=${scale}`);
+  };
+
+  const handleMitzvahSelection = (scale) => {
+    window.location.href = createPageUrl(`Pricing?eventType=bar_bat_mitzvah&eventScale=${scale}`);
   };
 
   return (
@@ -496,8 +510,54 @@ export default function Home() {
               </div>
             </button>
           </div>
-        </DialogContent>
-      </Dialog>
-    </>);
+          </DialogContent>
+          </Dialog>
 
-}
+          {/* Bar/Bat Mitzvah Event Selection Modal */}
+          <Dialog open={showMitzvahModal} onOpenChange={setShowMitzvahModal}>
+          <DialogContent className="bg-slate-900 border-2 border-amber-500/50 text-white max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="pb-4">
+            <DialogTitle className="text-[24px] md:text-[28px] font-bold text-center text-white">
+              Choose Your Bar/Bat Mitzvah Experience
+            </DialogTitle>
+            <p className="text-slate-200 text-center text-[14px] md:text-[15px] mt-2">
+              Make this milestone celebration truly unforgettable
+            </p>
+          </DialogHeader>
+
+          <div className="space-y-3 px-2 md:px-6 pb-4">
+            {/* Standard Experience */}
+            <button
+              onClick={() => handleMitzvahSelection('standard')}
+              className="w-full rounded-xl p-5 bg-slate-800 border-2 border-slate-600 hover:border-amber-500 hover:bg-slate-750 transition-all duration-300 text-left group">
+
+              <div>
+                <p className="font-bold text-[17px] md:text-[18px] text-white mb-2 group-hover:text-amber-400 transition-colors">
+                  Standard Experience
+                </p>
+                <p className="text-[14px] text-slate-200 leading-relaxed">
+                  Dynamic entertainment that engages guests of all ages and creates lasting memories.
+                </p>
+              </div>
+            </button>
+
+            {/* Premium Experience */}
+            <button
+              onClick={() => handleMitzvahSelection('premium')}
+              className="w-full rounded-xl p-5 bg-gradient-to-br from-amber-900/40 to-amber-800/40 border-2 border-amber-500 hover:border-amber-400 hover:shadow-lg transition-all duration-300 text-left group">
+
+              <div>
+                <p className="font-bold text-[17px] md:text-[18px] text-amber-300 mb-2 group-hover:text-amber-200 transition-colors">
+                  Premium Experience
+                </p>
+                <p className="text-[13px] md:text-[14px] text-white leading-relaxed">
+                  Elevated entertainment with customized performances that celebrate this special milestone in unforgettable style.
+                </p>
+              </div>
+            </button>
+          </div>
+          </DialogContent>
+          </Dialog>
+          </>);
+
+          }
