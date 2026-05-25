@@ -90,19 +90,19 @@ export default function Home() {
   };
 
   const handleCorporateSelection = (size, scale) => {
-    window.location.href = createPageUrl(`Pricing?eventType=corporate&eventSize=${size}&eventScale=${scale}`);
+    window.location.href = `/pricing?eventType=corporate&eventSize=${size}&eventScale=${scale}`;
   };
 
   const handlePrivateSelection = (scale) => {
-    window.location.href = createPageUrl(`Pricing?eventType=private&eventScale=${scale}`);
+    window.location.href = `/pricing?eventType=private&eventScale=${scale}`;
   };
 
   const handleWeddingSelection = (scale) => {
-    window.location.href = createPageUrl(`Pricing?eventType=wedding&eventScale=${scale}`);
+    window.location.href = `/pricing?eventType=wedding&eventScale=${scale}`;
   };
 
   const handleMitzvahSelection = (scale) => {
-    window.location.href = createPageUrl(`Pricing?eventType=bar_bat_mitzvah&eventScale=${scale}`);
+    window.location.href = `/pricing?eventType=bar_bat_mitzvah&eventScale=${scale}`;
   };
 
   return (
