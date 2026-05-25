@@ -54,9 +54,9 @@ export const PRICING = {
       diamond: { close_up_per_hr: 2999, stage_30: 2999, stage_45: 4499, stage_60: 5999 }
     },
     kids_birthday: {
-      gold: { stage_30: 649, stage_45: 749, stage_60: 849 },
-      signature: { stage_30: 999, stage_45: 1099, stage_60: 1199 },
-      diamond: { stage_30: 1499, stage_45: 1799, stage_60: 1999 }
+      gold:      { stage_30: 599,  stage_45: 799,  stage_60: 999  },
+      signature: { stage_30: 699,  stage_45: 899,  stage_60: 1199 },
+      diamond:   { stage_30: 1499, stage_45: 1799, stage_60: 1999 },
     },
     bar_bat_mitzvah: {
       gold: { close_up_per_hr: 1500, stage_30: 1299, stage_45: 1699, stage_60: 1999 },
