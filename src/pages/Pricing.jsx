@@ -438,19 +438,26 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
                 <h2 className="text-white text-[18px] md:text-[22px] font-bold mb-1 text-center">Event Date</h2>
                 <p className="text-amber-400 text-[13px] text-center mb-4">* Required to calculate accurate pricing</p>
                 <div className="max-w-md mx-auto">
-                  {/* Visible styled button */}
-                  <button type="button" onClick={openDatePicker}
-                    className="w-full flex items-center justify-between bg-slate-700 border-2 border-slate-500 hover:border-amber-500 text-white text-[14px] h-12 px-4 rounded-lg cursor-pointer transition-colors">
-                    <span className={eventDate ? 'text-white' : 'text-slate-400'}>
-                      {eventDate ? new Date(eventDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' }) : 'Select your event date'}
-                    </span>
-                    <svg className="w-5 h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
-                  </button>
-                  {/* Hidden native date input */}
-                  <input ref={dateInputRef} type="date" value={eventDate} onChange={handleDateChange} min={getTodayDate()} required
-                    className="sr-only" />
+                  {/* Wrapper: styled display layered under a transparent native input */}
+                  <div className="relative h-12">
+                    {/* Visual layer */}
+                    <div className="absolute inset-0 flex items-center justify-between bg-slate-700 border-2 border-slate-500 hover:border-amber-500 text-white text-[14px] px-4 rounded-lg pointer-events-none transition-colors">
+                      <span className={eventDate ? 'text-white' : 'text-slate-400'}>
+                        {eventDate ? new Date(eventDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' }) : 'Select your event date'}
+                      </span>
+                      <svg className="w-5 h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                    {/* Transparent native date input sits on top — full clickable area */}
+                    <input
+                      type="date"
+                      value={eventDate}
+                      onChange={handleDateChange}
+                      min={getTodayDate()}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                  </div>
                 </div>
                 {eventDate && isPeakDate(eventDate) && (
                   <div className="mt-3 p-3 bg-amber-500/20 border-2 border-amber-500/40 rounded-lg text-amber-300 text-[13px] text-center max-w-md mx-auto">
