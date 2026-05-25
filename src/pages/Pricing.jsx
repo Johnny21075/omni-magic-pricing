@@ -1,24 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { base44 } from "@/api/base44Client";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Users, Star, Gift, CheckCircle, DollarSign, ExternalLink, Play, CreditCard, Table2 } from 'lucide-react';
+import { DollarSign, ExternalLink, Play, CreditCard, CheckCircle, Table2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { format, addHours } from 'date-fns';
 import {
-  calculateCloseUpPrice,
-  calculateStagePrice,
   calculateBundlePrice,
-  calculateVirtualPrice,
   calculateFinalPrice,
   isPeakDate,
-  getAvailableTiers,
-  TIER_DESCRIPTIONS } from
-'../components/pricing/pricingCalculations';
+  BUNDLES,
+  KIDS_PRICING,
+  VIRTUAL_PRICING,
+  getPricingCategory,
+} from '../components/pricing/pricingCalculations';
 import { pricingData } from '../components/pricing/pricingData';
 import { magicExperiencesComparison } from '../components/pricing/tierComparisonData';
 import TierComparisonTable from '../components/pricing/TierComparisonTable';
@@ -27,286 +25,211 @@ import { createPageUrl } from '@/utils';
 const backgroundImageUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/e620330f2_IMG_1641.jpg";
 const zelleQRCodeUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/b227159ae_IMG_2995.jpg";
 
+// Determine if a date string falls on a weekend (Fri–Sun)
+const isWeekend = (dateString) => {
+  if (!dateString) return false;
+  const d = new Date(dateString + 'T00:00:00');
+  const day = d.getDay(); // 0=Sun, 5=Fri, 6=Sat
+  return day === 0 || day === 5 || day === 6;
+};
+
 export default function PricingPage() {
+  const urlParams = new URLSearchParams(window.location.search);
+  const eventType = urlParams.get('eventType');
+  const eventSize = urlParams.get('eventSize');
+  const eventScale = urlParams.get('eventScale');
+
+  const isKidsBirthday = eventType === 'private' && eventScale === 'kids';
+  const isVirtual = eventType === 'virtual';
+  const isAdult = !isKidsBirthday && !isVirtual;
+
+  // Shared state
   const [eventDate, setEventDate] = useState('');
-  const [selectedService, setSelectedService] = useState(null);
 
-  const [closeUpPerformer, setCloseUpPerformer] = useState('johnny_wu');
-  const [closeUpDuration, setCloseUpDuration] = useState('');
-  const [closeUpMagicians, setCloseUpMagicians] = useState('');
-  const [closeUpTier, setCloseUpTier] = useState('');
+  // Adult bundle state
+  const [performer, setPerformer] = useState('johnny_wu');
+  const [bundleType, setBundleType] = useState(''); // 'standard' | 'premium'
 
-  const [stagePerformer, setStagePerformer] = useState('johnny_wu');
-  const [stageDuration, setStageDuration] = useState('');
-  const [stageTier, setStageTier] = useState('');
+  // Kids state
+  const [kidsCloseUpAddon, setKidsCloseUpAddon] = useState(false);
 
-  const [bundlePerformer, setBundlePerformer] = useState('johnny_wu');
-  const [bundleCloseUpDuration, setBundleCloseUpDuration] = useState('');
-  const [bundleNumMagicians, setBundleNumMagicians] = useState('');
-  const [bundleStageDuration, setBundleStageDuration] = useState('');
-  const [bundleTier, setBundleTier] = useState('');
-
+  // Virtual state
   const [virtualDuration, setVirtualDuration] = useState('');
 
+  // Add-ons
   const [selectedAddons, setSelectedAddons] = useState([]);
 
+  // Booking / contact
+  const [bookingOption, setBookingOption] = useState(null);
+  const [showContactModal, setShowContactModal] = useState(false);
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [eventTime, setEventTime] = useState('');
   const [venueAddress, setVenueAddress] = useState('');
   const [additionalNotes, setAdditionalNotes] = useState('');
-
-  const [bookingOption, setBookingOption] = useState(null);
-  const [showContactModal, setShowContactModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [holdExpiryTime, setHoldExpiryTime] = useState(null);
-
-  const [showVideoModal, setShowVideoModal] = useState(false);
-  const [videoUrl, setVideoUrl] = useState('');
-
-  const [showZelleModal, setShowZelleModal] = useState(false);
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+
+  // Misc UI
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [videoUrl, setVideoUrl] = useState('');
+  const [showZelleModal, setShowZelleModal] = useState(false);
   const [showComparisonModal, setShowComparisonModal] = useState(false);
-  const [comparisonDataType, setComparisonDataType] = useState(null);
-
-  const urlParams = new URLSearchParams(window.location.search);
-  const eventType = urlParams.get('eventType');
-  const eventSize = urlParams.get('eventSize');
-  const eventScale = urlParams.get('eventScale');
-
-  console.log('URL Parameters:', { eventType, eventSize, eventScale });
-
-  const availableTiers = getAvailableTiers(eventType, eventSize, eventScale);
-
-  // Check if this is a kids birthday party
-  const isKidsBirthdayParty = eventType === 'private' && eventScale === 'kids';
-
-  const getServiceDescriptions = () => {
-    if (eventType === 'wedding') {
-      return {
-        closeUp: 'Perfect for cocktail hour — the magician mingles with your guests, creating intimate moments of wonder.',
-        stage: 'A captivating performance for your reception — everyone gathers to experience the impossible together.',
-        bundle: 'Start with magic during cocktail hour, then transition into a show-stopping performance at your reception.'
-      };
-    }
-
-    if (eventType === 'corporate') {
-      return {
-        closeUp: 'Ideal for team events, conferences, and networking — the magician creates connections through shared moments of amazement.',
-        stage: 'Perfect for galas and conferences — a theatrical performance that brings your entire audience together.',
-        bundle: 'Begin with intimate magic for your team event or conference networking, then deliver a powerful stage show for your gala or keynote.'
-      };
-    }
-
-    return {
-      closeUp: 'The magician roams through your event, creating jaw-dropping moments of wonder up close for small groups.',
-      stage: 'A captivating, theatrical performance where everyone gathers together to experience the impossible as one audience.',
-      bundle: 'Begin with intimate, mind-blowing magic up close — then bring everyone together for a show-stopping stage performance they will never forget.'
-    };
-  };
-
-  const serviceDescriptions = getServiceDescriptions();
 
   const getTodayDate = () => {
     const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
   };
 
   const handleDateChange = (e) => {
-    const selectedDate = e.target.value;
-    const today = getTodayDate();
-
-    if (selectedDate >= today) {
-      setEventDate(selectedDate);
-    }
+    if (e.target.value >= getTodayDate()) setEventDate(e.target.value);
   };
 
-  const filteredAddons = (pricingData?.app?.add_ons || []).filter((addon) => {
-    if (eventType === 'virtual') {
-      return addon.event_types && addon.event_types.includes('virtual');
-    }
-    if (!selectedService) return false;
-    return addon.service_types && addon.service_types.includes(selectedService);
-  });
+  // ── Price Calculation ──────────────────────────────────────────────────────
 
   const getSelectedPackagePrice = () => {
-    if (eventType === 'virtual' && virtualDuration) {
-      const base = calculateVirtualPrice(virtualDuration);
+    if (isVirtual && virtualDuration) {
+      const base = VIRTUAL_PRICING[parseInt(virtualDuration)] || 0;
       return calculateFinalPrice(base, eventDate);
     }
 
-    if (selectedService === 'closeup' && closeUpDuration && closeUpMagicians && closeUpTier) {
-      const base = calculateCloseUpPrice(closeUpPerformer, closeUpTier, closeUpDuration, closeUpMagicians, eventType, eventScale);
+    if (isKidsBirthday && eventDate) {
+      const base = isWeekend(eventDate) ? KIDS_PRICING.weekend : KIDS_PRICING.weekday;
       return calculateFinalPrice(base, eventDate);
     }
-    if (selectedService === 'stage' && stageDuration && stageTier) {
-      const base = calculateStagePrice(stagePerformer, stageTier, stageDuration, eventType, eventScale);
-      return calculateFinalPrice(base, eventDate);
+
+    if (isAdult && performer && bundleType) {
+      return calculateBundlePrice(
+        performer,
+        'signature', // tier locked to signature for public UI
+        bundleType === 'standard' ? 1 : 2,
+        1,
+        30,
+        eventType,
+        eventScale,
+        eventDate
+      );
     }
-    if (selectedService === 'bundle' && bundleCloseUpDuration && bundleNumMagicians && bundleStageDuration && bundleTier) {
-      const base = calculateBundlePrice(bundlePerformer, bundleTier, bundleCloseUpDuration, bundleNumMagicians, bundleStageDuration, eventType, eventScale);
-      return calculateFinalPrice(base, eventDate);
-    }
-    return { price: 0, isPeakDate: false };
+
+    return { price: 0, multiplier: 1 };
   };
 
   const selectedPackagePrice = getSelectedPackagePrice();
 
-  const includesFreePoster = selectedService === 'stage' && bookingOption === 'confirm';
+  // For kids: base + optional close-up add-on
+  const kidsAddonCost = isKidsBirthday && kidsCloseUpAddon ? KIDS_PRICING.closeup_addon : 0;
 
-  // Check if this is a corporate high-end gala (large or vip scale)
   const isCorporateGala = eventType === 'corporate' && (eventScale === 'large' || eventScale === 'vip');
 
-  // Helper function to get adjusted addon price
-  const getAddonPrice = (addon) => {
-    const basePrice = addon.price;
-    return isCorporateGala ? basePrice * 2 : basePrice;
-  };
+  const getAddonPrice = (addon) => isCorporateGala ? addon.price * 2 : addon.price;
+
+  const filteredAddons = (pricingData?.app?.add_ons || []).filter((addon) => {
+    if (isVirtual) return addon.event_types && addon.event_types.includes('virtual');
+    if (isAdult && bundleType) return addon.service_types && addon.service_types.includes('bundle');
+    return false;
+  });
 
   const totalAddonsCost = selectedAddons.reduce((sum, id) => {
     const addon = pricingData?.app?.add_ons?.find((a) => a.id === id);
-    if (id === 'addon_poster' && includesFreePoster) {
-      return sum;
-    }
     return sum + (addon ? getAddonPrice(addon) : 0);
   }, 0);
 
-  const totalInvestment = selectedPackagePrice.price + totalAddonsCost;
-  const [depositAmount, setDepositAmount] = useState(0);
+  const totalInvestment = selectedPackagePrice.price + totalAddonsCost + kidsAddonCost;
+  const depositAmount = Math.round(totalInvestment * 0.10);
 
-  useEffect(() => {
-    setDepositAmount(Math.round(totalInvestment * 0.10));
-  }, [totalInvestment]);
+  // ── Form Validity ──────────────────────────────────────────────────────────
 
-  const handleAddonToggle = (addonId) => {
-    setSelectedAddons((prev) =>
-    prev.includes(addonId) ? prev.filter((id) => id !== addonId) : [...prev, addonId]
-    );
+  const isFormValid = () => {
+    if (!eventDate) return false;
+    if (isVirtual) return !!virtualDuration;
+    if (isKidsBirthday) return true;
+    return !!(performer && bundleType);
   };
 
-  const handleServiceSelect = (serviceType) => {
-    setSelectedService(serviceType);
-    setSelectedAddons([]);
-  };
+  // ── Booking Handlers ───────────────────────────────────────────────────────
 
-  const handleVideoPlay = (url) => {
-    let embedUrl = url;
-    if (url.includes('youtu.be')) {
-      const videoId = url.split('youtu.be/')[1].split('?')[0];
-      embedUrl = `https://www.youtube.com/embed/${videoId}`;
-    } else if (url.includes('youtube.com/watch')) {
-      const videoId = url.split('v=')[1].split('&')[0];
-      embedUrl = `https://www.youtube.com/embed/${videoId}`;
-    } else if (url.includes('instagram.com/reel')) {
-      embedUrl = url.replace('/reel/', '/p/') + 'embed';
-    }
-
-    setVideoUrl(embedUrl);
-    setShowVideoModal(true);
-  };
-
-  const handleHoldDateClick = () => {
-    setBookingOption('hold');
-    setFullName('');
-    setEmail('');
-    setPhone('');
-    setEventTime('');
-    setVenueAddress('');
-    setAdditionalNotes('');
-    setShowContactModal(true);
-  };
-
-  const handleConfirmNowClick = () => {
-    setBookingOption('confirm');
-    setFullName('');
-    setEmail('');
-    setPhone('');
-    setEventTime('');
-    setVenueAddress('');
-    setAdditionalNotes('');
+  const openBookingModal = (option) => {
+    setBookingOption(option);
+    setFullName(''); setEmail(''); setPhone('');
+    setEventTime(''); setVenueAddress(''); setAdditionalNotes('');
     setShowContactModal(true);
   };
 
   const handleContactSubmit = async () => {
-    if (!email || !fullName) {
-      alert('Please enter your name and email');
-      return;
-    }
-
+    if (!email || !fullName) { alert('Please enter your name and email'); return; }
     setShowContactModal(false);
-
     if (bookingOption === 'hold') {
       setShowPaymentOptions(true);
-    } else if (bookingOption === 'confirm') {
+    } else {
       await handleConfirmNow();
     }
+  };
+
+  const buildPackageDetails = () => {
+    if (isVirtual) {
+      return {
+        type: 'Virtual Experience',
+        performer: 'Johnny Wu',
+        duration: `${virtualDuration} Minutes`,
+        tier: 'Virtual Show',
+        packagePrice: selectedPackagePrice.price,
+        addons: 'None',
+        magicians: '',
+        totalInvestment,
+      };
+    }
+    if (isKidsBirthday) {
+      return {
+        type: "Kids Birthday Stage Show",
+        performer: "Dylan George",
+        duration: "30 Minutes",
+        tier: "Kids Show",
+        packagePrice: selectedPackagePrice.price,
+        addons: kidsCloseUpAddon ? '+30m Close-Up Add-on ($250)' : 'None',
+        magicians: '',
+        totalInvestment,
+      };
+    }
+    const bundleLabel = bundleType === 'standard'
+      ? 'Signature Bundle (1h Close-Up + 30m Stage)'
+      : 'Premium Bundle (2h Close-Up + 30m Stage)';
+    return {
+      type: bundleLabel,
+      performer: performer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George',
+      duration: bundleType === 'standard' ? '1h Close-Up + 30m Stage' : '2h Close-Up + 30m Stage',
+      tier: 'Signature',
+      packagePrice: selectedPackagePrice.price,
+      addons: selectedAddons.length > 0
+        ? selectedAddons.map((id) => pricingData?.app?.add_ons?.find((a) => a.id === id)?.label).join(', ')
+        : 'None',
+      magicians: '1',
+      totalInvestment,
+    };
   };
 
   const handleStripePayment = async () => {
     setIsProcessingPayment(true);
     try {
-      let packageDetails;
-      if (eventType === 'virtual') {
-        packageDetails = {
-          type: 'Virtual Experience',
-          performer: 'Johnny Wu',
-          duration: `${virtualDuration} Minutes`,
-          tier: 'Virtual Show',
-          packagePrice: selectedPackagePrice.price,
-          addons: selectedAddons.length > 0 ? selectedAddons.map((id) => {
-            const addon = pricingData?.app?.add_ons?.find((a) => a.id === id);
-            return addon?.label;
-          }).join(', ') : 'None',
-          totalInvestment: totalInvestment,
-          magicians: ''
-        };
-      } else {
-        packageDetails = {
-          type: selectedService === 'closeup' ? 'Close-Up Mingling Magic' :
-          selectedService === 'stage' ? 'Stage Show' :
-          selectedService === 'bundle' ? 'Bundle Package' : 'Unknown',
-          performer: selectedService === 'closeup' ? closeUpPerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George' :
-          selectedService === 'stage' ? stagePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George' :
-          selectedService === 'bundle' ? bundlePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George' : 'Unknown',
-          duration: selectedService === 'closeup' ? `${closeUpDuration} ${parseFloat(closeUpDuration) === 1 ? 'Hour' : 'Hours'}` :
-          selectedService === 'stage' ? `${stageDuration} Minutes` :
-          selectedService === 'bundle' ? `${bundleCloseUpDuration}hr Close-Up + ${bundleStageDuration}min Stage` : 'Unknown',
-          magicians: selectedService === 'closeup' ? closeUpMagicians : selectedService === 'bundle' ? bundleNumMagicians : '',
-          tier: selectedService === 'closeup' ? closeUpTier.charAt(0).toUpperCase() + closeUpTier.slice(1) :
-          selectedService === 'stage' ? stageTier.charAt(0).toUpperCase() + stageTier.slice(1) :
-          selectedService === 'bundle' ? bundleTier.charAt(0).toUpperCase() + bundleTier.slice(1) : 'Unknown',
-          packagePrice: selectedPackagePrice.price,
-          addons: selectedAddons.length > 0 ? selectedAddons.map((id) => {
-            const addon = pricingData?.app?.add_ons?.find((a) => a.id === id);
-            return addon?.label;
-          }).join(', ') : 'None',
-          totalInvestment: totalInvestment
-        };
-      }
-
       const response = await base44.functions.invoke('createHoldDateCheckout', {
         amount: depositAmount,
         customerEmail: email,
         customerName: fullName,
-        packageDetails: packageDetails,
-        eventDate: eventDate,
-        phone: phone,
-        additionalNotes: additionalNotes
+        packageDetails: buildPackageDetails(),
+        eventDate,
+        phone,
+        additionalNotes,
       });
-
       if (response.data.url) {
         window.location.href = response.data.url;
       } else {
         throw new Error('No checkout URL returned');
       }
     } catch (error) {
-      console.error('Error creating Stripe checkout:', error);
+      console.error('Stripe error:', error);
       alert('Failed to create payment session. Please try again or use Zelle/Venmo.');
     } finally {
       setIsProcessingPayment(false);
@@ -314,17 +237,132 @@ export default function PricingPage() {
   };
 
   const handleManualPaymentConfirmation = async (paymentMethod) => {
-    await handleHoldDateRequest(paymentMethod);
+    if (!email || !fullName) { alert('Please enter your contact details'); return; }
+    setIsSubmitting(true);
+    setShowPaymentOptions(false);
+    const currentTime = new Date();
+    const expiryTime = addHours(currentTime, 48);
+
+    try {
+      await base44.functions.invoke('sendHoldDateConfirmation', {
+        customerName: fullName,
+        customerEmail: email,
+        customerPhone: phone,
+        eventDate,
+        packageDetails: buildPackageDetails(),
+        depositAmount,
+        totalInvestment,
+        eventTime,
+        venueAddress,
+        additionalNotes,
+        holdExpiryTime: expiryTime.toISOString(),
+        requestTime: currentTime.toISOString(),
+        paymentMethod,
+      });
+      setHoldExpiryTime(expiryTime);
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error('Hold date error:', error);
+      setHoldExpiryTime(expiryTime);
+      setShowSuccessModal(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const paymentStatus = urlParams.get('payment');
-    const sessionId = urlParams.get('session_id');
+  const handleConfirmNow = async () => {
+    if (!email || !fullName) { alert('Please enter your contact details'); return; }
+    setIsSubmitting(true);
+    try {
+      const pkg = buildPackageDetails();
+      const eventDateFormatted = eventDate
+        ? new Date(eventDate + 'T00:00:00').toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+        : 'Not specified';
 
+      let eventTypeDisplay = 'Private Event';
+      if (eventType === 'wedding') eventTypeDisplay = 'Wedding';
+      else if (eventType === 'bar_bat_mitzvah') eventTypeDisplay = 'Bar/Bat Mitzvah';
+      else if (eventType === 'corporate') eventTypeDisplay = isCorporateGala ? 'Corporate Gala' : 'Corporate Event';
+      else if (isVirtual) eventTypeDisplay = 'Virtual Event';
+      else if (isKidsBirthday) eventTypeDisplay = "Kids Birthday Party";
+
+      const bookingEmailBody = `
+<!DOCTYPE html><html><head><style>
+body{font-family:'Courier New',monospace;background:#f5f5f5;padding:20px;}
+.container{background:white;padding:30px;max-width:700px;margin:0 auto;border:2px solid #333;}
+.header{text-align:center;border-top:3px solid #333;border-bottom:3px solid #333;padding:15px 0;margin-bottom:30px;font-size:20px;font-weight:bold;}
+.section{margin-bottom:25px;}
+.section-title{font-size:16px;font-weight:bold;margin-bottom:10px;}
+.section-content{margin-left:20px;line-height:1.8;}
+.highlight{background:#fff3cd;padding:2px 5px;}
+</style></head><body><div class="container">
+<div class="header">📋 NEW BOOKING REQUEST</div>
+<div class="section"><div class="section-title">📅 EVENT DETAILS</div>
+<div class="section-content">
+<div><strong>Date:</strong> ${eventDateFormatted}</div>
+${eventTime ? `<div><strong>Time:</strong> ${eventTime}</div>` : ''}
+${venueAddress ? `<div><strong>Venue:</strong> ${venueAddress}</div>` : ''}
+<div><strong>Type:</strong> ${eventTypeDisplay}</div>
+<div><strong>Performer:</strong> ${pkg.performer}</div>
+</div></div>
+<div class="section"><div class="section-title">🎭 PACKAGE</div>
+<div class="section-content">
+<div><strong>Bundle:</strong> ${pkg.type}</div>
+<div><strong>Duration:</strong> ${pkg.duration}</div>
+<div><strong>Tier:</strong> ${pkg.tier}</div>
+<div><strong>Package Price:</strong> $${pkg.packagePrice.toLocaleString()}</div>
+</div></div>
+<div class="section"><div class="section-title">✨ ADD-ONS</div>
+<div class="section-content">${pkg.addons}</div></div>
+<div class="section"><div class="section-title">💰 PRICING SUMMARY</div>
+<div class="section-content">
+<div>Package: $${pkg.packagePrice.toLocaleString()}</div>
+<div>Add-ons: $${totalAddonsCost.toLocaleString()}</div>
+<div style="border-top:2px solid #333;margin:10px 0;padding-top:10px;"><strong>TOTAL: <span class="highlight">$${totalInvestment.toLocaleString()}</span></strong></div>
+</div></div>
+<div class="section"><div class="section-title">👤 CUSTOMER</div>
+<div class="section-content">
+<div><strong>Name:</strong> ${fullName}</div>
+<div><strong>Email:</strong> ${email}</div>
+<div><strong>Phone:</strong> ${phone || 'Not provided'}</div>
+</div></div>
+${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES</div><div class="section-content">${additionalNotes}</div></div>` : ''}
+</div></body></html>`;
+
+      await base44.integrations.Core.SendEmail({
+        to: 'hello@omnimagic.co',
+        subject: `📋 New Booking Request – ${pkg.type}`,
+        body: bookingEmailBody,
+      });
+
+      await base44.integrations.Core.SendEmail({
+        to: email,
+        subject: `✨ Your Omni Magic Booking Request Received!`,
+        body: `<p>Hi ${fullName},</p><p>We've received your booking request and will send you an official contract and invoice within 24 hours.</p><p>Questions? Email us at <a href="mailto:hello@omnimagic.co">hello@omnimagic.co</a></p><p>– The Omni Magic Team</p>`,
+      });
+
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error('Confirm now error:', error);
+      setShowSuccessModal(true);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle Stripe success redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const paymentStatus = params.get('payment');
+    const sessionId = params.get('session_id');
     if (paymentStatus === 'success' && sessionId) {
-      handleStripeSuccess(sessionId);
-      // Clean URL but keep event params
+      base44.functions.invoke('handleStripeSuccess', { sessionId }).then((res) => {
+        if (res.data?.success) {
+          setHoldExpiryTime(new Date(res.data.expiryTime));
+          setEmail(res.data.customerEmail);
+          setShowSuccessModal(true);
+        }
+      }).catch(() => setShowSuccessModal(true));
       const newUrl = new URL(window.location.href);
       newUrl.searchParams.delete('payment');
       newUrl.searchParams.delete('session_id');
@@ -332,1443 +370,502 @@ export default function PricingPage() {
     }
   }, []);
 
-  const handleStripeSuccess = async (sessionId) => {
-    setIsSubmitting(true);
-
-    try {
-      const response = await base44.functions.invoke('handleStripeSuccess', {
-        sessionId: sessionId
-      });
-
-      if (response.data.success) {
-        setHoldExpiryTime(new Date(response.data.expiryTime));
-        setEmail(response.data.customerEmail);
-        setDepositAmount(response.data.depositAmount);
-        setShowSuccessModal(true);
-      } else {
-        throw new Error('Payment verification failed');
-      }
-    } catch (error) {
-      console.error('Error processing Stripe success:', error);
-      // Payment was successful - show confirmation even if email fails
-      setShowSuccessModal(true);
-    } finally {
-      setIsSubmitting(false);
+  const handleVideoPlay = (url) => {
+    let embedUrl = url;
+    if (url.includes('youtu.be')) {
+      embedUrl = `https://www.youtube.com/embed/${url.split('youtu.be/')[1].split('?')[0]}`;
+    } else if (url.includes('youtube.com/watch')) {
+      embedUrl = `https://www.youtube.com/embed/${url.split('v=')[1].split('&')[0]}`;
     }
+    setVideoUrl(embedUrl);
+    setShowVideoModal(true);
   };
 
-  const handleHoldDateRequest = async (paymentMethod) => {
-    if (!email || !fullName) {
-      alert('Please enter your contact details');
-      return;
-    }
-
-    setIsSubmitting(true);
-    setShowPaymentOptions(false);
-    const currentTime = new Date();
-    const expiryTime = addHours(currentTime, 48);
-
-    try {
-      let packageDetails;
-      if (eventType === 'virtual') {
-        packageDetails = {
-          type: 'Virtual Experience',
-          performer: 'Johnny Wu',
-          duration: `${virtualDuration} Minutes`,
-          tier: 'Virtual Show',
-          packagePrice: selectedPackagePrice.price,
-          addons: selectedAddons.length > 0 ? selectedAddons.map((id) => {
-            const addon = pricingData?.app?.add_ons?.find((a) => a.id === id);
-            return addon?.label;
-          }).join(', ') : 'None',
-          magicians: ''
-        };
-      } else {
-        packageDetails = {
-          type: selectedService === 'closeup' ? 'Close-Up Mingling Magic' :
-          selectedService === 'stage' ? 'Stage Show' :
-          selectedService === 'bundle' ? 'Bundle Package' : 'Unknown',
-          performer: selectedService === 'closeup' ? closeUpPerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George' :
-          selectedService === 'stage' ? stagePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George' :
-          selectedService === 'bundle' ? bundlePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George' : 'Unknown',
-          duration: selectedService === 'closeup' ? `${closeUpDuration} ${parseInt(closeUpDuration) === 1 ? 'Hour' : 'Hours'}` :
-          selectedService === 'stage' ? `${stageDuration} Minutes` :
-          selectedService === 'bundle' ? `${bundleCloseUpDuration}hr Close-Up + ${bundleStageDuration}min Stage` : 'Unknown',
-          magicians: selectedService === 'closeup' ? closeUpMagicians : selectedService === 'bundle' ? bundleNumMagicians : '',
-          tier: selectedService === 'closeup' ? closeUpTier.charAt(0).toUpperCase() + closeUpTier.slice(1) :
-          selectedService === 'stage' ? stageTier.charAt(0).toUpperCase() + stageTier.slice(1) :
-          selectedService === 'bundle' ? bundleTier.charAt(0).toUpperCase() + bundleTier.slice(1) : 'Unknown',
-          packagePrice: selectedPackagePrice.price,
-          addons: selectedAddons.length > 0 ? selectedAddons.map((id) => {
-            const addon = pricingData?.app?.add_ons?.find((a) => a.id === id);
-            return addon?.label;
-          }).join(', ') : 'None'
-        };
-      }
-
-      await base44.functions.invoke('sendHoldDateConfirmation', {
-        customerName: fullName,
-        customerEmail: email,
-        customerPhone: phone,
-        eventDate: eventDate,
-        packageDetails: packageDetails,
-        depositAmount: depositAmount,
-        totalInvestment: totalInvestment,
-        eventTime: eventTime,
-        venueAddress: venueAddress,
-        additionalNotes: additionalNotes,
-        holdExpiryTime: expiryTime.toISOString(),
-        requestTime: currentTime.toISOString(),
-        paymentMethod: paymentMethod
-      });
-
-      setHoldExpiryTime(expiryTime);
-      setShowSuccessModal(true);
-    } catch (error) {
-      console.error('Error sending hold request email:', error);
-      setHoldExpiryTime(expiryTime);
-      setShowSuccessModal(true);
-      // Silently notify business of the error
-      base44.integrations.Core.SendEmail({
-        to: 'hello@omnimagic.co',
-        subject: '⚠️ Hold Date Submission Error',
-        body: `<p>A backend error occurred during a hold date submission.</p><p><strong>Customer:</strong> ${fullName} (${email})</p><p><strong>Error:</strong> ${error.message}</p>`
-      }).catch(() => {});
-    } finally {
-      setIsSubmitting(false);
-    }
+  // ── Bundle price preview helper ────────────────────────────────────────────
+  const getBundlePreviewPrice = (perf, type) => {
+    const result = calculateBundlePrice(perf, 'signature', type === 'standard' ? 1 : 2, 1, 30, eventType, eventScale, eventDate);
+    return result.price;
   };
 
-
-  const handleConfirmNow = async () => {
-    if (!email || !fullName) {
-      alert('Please enter your contact details');
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      let packageDetails;
-
-      if (eventType === 'virtual') {
-        packageDetails = {
-          type: 'Virtual Experience',
-          performer: 'Johnny Wu',
-          duration: `${virtualDuration} Minutes`,
-          tier: 'Virtual Show'
-        };
-      } else {
-        packageDetails = {
-          type: selectedService === 'closeup' ? 'Close-Up Mingling Magic' :
-          selectedService === 'stage' ? 'Stage Show' :
-          selectedService === 'bundle' ? 'Combination Package' :
-          'Unknown',
-          performer: selectedService === 'closeup' ? closeUpPerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George' :
-          selectedService === 'stage' ? stagePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George' :
-          selectedService === 'bundle' ? bundlePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George' :
-          'Unknown',
-          duration: selectedService === 'closeup' ? `${closeUpDuration} ${parseInt(closeUpDuration) === 1 ? 'Hour' : 'Hours'}` :
-          selectedService === 'stage' ? `${stageDuration}-Minute Show` :
-          selectedService === 'bundle' ? `${bundleCloseUpDuration}hr Close-Up + ${bundleStageDuration}min Stage` :
-          'Unknown',
-          magicians: selectedService === 'closeup' ? closeUpMagicians : selectedService === 'bundle' ? bundleNumMagicians : undefined,
-          tier: selectedService === 'closeup' ? closeUpTier :
-          selectedService === 'stage' ? stageTier :
-          selectedService === 'bundle' ? bundleTier :
-          'Unknown'
-        };
-      }
-
-      const tierName = packageDetails.tier === 'Virtual Show' ? 'Virtual Show' :
-      packageDetails.tier.charAt(0).toUpperCase() + packageDetails.tier.slice(1);
-
-      let eventTypeDisplay = 'Private Event';
-      if (eventType === 'wedding') {
-        eventTypeDisplay = 'Wedding';
-      } else if (eventType === 'corporate') {
-        if (eventScale === 'large' || eventScale === 'vip') {
-          eventTypeDisplay = 'Corporate Gala';
-        } else {
-          eventTypeDisplay = 'Corporate Event';
-        }
-      } else if (eventType === 'virtual') {
-        eventTypeDisplay = 'Virtual Event';
-      }
-
-      const eventDateFormatted = eventDate ? new Date(eventDate + 'T00:00:00').toLocaleDateString('en-US', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      }) : 'Not specified';
-
-      let addonsText = selectedAddons.length > 0 ?
-      selectedAddons.map((id) => {
-        const addon = pricingData?.app?.add_ons?.find((a) => a.id === id);
-        if (id === 'addon_poster' && includesFreePoster) {
-          return `  • ${addon.label} (Value: $200) - FREE`;
-        }
-        return `  • ${addon?.label} (+$${addon?.price.toLocaleString()})`;
-      }).join('\n') :
-      'None';
-
-      if (includesFreePoster && !selectedAddons.includes('addon_poster')) {
-        addonsText += (addonsText === 'None' ? '' : '\n') + '  • Impossible Poster Souvenir (Value: $200) - FREE';
-      }
-
-      const addonsArray = selectedAddons.length > 0 ?
-      selectedAddons.map((id) => {
-        const addon = pricingData?.app?.add_ons?.find((a) => a.id === id);
-        return addon?.label;
-      }) :
-      [];
-
-      if (includesFreePoster && !selectedAddons.includes('addon_poster')) {
-        addonsArray.push('Impossible Poster Souvenir (Value: $200) - FREE');
-      }
-
-      const addonsHtml = addonsArray.length > 0 ?
-      addonsArray.map((addon) => `<div style="margin-left: 20px;">• ${addon}</div>`).join('') :
-      '<div style="margin-left: 20px;">None</div>';
-
-      const bookingEmailBody = `
-<!DOCTYPE html>
-<html>
-<head>
-  <style>
-    body { font-family: 'Courier New', monospace; background-color: #f5f5f5; padding: 20px; }
-    .container { background-color: white; padding: 30px; max-width: 700px; margin: 0 auto; border: 2px solid #333; }
-    .header { text-align: center; border-top: 3px solid #333; border-bottom: 3px solid #333; padding: 15px 0; margin-bottom: 30px; font-size: 20px; font-weight: bold; }
-    .section { margin-bottom: 25px; }
-    .section-title { font-size: 16px; font-weight: bold; margin-bottom: 10px; color: #333; }
-    .section-content { margin-left: 20px; line-height: 1.8; }
-    .highlight { background-color: #fff3cd; padding: 2px 5px; }
-    .footer { text-align: center; border-top: 3px solid #333; border-bottom: 3px solid #333; padding: 15px 0; margin-top: 30px; font-size: 12px; color: #666; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      📋 NEW BOOKING REQUEST
-    </div>
-
-    <div class="section">
-      <div class="section-title">📋 REQUEST DETAILS</div>
-      <div class="section-content">
-        <div><strong>Type:</strong> Booking Request (Confirm Now)</div>
-        <div><strong>Requested At:</strong> ${new Date().toLocaleString('en-US', { dateStyle: 'full', timeStyle: 'short' })}</div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">📅 EVENT DETAILS</div>
-      <div class="section-content">
-        <div><strong>Date:</strong> ${eventDateFormatted}</div>
-        ${eventTime ? `<div><strong>Time:</strong> ${eventTime}</div>` : ''}
-        ${venueAddress ? `<div><strong>Venue:</strong> ${venueAddress}</div>` : ''}
-        <div><strong>Type:</strong> ${eventTypeDisplay}</div>
-        <div><strong>Performer:</strong> ${packageDetails.performer}</div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">🎭 PACKAGE DETAILS</div>
-      <div class="section-content">
-        <div><strong>Service Type:</strong> ${packageDetails.type}</div>
-        <div><strong>Duration:</strong> ${packageDetails.duration}</div>
-        ${packageDetails.magicians ? `<div><strong>Magicians:</strong> ${packageDetails.magicians}</div>` : ''}
-        <div><strong>Tier:</strong> ${tierName}</div>
-        <div><strong>Package Price:</strong> $${selectedPackagePrice.price.toLocaleString()}</div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">✨ ADD-ONS</div>
-      ${addonsHtml}
-    </div>
-
-    <div class="section">
-      <div class="section-title">💰 PRICING SUMMARY</div>
-      <div class="section-content">
-        <div>Package Price: $${selectedPackagePrice.price.toLocaleString()}</div>
-        <div>Add-ons Total: $${totalAddonsCost.toLocaleString()}</div>
-        <div style="border-top: 2px solid #333; margin: 10px 0; padding-top: 10px;">
-          <strong>TOTAL INVESTMENT: <span class="highlight">$${totalInvestment.toLocaleString()}</span></strong>
-        </div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">👤 CUSTOMER INFORMATION</div>
-      <div class="section-content">
-        <div><strong>Name:</strong> ${fullName}</div>
-        <div><strong>Email:</strong> ${email}</div>
-        <div><strong>Phone:</strong> ${phone || 'Not provided'}</div>
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">📝 NOTES</div>
-      <div class="section-content">
-        ${additionalNotes || 'None'}
-      </div>
-    </div>
-
-    <div class="section">
-      <div class="section-title">📌 NEXT STEPS</div>
-      <div style="margin-left: 20px;">
-        <div>• Send official contract and invoice to ${email}</div>
-        <div>• Confirm booking upon signature/payment</div>
-      </div>
-    </div>
-
-    <div class="footer">
-      Omni Magic Entertainment System
-    </div>
-  </div>
-</body>
-</html>
-`;
-
-      await base44.integrations.Core.SendEmail({
-        to: 'hello@omnimagic.co',
-        subject: `📋 New Booking Request - ${packageDetails.type}`,
-        body: bookingEmailBody
-      });
-
-      const customerThankYouEmailBody = `
-<!DOCTYPE html>
-<html>
-<head>
-  <style>
-    body { font-family: 'Inter', sans-serif; background-color: #f5f5f5; padding: 20px; color: #333; }
-    .container { background-color: white; padding: 30px; max-width: 600px; margin: 0 auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
-    .header { text-align: center; padding-bottom: 20px; border-bottom: 1px solid #eee; margin-bottom: 20px; }
-    .header img { max-width: 150px; margin-bottom: 15px; }
-    .header h1 { font-size: 24px; color: #333; margin: 0; }
-    .content { font-size: 16px; line-height: 1.6; }
-    .content p { margin-bottom: 15px; }
-    .button-container { text-align: center; margin-top: 30px; }
-    .button { background-color: #f59e0b; color: white; padding: 12px 25px; border-radius: 5px; text-decoration: none; font-weight: bold; }
-    .footer { text-align: center; padding-top: 20px; margin-top: 30px; border-top: 1px solid #eee; font-size: 12px; color: #777; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/705652e3a_logowhitewordstransparent.png" alt="Omni Magic Entertainment">
-      <h1>Thank You for Your Booking Request!</h1>
-    </div>
-    <div class="content">
-      <p>Dear ${fullName},</p>
-      <p>We've received your booking request for an unforgettable magic experience!</p>
-      <p>Our team at Omni Magic Entertainment is now reviewing your details and will prepare a personalized contract and invoice for you as soon as possible. You can expect to hear from us within 5 minutes to 12 hours at the email address: <strong>hello@omnimagic.co</strong>.</p>
-      <p>In the meantime, feel free to visit our website or explore more of our magical offerings.</p>
-      <div class="button-container">
-        <a href="https://omnimagic.co/" class="button">Visit Omni Magic</a>
-      </div>
-      <p>We're thrilled at the prospect of making your event truly magical!</p>
-      <p>Sincerely,</p>
-      <p>The Omni Magic Team</p>
-    </div>
-    <div class="footer">
-      &copy; 2025 Omni Magic Entertainment. All rights reserved.
-    </div>
-  </div>
-</body>
-</html>
-      `;
-
-      await base44.integrations.Core.SendEmail({
-        to: email,
-        subject: `✨ Your Omni Magic Booking Request Received!`,
-        body: customerThankYouEmailBody
-      });
-
-      setShowSuccessModal(true);
-    } catch (error) {
-      console.error('Error sending confirmation email:', error);
-      setShowSuccessModal(true);
-      // Silently notify business of the error
-      base44.integrations.Core.SendEmail({
-        to: 'hello@omnimagic.co',
-        subject: '⚠️ Confirm Now Submission Error',
-        body: `<p>A backend error occurred during a confirm now submission.</p><p><strong>Customer:</strong> ${fullName} (${email})</p><p><strong>Error:</strong> ${error.message}</p>`
-      }).catch(() => {});
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  const getMagicianOptions = (performerId) => {
-    const performerName = performerId === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George';
-    return [
-    { value: "1", label: `1 Magician: ${performerName}` },
-    { value: "2", label: `2 Magicians: ${performerName} + Associate` },
-    { value: "3", label: `3 Magicians: ${performerName} + 2 Associates` }];
-
-  };
-
-  const isFormValid = () => {
-    if (!eventDate) return false;
-    if (eventType === 'virtual') {
-      return virtualDuration;
-    }
-    if (!selectedService) return false;
-    if (selectedService === 'closeup' && (!closeUpDuration || !closeUpMagicians || !closeUpTier)) return false;
-    if (selectedService === 'stage' && (!stageDuration || !stageTier)) return false;
-    if (selectedService === 'bundle' && (!bundleCloseUpDuration || !bundleNumMagicians || !bundleStageDuration || !bundleTier)) return false;
-    return true;
-  };
-
-  const getPackageSummary = () => {
-    if (eventType === 'virtual' && virtualDuration) {
-      return {
-        type: 'Virtual Experience',
-        performer: 'Johnny Wu',
-        duration: `${virtualDuration} Minutes`,
-        magicians: '',
-        tier: 'Virtual Show'
-      };
-    }
-
-    if (!selectedService) return null;
-
-    let summary = {
-      type: '',
-      performer: '',
-      duration: '',
-      magicians: '',
-      tier: ''
-    };
-
-    if (selectedService === 'closeup') {
-      summary.type = 'Close-Up Mingling Magic';
-      summary.performer = closeUpPerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George';
-      summary.duration = `${closeUpDuration} ${parseFloat(closeUpDuration) === 1 ? 'Hour' : 'Hours'}`;
-      summary.magicians = closeUpMagicians ? `${closeUpMagicians} ${parseInt(closeUpMagicians) === 1 ? 'Magician' : 'Magicians'}` : '';
-      summary.tier = closeUpTier ? closeUpTier.charAt(0).toUpperCase() + closeUpTier.slice(1) : '';
-    } else if (selectedService === 'stage') {
-      summary.type = 'Stage Show';
-      summary.performer = stagePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George';
-      summary.duration = `${stageDuration} Minutes`;
-      summary.tier = stageTier ? stageTier.charAt(0).toUpperCase() + stageTier.slice(1) : '';
-    } else if (selectedService === 'bundle') {
-      summary.type = 'Bundle Package';
-      summary.performer = bundlePerformer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George';
-      summary.duration = `${bundleCloseUpDuration}hr Close-Up + ${bundleStageDuration}min Stage`;
-      summary.magicians = bundleNumMagicians ? `${bundleNumMagicians} ${parseInt(bundleNumMagicians) === 1 ? 'Magician' : 'Magicians'}` : '';
-      summary.tier = bundleTier ? bundleTier.charAt(0).toUpperCase() + bundleTier.slice(1) : '';
-    }
-
-    return summary;
-  };
-
-  const packageSummary = getPackageSummary();
+  // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
     <>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        
-        body {
-          font-family: 'Inter', sans-serif;
-          font-size: 15px;
-          line-height: 1.3;
-        }
-        
-        @media (max-width: 768px) {
-          body {
-            font-size: 14px;
-          }
-        }
-
-        input[type="date"]::-webkit-calendar-picker-indicator {
-          filter: invert(1);
-        }
+        body { font-family: 'Inter', sans-serif; font-size: 15px; }
+        input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(1); }
       `}</style>
 
       <div className="min-h-screen bg-slate-900">
-        <div
-          style={{ backgroundImage: `url(${backgroundImageUrl})` }}
+        <div style={{ backgroundImage: `url(${backgroundImageUrl})` }}
           className="fixed inset-0 bg-cover bg-center filter brightness-[0.3] z-0" />
 
-
         <div className="relative z-10">
+          {/* Header */}
           <div className="h-[200px] md:h-[250px] flex flex-col items-center justify-center px-4">
-            <a
-              href={createPageUrl('Home')}
-              className="cursor-pointer">
-
-              <img
-                src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/705652e3a_logowhitewordstransparent.png"
+            <a href={createPageUrl('Home')} className="cursor-pointer">
+              <img src="https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/705652e3a_logowhitewordstransparent.png"
                 alt="Omni Magic Entertainment"
                 className="h-16 md:h-20 mb-3 drop-shadow-2xl hover:opacity-80 transition-opacity" />
-
             </a>
-            <h1 className="text-white text-[22px] md:text-[28px] font-semibold text-center mb-2">
-              Reserve Your Experience
-            </h1>
+            <h1 className="text-white text-[22px] md:text-[28px] font-semibold text-center mb-2">Reserve Your Experience</h1>
             <p className="text-slate-200 text-[13px] md:text-[15px] text-center max-w-2xl mb-3">
-              Select your service, choose add-ons, and secure your date
+              Select your package and secure your date
             </p>
-            <a
-              href="https://omnimagic.co"
-              target="_blank"
-              rel="noopener noreferrer"
+            <a href="https://omnimagic.co" target="_blank" rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-900 font-medium text-[13px] rounded-lg transition-all">
               Visit Omnimagic.co <ExternalLink className="w-4 h-4" />
             </a>
           </div>
 
           <div className="max-w-[900px] mx-auto px-4 pb-24">
-            {/* Event Date Section */}
+
+            {/* Event Date */}
             <div className="bg-slate-800/90 rounded-xl border-2 border-slate-600 mb-6 shadow-xl overflow-hidden">
               <div className="p-4 md:p-6">
-                <h2 className="text-white text-[18px] md:text-[22px] font-bold mb-1 text-center">
-                  Event Date
-                </h2>
-                <p className="text-amber-400 text-[13px] md:text-[14px] text-center mb-4">
-                  * Required to calculate accurate pricing
-                </p>
-                
+                <h2 className="text-white text-[18px] md:text-[22px] font-bold mb-1 text-center">Event Date</h2>
+                <p className="text-amber-400 text-[13px] text-center mb-4">* Required to calculate accurate pricing</p>
                 <div className="max-w-md mx-auto">
-                  <Input
-                    id="eventDate"
-                    type="date"
-                    value={eventDate}
-                    onChange={handleDateChange}
-                    min={getTodayDate()}
-                    required
-                    className="w-full bg-slate-700 border-2 border-slate-500 focus:border-amber-500 text-white text-[13px] md:text-[14px] h-10 md:h-11 px-3 rounded-lg transition-all hover:bg-slate-700/90" />
-
+                  <Input type="date" value={eventDate} onChange={handleDateChange} min={getTodayDate()} required
+                    className="w-full bg-slate-700 border-2 border-slate-500 focus:border-amber-500 text-white text-[13px] md:text-[14px] h-10 px-3 rounded-lg" />
                 </div>
-
-                {eventDate && isPeakDate(eventDate) &&
-                <div className="mt-3 p-3 bg-amber-500/20 border-2 border-amber-500/40 rounded-lg text-amber-300 text-[13px] text-center max-w-md mx-auto">
-                    🔥 <span className="font-semibold">High demand date</span> - limited availability
+                {eventDate && isPeakDate(eventDate) && (
+                  <div className="mt-3 p-3 bg-amber-500/20 border-2 border-amber-500/40 rounded-lg text-amber-300 text-[13px] text-center max-w-md mx-auto">
+                    🔥 <span className="font-semibold">High demand date</span> — 1.5× pricing applies
                   </div>
-                }
+                )}
+                {isKidsBirthday && eventDate && (
+                  <div className="mt-3 p-3 bg-slate-700/50 border border-slate-500 rounded-lg text-slate-200 text-[13px] text-center max-w-md mx-auto">
+                    {isWeekend(eventDate) ? '📅 Weekend rate: $695' : '📅 Weekday rate: $595'}
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Location Disclaimer */}
-            <div className="bg-blue-900/30 border-2 border-blue-500/50 rounded-xl p-4 md:p-5 mb-6 shadow-lg">
+            {/* Location Notice */}
+            <div className="bg-blue-900/30 border-2 border-blue-500/50 rounded-xl p-4 mb-6 shadow-lg">
               <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 mt-0.5">
-                  <svg className="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-blue-300 font-semibold text-[14px] md:text-[15px] mb-1">
-                    📍 Location Notice
-                  </h3>
-                  <p className="text-blue-200 text-[13px] md:text-[14px] leading-relaxed">
-                    Pricing shown is for events within <span className="font-semibold text-white">Southern California</span> (within 50 miles of Los Angeles). 
-                    If your event is outside this area, please <a href="mailto:hello@omnimagic.co" className="text-blue-400 hover:text-blue-300 underline font-medium">contact us</a> for a custom quote including travel arrangements.
-                  </p>
-                </div>
+                <svg className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+                <p className="text-blue-200 text-[13px] md:text-[14px] leading-relaxed">
+                  Pricing shown is for events within <span className="font-semibold text-white">Southern California</span> (within 50 miles of Los Angeles).
+                  Outside this area? <a href="mailto:hello@omnimagic.co" className="text-blue-400 hover:text-blue-300 underline font-medium">Contact us</a> for a custom quote.
+                </p>
               </div>
             </div>
 
-            {/* Virtual Show Selection */}
-            {eventType === 'virtual' ?
-            <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-6 mb-4 shadow-sm">
+            {/* ── VIRTUAL ───────────────────────────────────────────────────── */}
+            {isVirtual && (
+              <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-6 mb-4 shadow-sm">
                 <div className="text-center mb-6">
-                  <h2 className="text-white text-[22px] md:text-[26px] font-bold mb-2">
-                    Virtual Experience — Magic That Connects Anywhere
-                  </h2>
-                  <p className="text-slate-200 text-[14px] md:text-[16px] max-w-2xl mx-auto">
-                    Bring world-class magic, mind reading, and connection straight to your screen — designed for remote teams, virtual galas, and global audiences.
+                  <h2 className="text-white text-[22px] md:text-[26px] font-bold mb-2">Virtual Experience</h2>
+                  <p className="text-slate-200 text-[14px] max-w-2xl mx-auto">
+                    World-class magic, mind reading, and connection straight to your screen.
                   </p>
                 </div>
 
                 <div className="space-y-3 max-w-2xl mx-auto">
-                  <h3 className="text-white text-[18px] font-semibold mb-3">Select Duration:</h3>
-                  
-                  <button
-                  onClick={() => setVirtualDuration('30')}
-                  className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
-                  virtualDuration === '30' ?
-                  'border-amber-500 bg-amber-500/10' :
-                  'border-slate-600 hover:border-slate-500'}`
-                  }>
-
-                    <div className="flex justify-between items-center mb-2">
-                      <h4 className="text-white text-[18px] font-bold">30 Minutes — $1,500</h4>
-                    </div>
-                    <p className="text-slate-200 text-[14px]">
-                      Perfect for team meetings or quick virtual celebrations.
-                    </p>
-                  </button>
-
-                  <button
-                  onClick={() => setVirtualDuration('45')}
-                  className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
-                  virtualDuration === '45' ?
-                  'border-amber-500 bg-amber-500/10' :
-                  'border-slate-600 hover:border-slate-500'}`
-                  }>
-
-                    <div className="flex justify-between items-center mb-2">
-                      <h4 className="text-white text-[18px] font-bold">45 Minutes — $2,000</h4>
-                      <span className="text-[11px] bg-blue-500 text-white px-2 py-1 rounded font-medium">
-                        MOST POPULAR
-                      </span>
-                    </div>
-                    <p className="text-slate-200 text-[14px]">
-                      Interactive, fast-paced, and unforgettable. Includes hypnosis and mind reading.
-                    </p>
-                  </button>
-
-                  <button
-                  onClick={() => setVirtualDuration('60')}
-                  className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
-                  virtualDuration === '60' ?
-                  'border-amber-500 bg-amber-500/10' :
-                  'border-slate-600 hover:border-slate-500'}`
-                  }>
-
-                    <div className="flex justify-between items-center mb-2">
-                      <h4 className="text-white text-[18px] font-bold">60 Minutes — $2,500</h4>
-                    </div>
-                    <p className="text-slate-200 text-[14px]">
-                      45-minute full experience with hypnosis and mind reading + 15-minute magic masterclass where everyone learns from a master magician.
-                    </p>
-                  </button>
+                  {[
+                    { value: '30', label: 'Virtual Experience 30m', price: 1499, desc: 'Perfect for team meetings or quick virtual celebrations.' },
+                    { value: '45', label: 'Virtual Experience 45m', price: 1999, badge: 'MOST POPULAR', desc: 'Interactive, fast-paced, and unforgettable. Includes hypnosis and mind reading.' },
+                    { value: '60', label: 'Virtual Experience 60m', price: 2499, desc: 'Full experience with hypnosis, mind reading + 15-min magic masterclass.' },
+                  ].map((opt) => (
+                    <button key={opt.value} onClick={() => setVirtualDuration(opt.value)}
+                      className={`w-full text-left p-4 rounded-lg border-2 transition-all ${virtualDuration === opt.value ? 'border-amber-500 bg-amber-500/10' : 'border-slate-600 hover:border-slate-500'}`}>
+                      <div className="flex justify-between items-center mb-1">
+                        <h4 className="text-white text-[17px] font-bold">{opt.label} — ${opt.price.toLocaleString()}</h4>
+                        {opt.badge && <span className="text-[11px] bg-blue-500 text-white px-2 py-1 rounded font-medium">{opt.badge}</span>}
+                      </div>
+                      <p className="text-slate-200 text-[13px]">{opt.desc}</p>
+                    </button>
+                  ))}
                 </div>
+              </div>
+            )}
 
-                {eventDate && isPeakDate(eventDate) &&
-              <div className="mt-4 p-3 bg-amber-500/20 border-2 border-amber-500/40 rounded-lg text-amber-300 text-[13px] text-center max-w-2xl mx-auto">
-                    📅 <span className="font-semibold">December Performance:</span> 1.5× premium automatically applied due to limited availability
-                  </div>
-              }
-              </div> : (
-
-            /* Regular Service Selection for non-virtual events */
-            <>
-                {/* Service Type Selection */}
-                {!selectedService && !isKidsBirthdayParty &&
+            {/* ── KIDS BIRTHDAY ─────────────────────────────────────────────── */}
+            {isKidsBirthday && (
               <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-6 mb-4 shadow-sm">
-                    <h2 className="text-white text-[20px] md:text-[24px] font-bold mb-4 text-center">
-                      Choose Your Service
-                    </h2>
-                    
-                    <div className="space-y-3 max-w-2xl mx-auto">
-                      <button
-                    onClick={() => handleServiceSelect('closeup')}
-                    className="w-full text-left p-4 rounded-lg border-2 border-slate-600 hover:border-amber-500 hover:bg-amber-500/10 transition-all">
+                <h2 className="text-white text-[20px] md:text-[24px] font-bold mb-2 text-center">Kids Birthday Stage Show</h2>
+                <p className="text-slate-300 text-[14px] text-center mb-6 max-w-2xl mx-auto">
+                  Dylan George performs a 30-minute interactive stage show designed to captivate young audiences and create magical memories.
+                </p>
 
-                        <h3 className="text-white text-[18px] font-bold mb-2">
-                          Close-Up Mingling Magic
-                        </h3>
-                        <p className="text-slate-200 text-[14px]">
-                          {serviceDescriptions.closeUp}
+                <div className="max-w-md mx-auto space-y-4">
+                  <div className="bg-slate-700/60 rounded-lg p-4 border border-slate-600">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <p className="text-white font-semibold text-[16px]">30-Minute Stage Show</p>
+                        <p className="text-slate-300 text-[13px]">Performer: Dylan George</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-amber-400 font-bold text-[20px]">
+                          ${eventDate ? (isWeekend(eventDate) ? KIDS_PRICING.weekend : KIDS_PRICING.weekday).toLocaleString() : '595–695'}
                         </p>
-                      </button>
+                        <p className="text-slate-400 text-[11px]">{eventDate ? (isWeekend(eventDate) ? 'Weekend' : 'Weekday') : 'Weekday / Weekend'}</p>
+                      </div>
+                    </div>
+                  </div>
 
-                      <button
-                    onClick={() => handleServiceSelect('stage')}
-                    className="w-full text-left p-4 rounded-lg border-2 border-slate-600 hover:border-amber-500 hover:bg-amber-500/10 transition-all">
+                  <div
+                    onClick={() => setKidsCloseUpAddon(!kidsCloseUpAddon)}
+                    className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${kidsCloseUpAddon ? 'border-amber-500 bg-amber-500/10' : 'border-slate-600 hover:border-slate-500'}`}>
+                    <Checkbox checked={kidsCloseUpAddon} onCheckedChange={setKidsCloseUpAddon} className="mt-0.5" />
+                    <div className="flex-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-white text-[14px] font-medium">Add +30 Minutes Close-Up Magic</span>
+                        <span className="text-amber-400 text-[14px] font-semibold">+$250</span>
+                      </div>
+                      <p className="text-slate-300 text-[12px] mt-1">Intimate magic mingling before or after the show.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
 
-                        <h3 className="text-white text-[18px] font-bold mb-2">
-                          Stage Show
-                        </h3>
-                        <p className="text-slate-200 text-[14px]">
-                          {serviceDescriptions.stage}
-                        </p>
-                      </button>
+            {/* ── ADULT BUNDLE SELECTOR ─────────────────────────────────────── */}
+            {isAdult && (
+              <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-6 mb-4 shadow-sm">
+                <h2 className="text-white text-[20px] md:text-[24px] font-bold mb-1 text-center">Choose Your Package</h2>
+                <p className="text-slate-300 text-[13px] text-center mb-6">Every bundle includes close-up mingling magic + a stage show</p>
 
-                      <button
-                    onClick={() => handleServiceSelect('bundle')}
-                    className="w-full text-left p-4 rounded-lg border-2 border-slate-600 hover:border-amber-500 hover:bg-amber-500/10 transition-all">
-
-                        <div className="flex items-center justify-between mb-2">
-                          <h3 className="text-white text-[18px] font-bold">
-                            Bundle Package
-                          </h3>
-                          <span className="text-[11px] bg-green-500 text-white px-2 py-1 rounded font-medium">
-                            10% OFF
+                {/* Performer Selection */}
+                <div className="mb-6">
+                  <Label className="text-white text-[14px] mb-3 block font-semibold">Select Performer</Label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {[
+                      { id: 'johnny_wu', name: 'Johnny Wu', subtitle: 'Elite / Anchor', badge: 'Premium' },
+                      { id: 'dylan_george', name: 'Dylan George', subtitle: 'Value / Calendar Filler', badge: 'Value' },
+                    ].map((p) => (
+                      <button key={p.id} onClick={() => setPerformer(p.id)}
+                        className={`p-4 rounded-lg border-2 text-left transition-all ${performer === p.id ? 'border-amber-500 bg-amber-500/10' : 'border-slate-600 hover:border-slate-500'}`}>
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="text-white font-bold text-[16px]">{p.name}</p>
+                            <p className="text-slate-300 text-[12px]">{p.subtitle}</p>
+                          </div>
+                          <span className={`text-[11px] px-2 py-1 rounded font-medium ${p.badge === 'Premium' ? 'bg-amber-500/20 text-amber-300' : 'bg-slate-600 text-slate-200'}`}>
+                            {p.badge}
                           </span>
                         </div>
-                        <p className="text-slate-200 text-[14px]">
-                          {serviceDescriptions.bundle}
-                        </p>
                       </button>
-                    </div>
-                  </div>
-              }
-                
-                {/* For kids birthday party, automatically select stage show */}
-                {!selectedService && isKidsBirthdayParty &&
-              <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-6 mb-4 shadow-sm">
-                    <h2 className="text-white text-[20px] md:text-[24px] font-bold mb-4 text-center">
-                      Kids Birthday Party Stage Show
-                    </h2>
-                    <p className="text-slate-200 text-[14px] text-center mb-4 max-w-2xl mx-auto">
-                      For kids birthday parties, we offer an engaging stage show designed to captivate young audiences. Select your preferences below to get started.
-                    </p>
-                    <div className="text-center">
-                      <button
-                    onClick={() => handleServiceSelect('stage')}
-                    className="inline-block px-6 py-3 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-semibold rounded-lg transition-all">
-
-                        Configure Stage Show
-                      </button>
-                    </div>
-                  </div>
-              }
-
-                {/* Close-Up Configuration */}
-                {selectedService === 'closeup' &&
-              <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-6 mb-4 shadow-sm">
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className="text-white text-[20px] font-bold">
-                        Close-Up Mingling Magic
-                      </h2>
-                      <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedService(null);
-                      setCloseUpDuration('');
-                      setCloseUpMagicians('');
-                      setCloseUpTier('');
-                    }} className="text-amber-200 px-3 text-xs font-medium rounded-md inline-flex items-center justify-center gap-2 whitespace-nowrap transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent h-8 hover:text-white">
-
-
-                        Change Service
-                      </Button>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div>
-                        <Label className="text-white text-[14px] mb-2 block">Select Performer</Label>
-                        <Select value={closeUpPerformer} onValueChange={setCloseUpPerformer}>
-                          <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="johnny_wu">Johnny Wu</SelectItem>
-                            <SelectItem value="dylan_george">Dylan George</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div>
-                        <Label className="text-white text-[14px] mb-2 block">Duration</Label>
-                        <Select value={closeUpDuration} onValueChange={setCloseUpDuration}>
-                          <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                            <SelectValue placeholder="Select duration" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="1">1 Hour (Great for 30-40 people)</SelectItem>
-                            <SelectItem value="1.5">1.5 Hours (Great for 40-60 people)</SelectItem>
-                            <SelectItem value="2">2 Hours (Great for 60-80 people)</SelectItem>
-                            <SelectItem value="2.5">2.5 Hours (Great for 75-100 people)</SelectItem>
-                            <SelectItem value="3">3 Hours (Great for 90-120 people)</SelectItem>
-                            <SelectItem value="3.5">3.5 Hours (Great for 120-150 people)</SelectItem>
-                            <SelectItem value="4">4 Hours (Great for 150+ people)</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div>
-                        <Label className="text-white text-[14px] mb-2 block">Number of Magicians</Label>
-                        <Select value={closeUpMagicians} onValueChange={setCloseUpMagicians}>
-                          <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                            <SelectValue placeholder="Select number" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {getMagicianOptions(closeUpPerformer).map((option) =>
-                        <SelectItem key={option.value} value={option.value}>
-                                {option.label}
-                              </SelectItem>
-                        )}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div>
-                        <Label className="text-white text-[14px] mb-2 block">Experience Tier</Label>
-                        <Select value={closeUpTier} onValueChange={setCloseUpTier}>
-                          <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                            <SelectValue placeholder="Select tier" />
-                          </SelectTrigger>
-                          <SelectContent className="max-w-[calc(100vw-2rem)] md:max-w-2xl">
-                            {availableTiers.map((tier) => {
-                          const tierDesc = TIER_DESCRIPTIONS.close_up[tier];
-                          return (
-                            <SelectItem key={tier} value={tier}>
-                                  <div className="py-1 pr-2">
-                                    <div className="font-semibold text-sm">{tierDesc?.title || tier.charAt(0).toUpperCase() + tier.slice(1)}</div>
-                                    <div className="text-[11px] text-slate-400 mt-1 whitespace-normal">{tierDesc?.description}</div>
-                                  </div>
-                                </SelectItem>);
-
-                        })}
-                          </SelectContent>
-                        </Select>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setComparisonDataType('close_up_magic');
-                            setShowComparisonModal(true);
-                          }}
-                          className="mt-3 w-full bg-slate-700 border-slate-600 text-white hover:bg-slate-600">
-                          <Table2 className="w-4 h-4 mr-2" /> Compare Tiers
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-              }
-
-                {/* Stage Show Configuration */}
-                {selectedService === 'stage' &&
-              <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-6 mb-4 shadow-sm">
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className="text-white text-[20px] font-bold">
-                        Stage Show
-                      </h2>
-                      <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedService(null);
-                      setStageDuration('');
-                      setStageTier('');
-                    }}
-                    className="text-slate-400 hover:text-white">
-
-                        Change Service
-                      </Button>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div>
-                        <Label className="text-white text-[14px] mb-2 block">Select Performer</Label>
-                        <Select value={stagePerformer} onValueChange={setStagePerformer}>
-                          <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="johnny_wu">Johnny Wu</SelectItem>
-                            <SelectItem value="dylan_george">Dylan George</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div>
-                        <Label className="text-white text-[14px] mb-2 block">Show Duration</Label>
-                        <Select value={stageDuration} onValueChange={setStageDuration}>
-                          <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                            <SelectValue placeholder="Select duration" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {eventType === 'wedding' ?
-                        <SelectItem value="20">20 Minutes</SelectItem> :
-
-                        <>
-                                <SelectItem value="30">30 Minutes</SelectItem>
-                                <SelectItem value="45">45 Minutes</SelectItem>
-                                <SelectItem value="60">60 Minutes</SelectItem>
-                              </>
-                        }
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div>
-                        <Label className="text-white text-[14px] mb-2 block">Experience Tier</Label>
-                        <Select value={stageTier} onValueChange={setStageTier}>
-                          <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                            <SelectValue placeholder="Select tier" />
-                          </SelectTrigger>
-                          <SelectContent className="max-w-[calc(100vw-2rem)] md:max-w-2xl">
-                            {availableTiers.map((tier) => {
-                          const tierDesc = TIER_DESCRIPTIONS.stage[tier];
-                          return (
-                            <SelectItem key={tier} value={tier}>
-                                  <div className="py-1 pr-2">
-                                    <div className="font-semibold text-sm">{tierDesc?.title || tier.charAt(0).toUpperCase() + tier.slice(1)}</div>
-                                    <div className="text-[11px] text-slate-400 mt-1 whitespace-normal">{tierDesc?.description}</div>
-                                  </div>
-                                </SelectItem>);
-
-                        })}
-                          </SelectContent>
-                        </Select>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setComparisonDataType('stage_magic');
-                            setShowComparisonModal(true);
-                          }}
-                          className="mt-3 w-full bg-slate-700 border-slate-600 text-white hover:bg-slate-600">
-                          <Table2 className="w-4 h-4 mr-2" /> Compare Tiers
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-              }
-
-                {/* Bundle Configuration */}
-                {selectedService === 'bundle' &&
-              <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-6 mb-4 shadow-sm">
-                    <div className="flex items-center justify-between mb-4">
-                      <h2 className="text-white text-[20px] font-bold">
-                        Bundle Package <span className="text-green-400 text-[14px]">(10% OFF)</span>
-                      </h2>
-                      <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedService(null);
-                      setBundleCloseUpDuration('');
-                      setBundleNumMagicians('');
-                      setBundleStageDuration('');
-                      setBundleTier('');
-                    }}
-                    className="text-slate-400 hover:text-white">
-
-                        Change Service
-                      </Button>
-                    </div>
-
-                    <div className="space-y-4">
-                      <div>
-                        <Label className="text-white text-[14px] mb-2 block">Select Performer</Label>
-                        <Select value={bundlePerformer} onValueChange={setBundlePerformer}>
-                          <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="johnny_wu">Johnny Wu</SelectItem>
-                            <SelectItem value="dylan_george">Dylan George</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="border-t border-slate-600 pt-4">
-                        <h3 className="text-white text-[16px] font-semibold mb-3">Close-Up Portion</h3>
-                        
-                        <div className="space-y-3">
-                          <div>
-                            <Label className="text-white text-[14px] mb-2 block">Duration</Label>
-                            <Select value={bundleCloseUpDuration} onValueChange={setBundleCloseUpDuration}>
-                              <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                                <SelectValue placeholder="Select duration" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="1">1 Hour (Great for 30-40 people)</SelectItem>
-                                <SelectItem value="1.5">1.5 Hours (Great for 40-60 people)</SelectItem>
-                                <SelectItem value="2">2 Hours (Great for 60-80 people)</SelectItem>
-                                <SelectItem value="2.5">2.5 Hours (Great for 75-100 people)</SelectItem>
-                                <SelectItem value="3">3 Hours (Great for 90-120 people)</SelectItem>
-                                <SelectItem value="3.5">3.5 Hours (Great for 120-150 people)</SelectItem>
-                                <SelectItem value="4">4 Hours (Great for 150+ people)</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          <div>
-                            <Label className="text-white text-[14px] mb-2 block">Number of Magicians</Label>
-                            <Select value={bundleNumMagicians} onValueChange={setBundleNumMagicians}>
-                              <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                                <SelectValue placeholder="Select number" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {getMagicianOptions(bundlePerformer).map((option) =>
-                            <SelectItem key={option.value} value={option.value}>
-                                    {option.label}
-                                  </SelectItem>
-                            )}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="border-t border-slate-600 pt-4">
-                        <h3 className="text-white text-[16px] font-semibold mb-3">Stage Show Portion</h3>
-                        
-                        <div className="space-y-3">
-                          <div>
-                            <Label className="text-white text-[14px] mb-2 block">Show Duration</Label>
-                            <Select value={bundleStageDuration} onValueChange={setBundleStageDuration}>
-                              <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                                <SelectValue placeholder="Select duration" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {eventType === 'wedding' ?
-                            <SelectItem value="20">20 Minutes</SelectItem> :
-
-                            <>
-                                    <SelectItem value="30">30 Minutes</SelectItem>
-                                    <SelectItem value="45">45 Minutes</SelectItem>
-                                    <SelectItem value="60">60 Minutes</SelectItem>
-                                  </>
-                            }
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
-                        <Label className="text-white text-[14px] mb-2 block">Experience Tier</Label>
-                        <Select value={bundleTier} onValueChange={setBundleTier}>
-                          <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                            <SelectValue placeholder="Select tier" />
-                          </SelectTrigger>
-                          <SelectContent className="max-w-[calc(100vw-2rem)] md:max-w-2xl">
-                            {availableTiers.map((tier) => {
-                          const closeUpDesc = TIER_DESCRIPTIONS.close_up[tier];
-                          const stageDesc = TIER_DESCRIPTIONS.stage[tier];
-                          return (
-                            <SelectItem key={tier} value={tier}>
-                                  <div className="py-1 pr-2">
-                                    <div className="font-semibold text-sm">{tier.charAt(0).toUpperCase() + tier.slice(1)} Bundle</div>
-                                    <div className="text-[11px] text-slate-400 mt-1 whitespace-normal">Close-Up: ${closeUpDesc?.description}</div>
-                                    <div className="text-[11px] text-slate-400 whitespace-normal">Stage: ${stageDesc?.description}</div>
-                                  </div>
-                                </SelectItem>);
-
-                        })}
-                          </SelectContent>
-                        </Select>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setComparisonDataType('close_up_magic');
-                            setShowComparisonModal(true);
-                          }}
-                          className="mt-3 w-full bg-slate-700 border-slate-600 text-white hover:bg-slate-600">
-                          <Table2 className="w-4 h-4 mr-2" /> Compare Tiers
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-              }
-              </>)
-            }
-
-            {/* Package Summary */}
-            {(selectedService || eventType === 'virtual') && packageSummary && isFormValid() &&
-            <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-5 mb-4 shadow-sm">
-                <h2 className="text-white text-[18px] md:text-[20px] font-semibold mb-3">Your Selected Package</h2>
-                
-                <div className="space-y-2 mb-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-200 text-[14px]">Service:</span>
-                    <span className="text-white text-[14px] font-semibold">{packageSummary.type}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-200 text-[14px]">Performer:</span>
-                    <span className="text-white text-[14px] font-semibold">{packageSummary.performer}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-200 text-[14px]">Duration:</span>
-                    <span className="text-white text-[14px] font-semibold">{packageSummary.duration}</span>
-                  </div>
-                  {packageSummary.magicians &&
-                <div className="flex justify-between items-center">
-                      <span className="text-slate-200 text-[14px]">Magicians:</span>
-                      <span className="text-white text-[14px] font-semibold">{packageSummary.magicians}</span>
-                    </div>
-                }
-                  <div className="flex justify-between items-center">
-                    <span className="text-slate-200 text-[14px]">Tier:</span>
-                    <span className="text-white text-[14px] font-semibold">{packageSummary.tier}</span>
+                    ))}
                   </div>
                 </div>
 
+                {/* Bundle Type Selection */}
+                <div>
+                  <Label className="text-white text-[14px] mb-3 block font-semibold">Select Bundle</Label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {[
+                      {
+                        key: 'standard',
+                        label: 'Signature Bundle',
+                        sub: '1 Hour Close-Up + 30 Min Stage',
+                        badge: '⭐ Most Popular',
+                      },
+                      {
+                        key: 'premium',
+                        label: 'Premium Bundle',
+                        sub: '2 Hours Close-Up + 30 Min Stage',
+                      },
+                    ].map((b) => {
+                      const previewPrice = getBundlePreviewPrice(performer, b.key);
+                      return (
+                        <button key={b.key} onClick={() => setBundleType(b.key)}
+                          className={`p-4 rounded-lg border-2 text-left transition-all ${bundleType === b.key ? 'border-amber-500 bg-amber-500/10' : 'border-slate-600 hover:border-slate-500'}`}>
+                          <div className="flex justify-between items-start mb-1">
+                            <p className="text-white font-bold text-[15px]">{b.label}</p>
+                            {b.badge && <span className="text-[10px] bg-green-600/80 text-white px-2 py-1 rounded font-medium">{b.badge}</span>}
+                          </div>
+                          <p className="text-slate-300 text-[13px] mb-2">{b.sub}</p>
+                          <p className="text-amber-400 font-bold text-[18px]">
+                            {previewPrice > 0 ? `$${previewPrice.toLocaleString()}` : '—'}
+                          </p>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {bundleType && (
+                  <div className="mt-4 p-3 bg-slate-700/40 rounded-lg border border-slate-600 text-slate-200 text-[13px]">
+                    <p className="font-semibold text-white mb-1">What's included:</p>
+                    <ul className="space-y-1 list-disc list-inside text-slate-300">
+                      <li>{bundleType === 'standard' ? '1 hour' : '2 hours'} of close-up mingling magic</li>
+                      <li>30-minute stage show</li>
+                      <li>Signature tier experience (mind reading, advanced magic, audience interaction)</li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── PACKAGE SUMMARY ───────────────────────────────────────────── */}
+            {isFormValid() && selectedPackagePrice.price > 0 && (
+              <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-5 mb-4 shadow-sm">
+                <h2 className="text-white text-[18px] font-semibold mb-3">Your Selected Package</h2>
+
+                <div className="space-y-2 mb-3 text-[14px]">
+                  {isAdult && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-slate-300">Performer</span>
+                        <span className="text-white font-medium">{performer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-300">Bundle</span>
+                        <span className="text-white font-medium">{bundleType === 'standard' ? 'Signature Bundle' : 'Premium Bundle'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-300">Duration</span>
+                        <span className="text-white font-medium">{bundleType === 'standard' ? '1h Close-Up + 30m Stage' : '2h Close-Up + 30m Stage'}</span>
+                      </div>
+                    </>
+                  )}
+                  {isVirtual && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-slate-300">Service</span>
+                        <span className="text-white font-medium">Virtual Experience {virtualDuration}m</span>
+                      </div>
+                    </>
+                  )}
+                  {isKidsBirthday && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-slate-300">Service</span>
+                        <span className="text-white font-medium">30-Minute Kids Stage Show</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-300">Performer</span>
+                        <span className="text-white font-medium">Dylan George</span>
+                      </div>
+                    </>
+                  )}
+                  {selectedPackagePrice.multiplier > 1 && (
+                    <div className="flex justify-between text-amber-300">
+                      <span>Peak Date Multiplier</span>
+                      <span>×{selectedPackagePrice.multiplier}</span>
+                    </div>
+                  )}
+                </div>
+
+                {kidsCloseUpAddon && (
+                  <div className="flex justify-between text-[14px] mb-2">
+                    <span className="text-slate-300">+30m Close-Up Add-on</span>
+                    <span className="text-amber-400 font-medium">+${KIDS_PRICING.closeup_addon.toLocaleString()}</span>
+                  </div>
+                )}
+
                 <div className="pt-3 border-t border-slate-600 flex justify-between items-center">
-                  <span className="text-white text-[16px] font-semibold">Package Price:</span>
-                  <span className="text-amber-400 text-[20px] font-bold">
-                    ${selectedPackagePrice.price.toLocaleString()}
+                  <span className="text-white text-[15px] font-semibold">Package Price</span>
+                  <span className="text-amber-400 text-[22px] font-bold">
+                    ${(selectedPackagePrice.price + kidsAddonCost).toLocaleString()}
                   </span>
                 </div>
               </div>
-            }
+            )}
 
-            {/* Add-Ons Section */}
-            {(selectedService || eventType === 'virtual') && filteredAddons.length > 0 &&
-            <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-5 mb-4 shadow-sm">
-                <h2 className="text-white text-[18px] md:text-[20px] font-semibold mb-3">Add-Ons (Optional)</h2>
-                
+            {/* ── ADD-ONS ───────────────────────────────────────────────────── */}
+            {isFormValid() && filteredAddons.length > 0 && (
+              <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-5 mb-4 shadow-sm">
+                <h2 className="text-white text-[18px] font-semibold mb-3">Add-Ons (Optional)</h2>
                 <div className="space-y-2">
-                  {filteredAddons.map((addon) => {
-                  const isFreePoster = addon.id === 'addon_poster' && includesFreePoster;
-                  const displayPrice = isFreePoster ? 0 : getAddonPrice(addon);
-
-                  return (
-                    <div
-                      key={addon.id}
-                      className={`flex items-start gap-3 p-3 rounded border-2 transition-all bg-slate-700/70 ${
-                      selectedAddons.includes(addon.id) ?
-                      'border-amber-500 bg-amber-500/10' :
-                      'border-slate-500'}`
-                      }>
-
-                        <Checkbox
-                        id={addon.id}
-                        checked={selectedAddons.includes(addon.id)}
-                        onCheckedChange={() => handleAddonToggle(addon.id)}
+                  {filteredAddons.map((addon) => (
+                    <div key={addon.id}
+                      className={`flex items-start gap-3 p-3 rounded border-2 transition-all bg-slate-700/70 ${selectedAddons.includes(addon.id) ? 'border-amber-500 bg-amber-500/10' : 'border-slate-500'}`}>
+                      <Checkbox id={addon.id} checked={selectedAddons.includes(addon.id)}
+                        onCheckedChange={() => setSelectedAddons((prev) => prev.includes(addon.id) ? prev.filter((id) => id !== addon.id) : [...prev, addon.id])}
                         className="mt-0.5" />
-
-                        <label htmlFor={addon.id} className="flex-1 cursor-pointer">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-white text-[14px] font-medium">{addon.label}</span>
-                            {isFreePoster ?
-                          <span className="text-green-400 text-[14px] font-semibold">FREE 🎁</span> :
-
-                          <span className="text-amber-400 text-[14px] font-semibold">
-                                +${displayPrice.toLocaleString()}
-                              </span>
-                          }
-                          </div>
-                          <p className="text-slate-200 text-[12px] mb-1">{addon.tooltip}</p>
-                          {isFreePoster &&
-                        <p className="text-green-300 text-[11px] font-semibold mt-1">
-                              ✨ Complimentary with Stage Show + Confirm Now booking
-                            </p>
-                        }
-                          {addon.preview_url &&
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleVideoPlay(addon.preview_url);
-                          }}
-                          className="text-blue-400 text-[11px] hover:text-blue-300 inline-flex items-center gap-1 mt-1">
-
-                              <Play className="w-3 h-3" /> Watch Demo
-                            </button>
-                        }
-                        </label>
-                      </div>);
-
-                })}
+                      <label htmlFor={addon.id} className="flex-1 cursor-pointer">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-white text-[14px] font-medium">{addon.label}</span>
+                          <span className="text-amber-400 text-[14px] font-semibold">+${getAddonPrice(addon).toLocaleString()}</span>
+                        </div>
+                        <p className="text-slate-200 text-[12px]">{addon.tooltip}</p>
+                        {addon.preview_url && (
+                          <button type="button" onClick={(e) => { e.preventDefault(); handleVideoPlay(addon.preview_url); }}
+                            className="text-blue-400 text-[11px] hover:text-blue-300 inline-flex items-center gap-1 mt-1">
+                            <Play className="w-3 h-3" /> Watch Demo
+                          </button>
+                        )}
+                      </label>
+                    </div>
+                  ))}
                 </div>
-
-                {selectedAddons.length > 0 &&
-              <div className="mt-3 pt-3 border-t border-slate-600 flex justify-between items-center">
-                    <span className="text-slate-200 text-[13px]">
-                      {selectedAddons.length} add-on{selectedAddons.length > 1 ? 's' : ''} selected
-                    </span>
-                    <span className="text-amber-400 text-[15px] font-semibold">
-                      +${totalAddonsCost.toLocaleString()}
-                    </span>
+                {selectedAddons.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-slate-600 flex justify-between items-center">
+                    <span className="text-slate-200 text-[13px]">{selectedAddons.length} add-on{selectedAddons.length > 1 ? 's' : ''} selected</span>
+                    <span className="text-amber-400 text-[15px] font-semibold">+${totalAddonsCost.toLocaleString()}</span>
                   </div>
-              }
+                )}
               </div>
-            }
+            )}
 
-            {/* Booking Options */}
-            {(selectedService || eventType === 'virtual') && isFormValid() &&
-            <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-5 mb-4 shadow-sm">
-                <h2 className="text-white text-[18px] md:text-[20px] font-semibold mb-3">Complete Your Booking</h2>
-                
+            {/* ── BOOKING OPTIONS ───────────────────────────────────────────── */}
+            {isFormValid() && selectedPackagePrice.price > 0 && (
+              <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-5 mb-4 shadow-sm">
+                <h2 className="text-white text-[18px] font-semibold mb-3">Complete Your Booking</h2>
+
                 <div className="bg-slate-700/50 rounded p-3 mb-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-slate-200 text-[13px]">Package</span>
-                    <span className="text-white text-[14px]">
-                      ${selectedPackagePrice.price.toLocaleString()}
-                    </span>
+                  <div className="flex justify-between text-[13px] mb-1">
+                    <span className="text-slate-200">Package</span>
+                    <span className="text-white">${(selectedPackagePrice.price + kidsAddonCost).toLocaleString()}</span>
                   </div>
-                  {totalAddonsCost > 0 &&
-                <div className="flex justify-between items-center mb-2">
-                      <span className="text-slate-200 text-[13px]">Add-ons</span>
-                      <span className="text-white text-[14px]">
-                        +${totalAddonsCost.toLocaleString()}
-                      </span>
+                  {totalAddonsCost > 0 && (
+                    <div className="flex justify-between text-[13px] mb-1">
+                      <span className="text-slate-200">Add-ons</span>
+                      <span className="text-white">+${totalAddonsCost.toLocaleString()}</span>
                     </div>
-                }
-                  {includesFreePoster &&
-                <div className="flex justify-between items-center mb-2">
-                      <span className="text-green-300 text-[13px]">FREE Poster Bonus</span>
-                      <span className="text-green-400 text-[14px]">+$200 (FREE)</span>
-                    </div>
-                }
+                  )}
                   <div className="pt-2 border-t border-slate-600 flex justify-between items-center">
                     <span className="text-white text-[15px] font-semibold">Total Investment</span>
-                    <span className="text-amber-400 text-[18px] font-bold">
-                      ${totalInvestment.toLocaleString()}
-                    </span>
+                    <span className="text-amber-400 text-[18px] font-bold">${totalInvestment.toLocaleString()}</span>
                   </div>
                 </div>
 
-                <div className="space-y-3 mb-4">
-                  <Label className="text-slate-200 text-[13px] block">Choose Booking Option</Label>
-                  
-                  <button
-                  onClick={handleHoldDateClick}
-                  className="w-full text-left p-3 rounded border-2 border-slate-600 hover:border-blue-500 hover:bg-blue-500/10 transition-all">
-
+                <div className="space-y-3">
+                  <button onClick={() => openBookingModal('hold')}
+                    className="w-full text-left p-3 rounded border-2 border-slate-600 hover:border-blue-500 hover:bg-blue-500/10 transition-all">
                     <div className="flex justify-between items-center">
                       <span className="text-white text-[14px] font-medium">Hold the Date (10% Deposit)</span>
-                      <span className="text-blue-400 text-[16px] font-semibold">
-                        ${depositAmount.toLocaleString()}
-                      </span>
+                      <span className="text-blue-400 text-[16px] font-semibold">${depositAmount.toLocaleString()}</span>
                     </div>
-                    <p className="text-slate-200 text-[12px] mt-1">Non-refundable • Holds your date for 48 hours</p>
+                    <p className="text-slate-300 text-[12px] mt-1">Non-refundable · Holds your date for 48 hours</p>
                   </button>
 
-                  <button
-                  onClick={handleConfirmNowClick}
-                  className="w-full text-left p-3 rounded border-2 border-slate-600 hover:border-green-500 hover:bg-green-500/10 transition-all">
-
+                  <button onClick={() => openBookingModal('confirm')}
+                    className="w-full text-left p-3 rounded border-2 border-slate-600 hover:border-green-500 hover:bg-green-500/10 transition-all">
                     <div className="flex justify-between items-center">
                       <span className="text-white text-[14px] font-medium">Confirm Now</span>
                       <span className="text-green-400 text-[14px]">Contract & Invoice</span>
                     </div>
-                    <p className="text-slate-200 text-[12px] mt-1">We will send you an official contract and invoice via email</p>
-                    {includesFreePoster &&
-                  <div className="mt-2 p-2 bg-green-900/30 border border-green-500/40 rounded">
-                        <p className="text-green-300 text-[12px] font-semibold">🎁 Complimentary Bonus: Impossible Poster Souvenir (Value: $200)</p>
-                      </div>
-                  }
+                    <p className="text-slate-300 text-[12px] mt-1">We'll send you an official contract and invoice via email</p>
                   </button>
                 </div>
 
-                {showPaymentOptions &&
-              <div className="space-y-4 mt-4 pt-4 border-t border-slate-600">
+                {/* Payment options (after hold) */}
+                {showPaymentOptions && (
+                  <div className="space-y-4 mt-4 pt-4 border-t border-slate-600">
                     <Label className="text-white text-[16px] block font-semibold">Choose Payment Method</Label>
-                    
-                    {/* Stripe Payment */}
+
                     <div className="p-4 bg-gradient-to-br from-indigo-900/30 to-slate-800/70 rounded-lg border-2 border-indigo-500/50">
-                      <div className="flex items-center gap-2 mb-3">
+                      <div className="flex items-center gap-2 mb-2">
                         <CreditCard className="w-6 h-6 text-indigo-400" />
                         <span className="text-white text-[16px] font-semibold">Credit Card / Apple Pay</span>
                       </div>
-                      <p className="text-slate-200 text-[13px] mb-4">
-                        Secure payment with Stripe • Instant confirmation
-                      </p>
-                      <Button
-                    onClick={handleStripePayment}
-                    disabled={isProcessingPayment}
-                    className="w-full bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-400 hover:to-indigo-500 text-white font-semibold">
-
+                      <p className="text-slate-200 text-[13px] mb-3">Secure payment with Stripe · Instant confirmation</p>
+                      <Button onClick={handleStripePayment} disabled={isProcessingPayment}
+                        className="w-full bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-400 hover:to-indigo-500 text-white font-semibold">
                         {isProcessingPayment ? 'Processing...' : `Pay $${depositAmount.toLocaleString()} Now`}
                       </Button>
                     </div>
 
                     <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-slate-600"></div>
-                      </div>
+                      <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-slate-600"></div></div>
                       <div className="relative flex justify-center text-sm">
                         <span className="px-2 bg-slate-900 text-slate-400">Or pay manually</span>
                       </div>
                     </div>
 
-                    {/* Zelle */}
                     <div className="p-3 bg-slate-700/50 rounded border border-slate-600">
                       <div className="flex items-center gap-2 mb-2">
                         <DollarSign className="w-5 h-5 text-purple-400" />
                         <span className="text-white text-[14px] font-medium">Pay with Zelle</span>
                       </div>
-                      <p className="text-slate-200 text-[12px] mb-3">
-                        Send ${depositAmount.toLocaleString()} to: <span className="text-white font-medium">626-242-7710</span>
-                      </p>
-                      <img
-                    src={zelleQRCodeUrl}
-                    alt="Zelle QR Code"
-                    className="w-48 h-48 mx-auto rounded cursor-pointer hover:opacity-80 transition-opacity"
-                    onClick={() => setShowZelleModal(true)} />
-
+                      <p className="text-slate-200 text-[12px] mb-3">Send ${depositAmount.toLocaleString()} to: <span className="text-white font-medium">626-242-7710</span></p>
+                      <img src={zelleQRCodeUrl} alt="Zelle QR Code"
+                        className="w-48 h-48 mx-auto rounded cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => setShowZelleModal(true)} />
                       <p className="text-slate-400 text-[11px] text-center mt-2">Click to enlarge</p>
                     </div>
 
-                    {/* Venmo */}
                     <div className="p-3 bg-slate-700/50 rounded border border-slate-600">
                       <div className="flex items-center gap-2 mb-2">
                         <DollarSign className="w-5 h-5 text-blue-400" />
                         <span className="text-white text-[14px] font-medium">Pay with Venmo</span>
                       </div>
-                      <p className="text-slate-200 text-[12px] mb-2">
-                        Send ${depositAmount.toLocaleString()} to:
-                      </p>
-                      <a
-                    href="https://venmo.com/u/johnnywumagic"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-400 text-[13px] hover:text-blue-300 inline-flex items-center gap-1">
-
+                      <a href="https://venmo.com/u/johnnywumagic" target="_blank" rel="noopener noreferrer"
+                        className="text-blue-400 text-[13px] hover:text-blue-300 inline-flex items-center gap-1">
                         @johnnywumagic <ExternalLink className="w-3 h-3" />
                       </a>
                     </div>
 
-                    {/* I Paid Button */}
                     <div className="pt-4 border-t border-slate-600">
                       <p className="text-amber-400 text-[13px] mb-3 text-center font-semibold">
                         ⚠️ After completing Zelle or Venmo payment, click below:
                       </p>
                       <div className="flex gap-3">
-                        <Button
-                      onClick={() => handleManualPaymentConfirmation('Zelle')}
-                      disabled={isSubmitting}
-                      className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-400 hover:to-purple-500 text-white font-semibold">
-
+                        <Button onClick={() => handleManualPaymentConfirmation('Zelle')} disabled={isSubmitting}
+                          className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-400 hover:to-purple-500 text-white font-semibold">
                           {isSubmitting ? 'Processing...' : 'I Paid with Zelle'}
                         </Button>
-                        <Button
-                      onClick={() => handleManualPaymentConfirmation('Venmo')}
-                      disabled={isSubmitting}
-                      className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-semibold">
-
+                        <Button onClick={() => handleManualPaymentConfirmation('Venmo')} disabled={isSubmitting}
+                          className="flex-1 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 text-white font-semibold">
                           {isSubmitting ? 'Processing...' : 'I Paid with Venmo'}
                         </Button>
                       </div>
                     </div>
                   </div>
-              }
-
-                {bookingOption === 'confirm' && !showContactModal &&
-              <div className="mt-4 pt-4 border-t border-slate-600">
-                    <Button
-                  onClick={handleConfirmNow}
-                  disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-400 hover:to-green-500 text-white font-medium text-[15px] h-10">
-
-                      {isSubmitting ? 'Sending Request...' : 'Send Booking Request'}
-                    </Button>
-                    <p className="text-slate-400 text-[11px] mt-2 text-center">
-                      We will email you within 24 hours with your contract and invoice
-                    </p>
-                  </div>
-              }
+                )}
               </div>
-            }
+            )}
+
           </div>
         </div>
       </div>
 
-      {/* Contact Information Modal */}
+      {/* Contact Modal */}
       <Dialog open={showContactModal} onOpenChange={setShowContactModal}>
         <DialogContent className="bg-slate-900 border-2 border-amber-500/50 text-white max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-[22px] font-bold text-center text-white mb-2">
-              Enter Your Details
-            </DialogTitle>
+            <DialogTitle className="text-[22px] font-bold text-center text-white mb-1">Enter Your Details</DialogTitle>
             <p className="text-slate-200 text-center text-[13px]">
-              {bookingOption === 'hold' ? 'To proceed with holding your date, please provide your contact information.' : 'To send your booking request, please provide your contact information.'}
+              {bookingOption === 'hold' ? 'Provide your info to hold this date.' : 'Provide your info to send a booking request.'}
             </p>
           </DialogHeader>
-
           <div className="space-y-4 pt-4">
             <div>
-              <Label htmlFor="modalFullName" className="text-slate-200 text-[13px] mb-1 block">Full Name *</Label>
-              <Input
-                id="modalFullName"
-                type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="John Smith"
-                required
+              <Label className="text-slate-200 text-[13px] mb-1 block">Full Name *</Label>
+              <Input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="John Smith"
                 className="bg-slate-700 border-slate-600 text-white text-[14px] placeholder-slate-500 h-9" />
-
             </div>
-
             <div>
-              <Label htmlFor="modalEmail" className="text-slate-200 text-[13px] mb-1 block">Email *</Label>
-              <Input
-                id="modalEmail"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="john@example.com"
-                required
+              <Label className="text-slate-200 text-[13px] mb-1 block">Email *</Label>
+              <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="john@example.com"
                 className="bg-slate-700 border-slate-600 text-white text-[14px] placeholder-slate-500 h-9" />
-
             </div>
-
             <div>
-              <Label htmlFor="modalPhone" className="text-slate-200 text-[13px] mb-1 block">Phone</Label>
-              <Input
-                id="modalPhone"
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="(555) 123-4567"
+              <Label className="text-slate-200 text-[13px] mb-1 block">Phone</Label>
+              <Input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="(555) 123-4567"
                 className="bg-slate-700 border-slate-600 text-white text-[14px] placeholder-slate-500 h-9" />
-
             </div>
-
             <div>
-              <Label htmlFor="modalEventTime" className="text-slate-200 text-[13px] mb-1 block">Event Time</Label>
-              <Input
-                id="modalEventTime"
-                type="time"
-                value={eventTime}
-                onChange={(e) => setEventTime(e.target.value)}
+              <Label className="text-slate-200 text-[13px] mb-1 block">Event Time</Label>
+              <Input type="time" value={eventTime} onChange={(e) => setEventTime(e.target.value)}
+                className="bg-slate-700 border-slate-600 text-white text-[14px] h-9" />
+            </div>
+            <div>
+              <Label className="text-slate-200 text-[13px] mb-1 block">Venue Address</Label>
+              <Input value={venueAddress} onChange={(e) => setVenueAddress(e.target.value)} placeholder="123 Main St, Los Angeles, CA"
                 className="bg-slate-700 border-slate-600 text-white text-[14px] placeholder-slate-500 h-9" />
-
             </div>
-
             <div>
-              <Label htmlFor="modalVenueAddress" className="text-slate-200 text-[13px] mb-1 block">Venue Address</Label>
-              <Input
-                id="modalVenueAddress"
-                type="text"
-                value={venueAddress}
-                onChange={(e) => setVenueAddress(e.target.value)}
-                placeholder="123 Main St, Los Angeles, CA 90001"
-                className="bg-slate-700 border-slate-600 text-white text-[14px] placeholder-slate-500 h-9" />
-
-            </div>
-
-            <div>
-              <Label htmlFor="modalNotes" className="text-slate-200 text-[13px] mb-1 block">
-                Additional Notes (Optional)
-              </Label>
-              <textarea
-                id="modalNotes"
-                value={additionalNotes}
-                onChange={(e) => setAdditionalNotes(e.target.value)}
-                placeholder="Anything we should know about your event?"
-                rows={3}
+              <Label className="text-slate-200 text-[13px] mb-1 block">Additional Notes</Label>
+              <textarea value={additionalNotes} onChange={(e) => setAdditionalNotes(e.target.value)}
+                placeholder="Anything we should know?" rows={3}
                 className="w-full bg-slate-700 border border-slate-600 text-white text-[14px] placeholder-slate-500 rounded-md p-2" />
-
             </div>
-
             <div className="flex gap-2 pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowContactModal(false)}
-                className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-800">
-                Cancel
-              </Button>
-              <Button
-                onClick={handleContactSubmit}
-                disabled={isSubmitting || !fullName || !email}
+              <Button variant="outline" onClick={() => setShowContactModal(false)} className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-800">Cancel</Button>
+              <Button onClick={handleContactSubmit} disabled={isSubmitting || !fullName || !email}
                 className="flex-1 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-900 font-medium">
                 {isSubmitting ? 'Processing...' : 'Continue'}
               </Button>
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Video Modal */}
-      <Dialog open={showVideoModal} onOpenChange={setShowVideoModal}>
-        <DialogContent className="bg-slate-900 border-amber-400/30 text-white max-w-4xl max-h-[90vh] p-0 overflow-y-auto">
-          <DialogHeader className="p-4">
-            <DialogTitle className="text-[20px] font-semibold text-white">Add-on Preview</DialogTitle>
-          </DialogHeader>
-          <div className="relative pb-[56.25%] h-0">
-            <iframe
-              src={videoUrl}
-              className="absolute top-0 left-0 w-full h-full rounded-b-lg"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen />
-
           </div>
         </DialogContent>
       </Dialog>
@@ -1781,121 +878,53 @@ export default function PricingPage() {
             <h3 className="text-[22px] font-semibold text-white mb-3">
               {bookingOption === 'hold' ? 'Hold Request Sent! 🎉' : 'Request Sent! 📧'}
             </h3>
-            
-            {bookingOption === 'hold' ?
-            <>
+            {bookingOption === 'hold' ? (
+              <>
                 <p className="text-[15px] text-slate-200 mb-4">
-                  Thank you! Your request to hold the date has been received.
-                  To secure your booking, please complete your 10% deposit of <span className="font-bold text-amber-400">${depositAmount.toLocaleString()}</span> via Zelle or Venmo within 48 hours.
+                  Complete your <span className="font-bold text-amber-400">${depositAmount.toLocaleString()}</span> deposit via Stripe, Zelle, or Venmo within 48 hours to confirm your date.
                 </p>
-                {holdExpiryTime &&
-              <div className="bg-blue-900/30 rounded p-3 mb-4">
+                {holdExpiryTime && (
+                  <div className="bg-blue-900/30 rounded p-3 mb-4">
                     <p className="text-blue-400 text-[13px] mb-1">Your hold expires:</p>
-                    <p className="text-white text-[16px] font-semibold">
-                      {format(holdExpiryTime, 'PPpp')}
-                    </p>
-                    <p className="text-slate-400 text-[12px] mt-1">
-                      Please send your deposit by this time to confirm.
-                    </p>
+                    <p className="text-white text-[16px] font-semibold">{format(holdExpiryTime, 'PPpp')}</p>
                   </div>
-              }
-                <div className="mt-4 text-left">
-                  <p className="text-slate-200 text-[13px] mb-2 font-semibold">Payment Options:</p>
-                  <div className="p-3 bg-slate-700/50 rounded border border-slate-600 mb-2">
-                    <div className="flex items-center gap-2 mb-2">
-                      <DollarSign className="w-5 h-5 text-purple-400" />
-                      <span className="text-white text-[14px] font-medium">Zelle</span>
-                    </div>
-                    <p className="text-slate-200 text-[12px]">
-                      Send to: <span className="text-white font-medium">626-242-7710</span>
-                    </p>
-                    <button
-                    type="button"
-                    onClick={() => setShowZelleModal(true)}
-                    className="text-blue-400 text-[11px] hover:text-blue-300 inline-flex items-center gap-1 mt-1">
-
-                      View QR Code <ExternalLink className="w-3 h-3" />
-                    </button>
-                  </div>
-                  <div className="p-3 bg-slate-700/50 rounded border border-slate-600">
-                    <div className="flex items-center gap-2 mb-2">
-                      <DollarSign className="w-5 h-5 text-blue-400" />
-                      <span className="text-white text-[14px] font-medium">Venmo</span>
-                    </div>
-                    <p className="text-slate-200 text-[12px]">
-                      Send to: <a href="https://venmo.com/u/johnnywumagic" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 inline-flex items-center gap-1">@johnnywumagic <ExternalLink className="w-3 h-3" /></a>
-                    </p>
-                  </div>
-                </div>
-              </> :
-
-            <>
-                <p className="text-[15px] text-slate-200 mb-4">
-                  We have received your booking request and will email you an official contract and invoice within 24 hours.
-                </p>
-                {includesFreePoster &&
-              <div className="bg-green-900/30 border border-green-500/40 rounded p-3 mb-4">
-                    <p className="text-green-300 text-[14px] font-semibold">
-                      🎁 Your FREE Impossible Poster Souvenir ($200 value) will be included in your booking!
-                    </p>
-                  </div>
-              }
+                )}
               </>
-            }
-            
-            <p className="text-[14px] text-slate-200 mb-4 mt-4">
-              Check your email for confirmation details.
-            </p>
-            
-            <Button
-              onClick={() => window.location.reload()}
-              className="bg-amber-500 hover:bg-amber-400 text-slate-900 font-medium text-[14px] px-6 h-10">
-
+            ) : (
+              <p className="text-[15px] text-slate-200 mb-4">
+                We've received your booking request and will email you a contract and invoice within 24 hours.
+              </p>
+            )}
+            <Button onClick={() => window.location.reload()}
+              className="bg-amber-500 hover:bg-amber-400 text-slate-900 font-medium px-6 h-10">
               Close
             </Button>
           </div>
         </DialogContent>
       </Dialog>
 
+      {/* Video Modal */}
+      <Dialog open={showVideoModal} onOpenChange={setShowVideoModal}>
+        <DialogContent className="bg-slate-900 border-amber-400/30 text-white max-w-4xl p-0 overflow-y-auto">
+          <DialogHeader className="p-4"><DialogTitle className="text-[20px] font-semibold text-white">Add-on Preview</DialogTitle></DialogHeader>
+          <div className="relative pb-[56.25%] h-0">
+            <iframe src={videoUrl} className="absolute top-0 left-0 w-full h-full rounded-b-lg"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Zelle QR Modal */}
       <Dialog open={showZelleModal} onOpenChange={setShowZelleModal}>
-        <DialogContent className="bg-slate-900 border-amber-400/30 text-white max-w-md overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-[20px] font-semibold text-center text-white">Zelle Payment</DialogTitle>
-          </DialogHeader>
+        <DialogContent className="bg-slate-900 border-amber-400/30 text-white max-w-md">
+          <DialogHeader><DialogTitle className="text-[20px] font-semibold text-center text-white">Zelle Payment</DialogTitle></DialogHeader>
           <div className="text-center">
-            <p className="text-slate-200 text-[14px] mb-4">
-              Scan this QR code in your bank app to send ${depositAmount.toLocaleString()}
-            </p>
-            <img
-              src={zelleQRCodeUrl}
-              alt="Zelle QR Code"
-              className="w-full max-w-sm mx-auto rounded-lg shadow-2xl" />
-
-            <p className="text-white font-bold text-[16px] mt-4">
-              Send to: 626-242-7710
-            </p>
+            <p className="text-slate-200 text-[14px] mb-4">Scan this QR code to send ${depositAmount.toLocaleString()}</p>
+            <img src={zelleQRCodeUrl} alt="Zelle QR Code" className="w-full max-w-sm mx-auto rounded-lg shadow-2xl" />
+            <p className="text-white font-bold text-[16px] mt-4">Send to: 626-242-7710</p>
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Tier Comparison Modal */}
-      <Dialog open={showComparisonModal} onOpenChange={setShowComparisonModal}>
-        <DialogContent className="bg-slate-900 border-2 border-amber-500/50 text-white max-w-5xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-[20px] md:text-[24px] font-semibold text-center text-white">
-              Experience Tier Comparison
-            </DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            {comparisonDataType && magicExperiencesComparison[comparisonDataType] ? (
-              <TierComparisonTable data={magicExperiencesComparison[comparisonDataType]} />
-            ) : (
-              <p className="text-white text-center">Select a service to compare tiers.</p>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>);
-
+    </>
+  );
 }

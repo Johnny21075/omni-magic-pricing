@@ -1,4 +1,4 @@
-// --- Core Pricing Data Structure ---
+// --- Core Pricing Data Structure (kept for fallback/admin use) ---
 export const PRICING = {
   johnny_wu: {
     private: {
@@ -66,6 +66,63 @@ export const PRICING = {
   }
 };
 
+// --- Bundle Pricing Map (new architecture) ---
+// One standard bundle (1h CU + 30m stage) and one premium bundle (2h CU + 30m stage).
+// Categories must match getPricingCategory return values.
+export const BUNDLES = {
+  johnny_wu: {
+    private: {
+      standard: { closeUpHours: 1, stageDuration: 30, basePrice: 3500 },
+      premium:  { closeUpHours: 2, stageDuration: 30, basePrice: 5000 },
+    },
+    wedding: {
+      standard: { closeUpHours: 1, stageDuration: 30, basePrice: 3500 },
+      premium:  { closeUpHours: 2, stageDuration: 30, basePrice: 5000 },
+    },
+    corporate_small: {
+      standard: { closeUpHours: 1, stageDuration: 30, basePrice: 3500 },
+      premium:  { closeUpHours: 2, stageDuration: 30, basePrice: 5000 },
+    },
+    corporate_gala: {
+      standard: { closeUpHours: 1, stageDuration: 30, basePrice: 4500 },
+      premium:  { closeUpHours: 2, stageDuration: 30, basePrice: 6500 },
+    },
+    bar_bat_mitzvah: {
+      standard: { closeUpHours: 1, stageDuration: 30, basePrice: 3500 },
+      premium:  { closeUpHours: 2, stageDuration: 30, basePrice: 5000 },
+    },
+  },
+  dylan_george: {
+    private: {
+      standard: { closeUpHours: 1, stageDuration: 30, basePrice: 1750 },
+      premium:  { closeUpHours: 2, stageDuration: 30, basePrice: 2250 },
+    },
+    wedding: {
+      standard: { closeUpHours: 1, stageDuration: 30, basePrice: 1750 },
+      premium:  { closeUpHours: 2, stageDuration: 30, basePrice: 2250 },
+    },
+    corporate_small: {
+      standard: { closeUpHours: 1, stageDuration: 30, basePrice: 1750 },
+      premium:  { closeUpHours: 2, stageDuration: 30, basePrice: 2250 },
+    },
+    corporate_gala: {
+      standard: { closeUpHours: 1, stageDuration: 30, basePrice: 2250 },
+      premium:  { closeUpHours: 2, stageDuration: 30, basePrice: 3000 },
+    },
+    bar_bat_mitzvah: {
+      standard: { closeUpHours: 1, stageDuration: 30, basePrice: 1750 },
+      premium:  { closeUpHours: 2, stageDuration: 30, basePrice: 2250 },
+    },
+  },
+};
+
+// Kids birthday hardcoded public prices (Dylan George only on UI)
+export const KIDS_PRICING = {
+  weekday: 595,  // Mon–Thu
+  weekend: 695,  // Fri–Sun
+  closeup_addon: 250, // +30m close-up add-on
+};
+
 // Virtual show pricing (flat rates, no performer selection)
 export const VIRTUAL_PRICING = {
   30: 1499,
@@ -78,19 +135,18 @@ export const getPricingCategory = (eventType, eventScale) => {
   if (eventType === 'wedding') {
     return 'wedding';
   }
-  
+
   if (eventType === 'bar_bat_mitzvah') {
     return 'bar_bat_mitzvah';
   }
 
   if (eventType === 'private') {
-    // Check if it's a kids birthday party
     if (eventScale === 'kids') {
       return 'kids_birthday';
     }
     return 'private';
   }
-  
+
   if (eventType === 'corporate') {
     if (eventScale === 'small') {
       return 'corporate_small';
@@ -99,7 +155,7 @@ export const getPricingCategory = (eventType, eventScale) => {
       return 'corporate_gala';
     }
   }
-  
+
   // Default to private for any unhandled cases
   return 'private';
 };
@@ -125,12 +181,12 @@ export const calculateFinalPrice = (basePrice, dateString) => {
   if (dateString && isPeakDate(dateString)) {
     multiplier = 1.5;
   }
-  
+
   const finalPrice = Math.round(basePrice * multiplier);
-  
+
   // Round to nearest $100
   const roundedPrice = Math.round(finalPrice / 100) * 100;
-  
+
   return { price: roundedPrice, multiplier };
 };
 
@@ -147,80 +203,101 @@ export const calculateDepositAmount = (totalPrice) => {
 
 export const getPerformerPricing = (performer, tier, eventType, eventScale) => {
   const category = getPricingCategory(eventType, eventScale);
-  
+
   if (!PRICING[performer] || !PRICING[performer][category] || !PRICING[performer][category][tier]) {
     console.warn(`Pricing data missing for performer: ${performer}, category: ${category}, tier: ${tier}. Defaulting to private/gold.`);
     return PRICING.johnny_wu.private.gold;
   }
-  
+
   return PRICING[performer][category][tier];
 };
 
-// Virtual show calculation
-export const calculateVirtualPrice = (duration) => {
-  if (!duration) return 0;
-  return VIRTUAL_PRICING[duration] || 0;
+// Virtual show calculation — returns { price, multiplier }
+export const calculateVirtualPrice = (duration, dateString) => {
+  if (!duration) return { price: 0, multiplier: 1 };
+  const base = VIRTUAL_PRICING[duration] || 0;
+  return calculateFinalPrice(base, dateString);
 };
 
 // Filter available tiers based on event type and scale
 export const getAvailableTiers = (eventType, eventSize, eventScale) => {
-  // For high-end VIP events, only show signature and diamond
   if (eventScale === 'vip' || eventScale === 'elite') {
     return ['signature', 'diamond'];
   }
-
-  // For all other events (including kids parties), show gold, signature, and diamond
   return ['gold', 'signature', 'diamond'];
 };
 
-// 1. Close-Up Mingling Magic Calculation
-export const calculateCloseUpPrice = (performer, tier, closeUpHours, numMagicians, eventType, eventScale) => {
-  if (!closeUpHours) return 0;
+// 1. Close-Up Mingling Magic Calculation — returns { price, multiplier }
+export const calculateCloseUpPrice = (performer, tier, closeUpHours, numMagicians, eventType, eventScale, dateString) => {
+  if (!closeUpHours) return { price: 0, multiplier: 1 };
   const pricing = getPerformerPricing(performer, tier, eventType, eventScale);
-  
+
   let basePrice = pricing.close_up_per_hr * parseFloat(closeUpHours);
-  
-  // Apply team discount (10% off per additional magician)
+
   const magicianCount = parseInt(numMagicians);
   if (magicianCount > 1) {
-    // First magician full price, additional magicians get 10% discount
     basePrice = basePrice + (basePrice * (magicianCount - 1) * 0.9);
   }
-  
-  return basePrice;
+
+  return calculateFinalPrice(basePrice, dateString);
 };
 
-// 2. Stage Show Calculation
-export const calculateStagePrice = (performer, tier, stageDuration, eventType, eventScale) => {
-  if (!stageDuration) return 0;
+// 2. Stage Show Calculation — returns { price, multiplier }
+export const calculateStagePrice = (performer, tier, stageDuration, eventType, eventScale, dateString) => {
+  if (!stageDuration) return { price: 0, multiplier: 1 };
   const pricing = getPerformerPricing(performer, tier, eventType, eventScale);
-  
+
   const category = getPricingCategory(eventType, eventScale);
-  
-  // For weddings, use stage_20 pricing
+
+  let basePrice;
   if (category === 'wedding') {
-    return pricing.stage_20 || 0;
+    basePrice = pricing.stage_20 || 0;
+  } else {
+    const stageKey = `stage_${stageDuration}`;
+    basePrice = pricing[stageKey] || 0;
   }
-  
-  // For other events, use stage_30/45/60
-  const stageKey = `stage_${stageDuration}`;
-  return pricing[stageKey] || 0;
+
+  return calculateFinalPrice(basePrice, dateString);
 };
 
-// 3. Bundle (Close-Up + Stage) Calculation - 10% discount
-export const calculateBundlePrice = (performer, tier, closeUpHours, numMagicians, stageDuration, eventType, eventScale) => {
-  if (!closeUpHours || !numMagicians || !stageDuration) return 0;
-  
-  const closeUpBase = calculateCloseUpPrice(performer, tier, closeUpHours, numMagicians, eventType, eventScale);
-  const stageBase = calculateStagePrice(performer, tier, stageDuration, eventType, eventScale);
-  
-  const subtotal = closeUpBase + stageBase;
-  const withDiscount = subtotal * 0.9; // 10% bundle discount
-  
-  return withDiscount;
+// 3. Bundle Calculation — uses BUNDLES map for standard/premium, falls back to legacy logic
+export const calculateBundlePrice = (
+  performer,
+  tier,
+  closeUpHours,
+  numMagicians,
+  stageDuration,
+  eventType,
+  eventScale,
+  dateString
+) => {
+  const category = getPricingCategory(eventType, eventScale);
+
+  const isOnePlusThirty = parseInt(closeUpHours) === 1 && parseInt(stageDuration) === 30;
+  const isTwoPlusThirty = parseInt(closeUpHours) === 2 && parseInt(stageDuration) === 30;
+  const bundleKey = isOnePlusThirty ? 'standard' : isTwoPlusThirty ? 'premium' : null;
+
+  let baseSubtotal;
+
+  if (
+    bundleKey &&
+    BUNDLES[performer] &&
+    BUNDLES[performer][category] &&
+    BUNDLES[performer][category][bundleKey]
+  ) {
+    // Use fixed bundle pricing
+    baseSubtotal = BUNDLES[performer][category][bundleKey].basePrice;
+  } else {
+    // Fallback: legacy per-hour logic with 10% bundle discount
+    const closeUpResult = calculateCloseUpPrice(performer, tier, closeUpHours, numMagicians, eventType, eventScale);
+    const stageResult = calculateStagePrice(performer, tier, stageDuration, eventType, eventScale);
+    baseSubtotal = 0.9 * (closeUpResult.price + stageResult.price);
+  }
+
+  return calculateFinalPrice(baseSubtotal, dateString);
 };
 
-// Tier descriptions - Updated with concise descriptions
+// Tier descriptions
 export const TIER_DESCRIPTIONS = {
   close_up: {
     diamond: {
@@ -237,11 +314,6 @@ export const TIER_DESCRIPTIONS = {
       title: "Gold",
       description: "Elegant sleight-of-hand magic performed inches from your guests using cards, rings, and everyday objects.\nPerfect for cocktail hours, mixers, and intimate gatherings.",
       startingPrice: 1499
-    },
-    silver: {
-      title: "Essential (Silver) — Close-Up Magic",
-      description: "Pure close-up magic with cards, rings, and visual impossibilities. Perfect for smaller gatherings.",
-      startingPrice: 1500
     }
   },
   stage: {
@@ -259,11 +331,6 @@ export const TIER_DESCRIPTIONS = {
       title: "Gold",
       description: "A high energy magic show with visual illusions and audience participation.\nPerfect for private events and smaller gatherings.",
       startingPrice: 1499
-    },
-    silver: {
-      title: "Essential (Silver) — Stage Magic",
-      description: "High-energy magic show with visual illusions and audience interaction. Pure entertainment.",
-      startingPrice: 1500
     }
   }
 };
