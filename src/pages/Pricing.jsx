@@ -462,9 +462,9 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
             {isVirtual && (
               <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-6 mb-4 shadow-sm">
                 <div className="text-center mb-6">
-                  <h2 className="text-white text-[22px] md:text-[26px] font-bold mb-2">Virtual Experience</h2>
+                  <h2 className="text-white text-[22px] md:text-[26px] font-bold mb-2">Virtual Magic & Mentalism Show</h2>
                   <p className="text-slate-200 text-[14px] max-w-2xl mx-auto">
-                    World-class magic, mind reading, and connection straight to your screen.
+                    World-class magic, mind reading, and connection straight to your screen — no travel required.
                   </p>
                 </div>
 
@@ -490,9 +490,9 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
             {/* ── KIDS BIRTHDAY ─────────────────────────────────────────────── */}
             {isKidsBirthday && (
               <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-6 mb-4 shadow-sm">
-                <h2 className="text-white text-[20px] md:text-[24px] font-bold mb-2 text-center">Kids Birthday Stage Show</h2>
+                <h2 className="text-white text-[20px] md:text-[24px] font-bold mb-2 text-center">Kids' Birthday Magic (Dylan George)</h2>
                 <p className="text-slate-300 text-[14px] text-center mb-6 max-w-2xl mx-auto">
-                  Dylan George performs a 30-minute interactive stage show designed to captivate young audiences and create magical memories.
+                  A high‑energy, kid‑friendly show that parents love and kids talk about for weeks.
                 </p>
 
                 <div className="max-w-md mx-auto space-y-4">
@@ -558,9 +558,9 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
                         subhead: 'Ideal for galas, luxury weddings, and high‑profile corporate events.',
                         badge: 'Premium',
                         bullets: [
-                          'Elite magic and mentalism created and performed by Johnny Wu',
-                          'Limited dates each year, reserved for high‑impact events',
-                          'Custom scripting and higher production options available',
+                          'Celebrity magician featured on Netflix and The Kardashians',
+                          'Trusted by dozens of Fortune 500 companies for their biggest events',
+                          'Elite magic, mentalism, and hypnosis with limited annual availability',
                         ],
                         pricing: [
                           'Signature Bundle: 1 hour close‑up + 30 minute stage show – from $3,500',
@@ -575,9 +575,9 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
                         subhead: 'Ideal for weddings, private parties, and corporate events that want the Omni Magic experience with more date availability.',
                         badge: 'Most Booked',
                         bullets: [
-                          'Same Omni Magic style and routines, performed by Dylan',
+                          'Delivers the same Omni Magic style and routines as seen with Johnny',
                           'Personally trained and directed by Johnny Wu',
-                          'More date options, perfect for most events',
+                          'Perfect for most events, with more flexible scheduling',
                         ],
                         pricing: [
                           'Signature Bundle: 1 hour close‑up + 30 minute stage show – $1,750',
@@ -702,17 +702,64 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
               </div>
             )}
 
+            {/* ── WHY OMNI MAGIC ────────────────────────────────────────────── */}
+            {isAdult && (
+              <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-5 md:p-6 mb-4">
+                <h2 className="text-white text-[20px] md:text-[24px] font-bold mb-1">Why Omni Magic Isn't Like "Top‑Hat" Magicians</h2>
+                <p className="text-slate-300 text-[14px] mb-5">Modern, cinematic magic and mentalism trusted by the world's most demanding clients.</p>
+                <div className="space-y-4">
+                  {[
+                    {
+                      icon: '⭐',
+                      title: '2,100+ Five‑Star Reviews',
+                      body: "Between Yelp and Google, we've earned over 2,100 five‑star reviews from couples, planners, and corporate teams. That's thousands of real people betting their reputation on us — and winning.",
+                    },
+                    {
+                      icon: '🎬',
+                      title: 'Proven on Netflix & The Kardashians',
+                      body: "Our magic has been featured on Netflix and The Kardashians, and on stages for household‑name brands. This isn't kids' party magic scaled up; it's world‑class entertainment built for TV, VIP rooms, and high‑stakes events.",
+                    },
+                    {
+                      icon: '🏢',
+                      title: 'Fortune 500 Trusted',
+                      body: "We've performed for dozens of Fortune 500 companies who can hire anyone they want. They keep bringing us back because we're easy to work with, on time, and obsess over making them look like heroes.",
+                    },
+                    {
+                      icon: '🧠',
+                      title: 'Modern Mentalism, Not Cheesy Tricks',
+                      body: "No rabbits, no clown suits, no awkward top hats. You get sophisticated psychological illusions, mind‑reading, and interactive moments your guests actually care about.",
+                    },
+                    {
+                      icon: '🤝',
+                      title: 'White‑Glove, Turnkey Experience',
+                      body: "We coordinate with your planner, AV team, and venue so the show feels seamless. You pick the date and the package — we handle the details.",
+                    },
+                  ].map((item, i) => (
+                    <div key={i} className="flex gap-3">
+                      <span className="text-[20px] flex-shrink-0 mt-0.5">{item.icon}</span>
+                      <div>
+                        <p className="text-white font-semibold text-[14px] mb-0.5">{item.title}</p>
+                        <p className="text-slate-300 text-[13px] leading-relaxed">{item.body}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* ── PROOF BAND ────────────────────────────────────────────────── */}
             {isAdult && bundleType && (
               <div className="bg-slate-800/80 rounded-lg border border-slate-600 p-4 mb-4">
+                <p className="text-white font-bold text-[15px] text-center mb-1">2,100+ Five‑Star Reviews.</p>
+                <p className="text-slate-300 text-[13px] text-center mb-4">Trusted by Netflix, The Kardashians, and Fortune 500 companies.</p>
                 <div className="flex flex-wrap justify-center gap-4 mb-4 text-center">
-                  <div className="text-slate-200 text-[13px]">⭐⭐⭐⭐⭐ <span className="font-semibold text-white">1,000+ Five-Star Events</span></div>
+                  <div className="text-slate-200 text-[13px]">⭐⭐⭐⭐⭐ <span className="font-semibold text-white">2,100+ Five-Star Reviews</span></div>
                   <div className="text-slate-400 hidden sm:block">|</div>
-                  <div className="text-slate-200 text-[13px]">🎩 <span className="font-semibold text-white">10+ Years of Experience</span></div>
+                  <div className="text-slate-200 text-[13px]">🎬 <span className="font-semibold text-white">Netflix & The Kardashians</span></div>
                   <div className="text-slate-400 hidden sm:block">|</div>
-                  <div className="text-slate-200 text-[13px]">🏢 <span className="font-semibold text-white">Fortune 500 & Celebrity Clients</span></div>
+                  <div className="text-slate-200 text-[13px]">🏢 <span className="font-semibold text-white">Fortune 500 Trusted</span></div>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                   {[
                     { quote: "Johnny left our entire gala speechless. Even our CEO, who's seen everything, couldn't stop talking about it.", name: "Sarah K.", event: "Corporate Gala, 400 guests" },
                     { quote: "Our wedding guests are still texting us about Dylan. Best decision we made for the reception.", name: "Michael & Jess T.", event: "Wedding, Newport Beach" },
@@ -724,6 +771,12 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
                       <p className="text-slate-400 text-[11px]">{t.event}</p>
                     </div>
                   ))}
+                </div>
+                {/* Micro guarantee */}
+                <div className="bg-slate-700/40 border border-slate-500 rounded p-3 text-center">
+                  <p className="text-slate-200 text-[12px] leading-relaxed">
+                    <span className="text-amber-400 font-semibold">Our Promise:</span> If your guests don't rave about the magic, email us within 24 hours and we'll jump on a call to make it right — including a credit toward a future performance.
+                  </p>
                 </div>
               </div>
             )}
