@@ -116,6 +116,53 @@ export const BUNDLES = {
   },
 };
 
+// --- Extra Time Add-On Pricing ---
+// Per 30-minute block of additional close-up magic, by performer.
+export const EXTRA_CLOSEUP_PRICING = {
+  johnny_wu:    { default: 750 },
+  dylan_george: { default: 300 },
+};
+
+// Stage show upgrades from the base 30 minutes.
+export const STAGE_UPGRADE_PRICING = {
+  johnny_wu:    { to45: 500,  to60: 1000 },
+  dylan_george: { to45: 250,  to60: 500  },
+};
+
+// --- Single unified pricing function ---
+export const calculatePackagePrice = ({
+  performer,
+  bundleType,           // 'standard' | 'premium'
+  eventType,
+  eventScale,
+  extraCloseUpMinutes,  // 0, 30, 60 (only for standard; premium locked to 0)
+  stageDuration,        // 30, 45, 60
+  dateString,
+}) => {
+  const category = getPricingCategory(eventType, eventScale);
+  const bundle = BUNDLES[performer]?.[category]?.[bundleType];
+  if (!bundle) throw new Error('Invalid bundle selection');
+
+  let subtotal = bundle.basePrice;
+
+  // Extra close-up (in 30-min blocks)
+  const extraBlocks = Math.round((extraCloseUpMinutes || 0) / 30);
+  if (extraBlocks > 0) {
+    const perBlock = EXTRA_CLOSEUP_PRICING[performer]?.default || 0;
+    subtotal += perBlock * extraBlocks;
+  }
+
+  // Stage upgrade
+  if (stageDuration === 45) {
+    subtotal += STAGE_UPGRADE_PRICING[performer].to45;
+  } else if (stageDuration === 60) {
+    subtotal += STAGE_UPGRADE_PRICING[performer].to60;
+  }
+
+  const { price, multiplier } = calculateFinalPrice(subtotal, dateString);
+  return { price, multiplier };
+};
+
 // Kids birthday hardcoded public prices (Dylan George only on UI)
 export const KIDS_PRICING = {
   weekday: 595,  // Mon–Thu

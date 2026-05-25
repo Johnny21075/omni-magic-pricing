@@ -51,6 +51,30 @@ export const pricingData = {
         "service_types": ["stage", "bundle"]
       },
       {
+        "id": "addon_vip_meet_greet",
+        "label": "VIP Meet & Greet Photo Session (up to 30 guests)",
+        "price": 500,
+        "tooltip": "A dedicated post-show meet & greet where guests get photos with the performer and see an exclusive close-up piece just for them. Makes your VIPs feel like celebrities.",
+        "event_types": ["corporate", "private", "wedding"],
+        "service_types": ["bundle"]
+      },
+      {
+        "id": "addon_event_recording",
+        "label": "Permission to Professionally Record the Show",
+        "price": 300,
+        "tooltip": "Receive written permission to hire your own videographer or use your AV team to record the full performance for company reels, social media, or personal memories.",
+        "event_types": ["corporate", "private", "wedding"],
+        "service_types": ["bundle"]
+      },
+      {
+        "id": "addon_custom_routine",
+        "label": "Custom Illusion or Mind-Reading Routine Built Around Your Event",
+        "price": 1500,
+        "tooltip": "Johnny or Dylan designs a bespoke routine using your company name, couple's story, or event theme. A truly one-of-a-kind moment your guests will be talking about for years.",
+        "event_types": ["corporate", "private", "wedding"],
+        "service_types": ["bundle"]
+      },
+      {
         "id": "addon_virtual_plus",
         "label": "Virtual Plus Bundle",
         "price": 500,

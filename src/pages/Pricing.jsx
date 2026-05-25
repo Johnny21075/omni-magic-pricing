@@ -9,6 +9,7 @@ import { DollarSign, ExternalLink, Play, CreditCard, CheckCircle, Table2 } from 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { format, addHours } from 'date-fns';
 import {
+  calculatePackagePrice,
   calculateBundlePrice,
   calculateFinalPrice,
   isPeakDate,
@@ -49,8 +50,8 @@ export default function PricingPage() {
   // Adult bundle state
   const [performer, setPerformer] = useState('johnny_wu');
   const [bundleType, setBundleType] = useState(''); // 'standard' | 'premium'
-  const [extraCloseUp, setExtraCloseUp] = useState(0);   // extra hours: 0, 0.5, or 1
-  const [extraStage, setExtraStage] = useState(0);       // extra minutes: 0, 15, or 30
+  const [extraCloseUpMinutes, setExtraCloseUpMinutes] = useState(0); // 0, 30, 60 (standard only)
+  const [stageDuration, setStageDuration] = useState(30);             // 30, 45, 60
 
   // Kids state
   const [kidsCloseUpAddon, setKidsCloseUpAddon] = useState(false);
@@ -105,19 +106,15 @@ export default function PricingPage() {
     }
 
     if (isAdult && performer && bundleType) {
-      const baseCloseUp = bundleType === 'standard' ? 1 : 2;
-      const totalCloseUp = baseCloseUp + extraCloseUp;
-      const totalStage = 30 + extraStage;
-      return calculateBundlePrice(
+      return calculatePackagePrice({
         performer,
-        'signature',
-        totalCloseUp,
-        1,
-        totalStage,
+        bundleType,
         eventType,
         eventScale,
-        eventDate
-      );
+        extraCloseUpMinutes,
+        stageDuration,
+        dateString: eventDate,
+      });
     }
 
     return { price: 0, multiplier: 1 };
@@ -199,14 +196,13 @@ export default function PricingPage() {
         totalInvestment,
       };
     }
-    const baseCloseUp = bundleType === 'standard' ? 1 : 2;
-    const totalCloseUp = baseCloseUp + extraCloseUp;
-    const totalStage = 30 + extraStage;
+    const baseCloseUpMin = bundleType === 'standard' ? 60 : 120;
+    const totalCloseUpMin = baseCloseUpMin + extraCloseUpMinutes;
     const bundleLabel = bundleType === 'standard' ? 'Signature Bundle' : 'Premium Bundle';
     return {
       type: bundleLabel,
       performer: performer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George',
-      duration: `${totalCloseUp}h Close-Up + ${totalStage}m Stage`,
+      duration: `${totalCloseUpMin} min Close-Up + ${stageDuration} min Stage`,
       tier: 'Signature',
       packagePrice: selectedPackagePrice.price,
       addons: selectedAddons.length > 0
@@ -535,7 +531,20 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
             {isAdult && (
               <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-6 mb-4 shadow-sm">
                 <h2 className="text-white text-[20px] md:text-[24px] font-bold mb-1 text-center">Choose Your Package</h2>
-                <p className="text-slate-300 text-[13px] text-center mb-6">Every bundle includes close-up mingling magic + a stage show</p>
+                <p className="text-slate-300 text-[13px] text-center mb-4">Every bundle includes close-up mingling magic + a stage show</p>
+
+                {/* Elite Experience anchor card */}
+                <div className="mb-6 p-4 rounded-lg border-2 border-amber-500/40 bg-gradient-to-br from-amber-900/20 to-slate-800/60">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-[11px] bg-amber-500/30 text-amber-300 px-2 py-0.5 rounded font-semibold tracking-wide uppercase">Elite Experience</span>
+                      </div>
+                      <p className="text-white font-bold text-[15px] mb-1">Fully Custom Luxury Production – from $9,500</p>
+                      <p className="text-slate-300 text-[13px]">Reserved for luxury brands, high-profile galas, and celebrity-level events. Fully bespoke scripting, expanded cast, and premium production design. <a href="mailto:hello@omnimagic.co" className="text-amber-400 hover:text-amber-300 underline">Contact us to inquire.</a></p>
+                    </div>
+                  </div>
+                </div>
 
                 {/* Performer Selection */}
                 <div className="mb-6">
@@ -577,7 +586,7 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
                         cta: 'Book Dylan for My Event',
                       },
                     ].map((p) => (
-                      <button key={p.id} onClick={() => { setPerformer(p.id); setExtraCloseUp(0); setExtraStage(0); }}
+                      <button key={p.id} onClick={() => { setPerformer(p.id); setExtraCloseUpMinutes(0); setStageDuration(30); }}
                         className={`p-5 rounded-lg border-2 text-left transition-all ${performer === p.id ? 'border-amber-500 bg-amber-500/10' : 'border-slate-600 hover:border-slate-500'}`}>
                         <div className="flex justify-between items-start mb-2">
                           <p className="text-white font-bold text-[15px] leading-snug pr-2">{p.title}</p>
@@ -625,7 +634,7 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
                     ].map((b) => {
                       const previewPrice = getBundlePreviewPrice(performer, b.key);
                       return (
-                        <button key={b.key} onClick={() => { setBundleType(b.key); setExtraCloseUp(0); setExtraStage(0); }}
+                        <button key={b.key} onClick={() => { setBundleType(b.key); setExtraCloseUpMinutes(0); setStageDuration(30); }}
                           className={`p-4 rounded-lg border-2 text-left transition-all ${bundleType === b.key ? 'border-amber-500 bg-amber-500/10' : 'border-slate-600 hover:border-slate-500'}`}>
                           <div className="flex justify-between items-start mb-1">
                             <p className="text-white font-bold text-[15px]">{b.label}</p>
@@ -646,42 +655,76 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
                   <div className="mt-6 border-t border-slate-600 pt-5 space-y-5">
                     <h3 className="text-white text-[16px] font-bold">Customize Your Time</h3>
 
-                    {/* Close-up add-on */}
-                    <div>
-                      <Label className="text-slate-200 text-[13px] mb-2 block">Add more mingling magic?</Label>
-                      <div className="space-y-2">
-                        {[
-                          { value: 0, label: `No, keep it at ${bundleType === 'standard' ? '1 hour' : '2 hours'} (included)` },
-                          { value: 0.5, label: '+30 minutes of close‑up magic' },
-                          { value: 1,   label: '+60 minutes of close‑up magic' },
-                        ].map((opt) => (
-                          <button key={opt.value} onClick={() => setExtraCloseUp(opt.value)}
-                            className={`w-full text-left px-4 py-2.5 rounded border-2 text-[13px] transition-all ${extraCloseUp === opt.value ? 'border-amber-500 bg-amber-500/10 text-white font-medium' : 'border-slate-600 hover:border-slate-500 text-slate-300'}`}>
-                            {opt.label}
-                          </button>
-                        ))}
+                    {/* Close-up add-on — only for Standard (Premium already at 2h max) */}
+                    {bundleType === 'standard' ? (
+                      <div>
+                        <Label className="text-slate-200 text-[13px] mb-2 block">Add more mingling magic?</Label>
+                        <div className="space-y-2">
+                          {[
+                            { value: 0,  label: 'Keep it at 1 hour (included)', extra: null },
+                            { value: 30, label: '+30 min close‑up magic → 1.5 hours total', extra: performer === 'johnny_wu' ? 750 : 300 },
+                            { value: 60, label: '+60 min close‑up magic → 2 hours total',   extra: performer === 'johnny_wu' ? 1500 : 600 },
+                          ].map((opt) => (
+                            <button key={opt.value} onClick={() => setExtraCloseUpMinutes(opt.value)}
+                              className={`w-full text-left px-4 py-2.5 rounded border-2 text-[13px] transition-all flex justify-between items-center ${extraCloseUpMinutes === opt.value ? 'border-amber-500 bg-amber-500/10 text-white font-medium' : 'border-slate-600 hover:border-slate-500 text-slate-300'}`}>
+                              <span>{opt.label}</span>
+                              {opt.extra && <span className="text-amber-400 font-semibold">+${opt.extra.toLocaleString()}</span>}
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="p-3 bg-slate-700/40 rounded border border-slate-600">
+                        <p className="text-slate-300 text-[13px]">✓ Premium bundle already includes the maximum 2 hours of close‑up magic.</p>
+                      </div>
+                    )}
 
-                    {/* Stage add-on */}
+                    {/* Stage upgrade */}
                     <div>
                       <Label className="text-slate-200 text-[13px] mb-1 block">Extend the stage show?</Label>
-                      <p className="text-slate-400 text-[12px] mb-2">All bundles include a 30 minute feature show. You can extend it if you want a longer performance.</p>
+                      <p className="text-slate-400 text-[12px] mb-2">All bundles include a 30‑minute feature show.</p>
                       <div className="space-y-2">
                         {[
-                          { value: 0,  label: 'Keep it at 30 minutes (included)' },
-                          { value: 15, label: 'Upgrade to 45 minutes' },
-                          { value: 30, label: 'Upgrade to 60 minutes' },
+                          { value: 30, label: '30 minutes (included)',          extra: null },
+                          { value: 45, label: 'Upgrade to 45 minutes',          extra: performer === 'johnny_wu' ? 500  : 250 },
+                          { value: 60, label: 'Upgrade to 60 minutes',          extra: performer === 'johnny_wu' ? 1000 : 500 },
                         ].map((opt) => (
-                          <button key={opt.value} onClick={() => setExtraStage(opt.value)}
-                            className={`w-full text-left px-4 py-2.5 rounded border-2 text-[13px] transition-all ${extraStage === opt.value ? 'border-amber-500 bg-amber-500/10 text-white font-medium' : 'border-slate-600 hover:border-slate-500 text-slate-300'}`}>
-                            {opt.label}
+                          <button key={opt.value} onClick={() => setStageDuration(opt.value)}
+                            className={`w-full text-left px-4 py-2.5 rounded border-2 text-[13px] transition-all flex justify-between items-center ${stageDuration === opt.value ? 'border-amber-500 bg-amber-500/10 text-white font-medium' : 'border-slate-600 hover:border-slate-500 text-slate-300'}`}>
+                            <span>{opt.label}</span>
+                            {opt.extra && <span className="text-amber-400 font-semibold">+${opt.extra.toLocaleString()}</span>}
                           </button>
                         ))}
                       </div>
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* ── PROOF BAND ────────────────────────────────────────────────── */}
+            {isAdult && bundleType && (
+              <div className="bg-slate-800/80 rounded-lg border border-slate-600 p-4 mb-4">
+                <div className="flex flex-wrap justify-center gap-4 mb-4 text-center">
+                  <div className="text-slate-200 text-[13px]">⭐⭐⭐⭐⭐ <span className="font-semibold text-white">1,000+ Five-Star Events</span></div>
+                  <div className="text-slate-400 hidden sm:block">|</div>
+                  <div className="text-slate-200 text-[13px]">🎩 <span className="font-semibold text-white">10+ Years of Experience</span></div>
+                  <div className="text-slate-400 hidden sm:block">|</div>
+                  <div className="text-slate-200 text-[13px]">🏢 <span className="font-semibold text-white">Fortune 500 & Celebrity Clients</span></div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {[
+                    { quote: "Johnny left our entire gala speechless. Even our CEO, who's seen everything, couldn't stop talking about it.", name: "Sarah K.", event: "Corporate Gala, 400 guests" },
+                    { quote: "Our wedding guests are still texting us about Dylan. Best decision we made for the reception.", name: "Michael & Jess T.", event: "Wedding, Newport Beach" },
+                    { quote: "We've hired entertainment for 15+ company events. Omni Magic is on a completely different level.", name: "David L.", event: "Annual Holiday Party" },
+                  ].map((t, i) => (
+                    <div key={i} className="bg-slate-700/50 rounded p-3 border border-slate-600">
+                      <p className="text-slate-200 text-[12px] italic mb-2">"{t.quote}"</p>
+                      <p className="text-amber-400 text-[12px] font-semibold">{t.name}</p>
+                      <p className="text-slate-400 text-[11px]">{t.event}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -703,11 +746,11 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-300">Close-Up</span>
-                        <span className="text-white font-medium">{(bundleType === 'standard' ? 1 : 2) + extraCloseUp}h mingling magic</span>
+                        <span className="text-white font-medium">{(bundleType === 'standard' ? 60 : 120) + extraCloseUpMinutes} min mingling magic</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-300">Stage Show</span>
-                        <span className="text-white font-medium">{30 + extraStage} minutes</span>
+                        <span className="text-white font-medium">{stageDuration} minutes</span>
                       </div>
                     </>
                   )}
