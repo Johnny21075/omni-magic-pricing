@@ -211,12 +211,18 @@ export default function Home() {
 
               })}
             </div>
-            <div className="flex justify-center mt-8">
+            <div className="flex justify-center gap-4 mt-8 flex-wrap">
               <Button
                 onClick={() => window.location.href = createPageUrl('GratuityPage')}
                 className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-900 font-semibold px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 Leave a Gratuity
+              </Button>
+              <Button
+                onClick={() => window.location.href = createPageUrl('Pricing')}
+                className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold px-8 py-6 text-lg rounded-lg shadow-lg hover:shadow-xl transition-all duration-300"
+              >
+                Deposit & Hold My Date
               </Button>
             </div>
           </div>
