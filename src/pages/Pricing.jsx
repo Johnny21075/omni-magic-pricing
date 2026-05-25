@@ -462,7 +462,11 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
 
   // ── Bundle price preview helper ────────────────────────────────────────────
   const getBundlePreviewPrice = (perf, type) => {
-    const result = calculateBundlePrice(perf, 'signature', type === 'standard' ? 1 : 2, 1, 30, eventType, eventScale, eventDate);
+    const category = getPricingCategory(eventType, eventScale);
+    const bundle = BUNDLES[perf]?.[category]?.[type];
+    if (!bundle) return 0;
+    // Apply peak date multiplier if applicable, then round to nearest $100
+    const result = calculateFinalPrice(bundle.basePrice, eventDate);
     return result.price;
   };
 
