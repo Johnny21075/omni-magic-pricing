@@ -429,9 +429,10 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
                 <h2 className="text-white text-[18px] md:text-[22px] font-bold mb-1 text-center">Event Date</h2>
                 <p className="text-amber-400 text-[13px] text-center mb-4">* Required to calculate accurate pricing</p>
                 <div className="max-w-md mx-auto">
-                   <Input type="date" value={eventDate} onChange={handleDateChange} min={getTodayDate()} required
-                     onClick={(e) => { try { e.target.showPicker && e.target.showPicker(); } catch (_) {} }}
-                     className="w-full bg-slate-700 border-2 border-slate-500 focus:border-amber-500 text-white text-[13px] md:text-[14px] h-10 px-3 rounded-lg cursor-pointer" />
+                   <div className="relative cursor-pointer" onClick={(e) => { const inp = e.currentTarget.querySelector('input'); if (inp) { inp.focus(); try { inp.showPicker && inp.showPicker(); } catch (_) {} } }}>
+                     <Input type="date" value={eventDate} onChange={handleDateChange} min={getTodayDate()} required
+                       className="w-full bg-slate-700 border-2 border-slate-500 focus:border-amber-500 text-white text-[13px] md:text-[14px] h-10 px-3 rounded-lg cursor-pointer pointer-events-none" />
+                   </div>
                  </div>
                 {eventDate && isPeakDate(eventDate) && (
                   <div className="mt-3 p-3 bg-amber-500/20 border-2 border-amber-500/40 rounded-lg text-amber-300 text-[13px] text-center max-w-md mx-auto">
