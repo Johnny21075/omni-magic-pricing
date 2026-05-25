@@ -130,36 +130,49 @@ export const STAGE_UPGRADE_PRICING = {
 };
 
 // --- Single unified pricing function ---
+// packageType: 'bundle' | 'close_up_only' | 'stage_only'
 export const calculatePackagePrice = ({
   performer,
-  bundleType,           // 'standard' | 'premium'
+  packageType = 'bundle',
+  bundleType,           // 'standard' | 'premium'  (bundle only)
   eventType,
   eventScale,
-  extraCloseUpMinutes,  // 0, 30, 60 (only for standard; premium locked to 0)
+  extraCloseUpMinutes,  // 0, 30, 60 (standard bundle only)
+  closeUpHours,         // 1 or 2 (close_up_only)
   stageDuration,        // 30, 45, 60
   dateString,
 }) => {
-  const category = getPricingCategory(eventType, eventScale);
-  const bundle = BUNDLES[performer]?.[category]?.[bundleType];
-  if (!bundle) throw new Error('Invalid bundle selection');
+  let baseSubtotal = 0;
 
-  let subtotal = bundle.basePrice;
+  if (packageType === 'bundle') {
+    const category = getPricingCategory(eventType, eventScale);
+    const bundle = BUNDLES[performer]?.[category]?.[bundleType];
+    if (!bundle) throw new Error('Invalid bundle selection');
+    baseSubtotal = bundle.basePrice;
 
-  // Extra close-up (in 30-min blocks)
-  const extraBlocks = Math.round((extraCloseUpMinutes || 0) / 30);
-  if (extraBlocks > 0) {
-    const perBlock = EXTRA_CLOSEUP_PRICING[performer]?.default || 0;
-    subtotal += perBlock * extraBlocks;
+    // Extra close-up blocks (standard only)
+    const extraBlocks = Math.round((extraCloseUpMinutes || 0) / 30);
+    if (extraBlocks > 0) {
+      baseSubtotal += (EXTRA_CLOSEUP_PRICING[performer]?.default || 0) * extraBlocks;
+    }
+
+    // Stage upgrade
+    if (stageDuration === 45) baseSubtotal += STAGE_UPGRADE_PRICING[performer].to45;
+    else if (stageDuration === 60) baseSubtotal += STAGE_UPGRADE_PRICING[performer].to60;
+
+  } else if (packageType === 'close_up_only') {
+    const result = calculateCloseUpPrice(performer, 'signature', closeUpHours || 1, 1, eventType, eventScale, dateString);
+    return { price: result.price, multiplier: result.multiplier };
+
+  } else if (packageType === 'stage_only') {
+    const result = calculateStagePrice(performer, 'signature', stageDuration || 30, eventType, eventScale, dateString);
+    return { price: result.price, multiplier: result.multiplier };
+
+  } else {
+    throw new Error('Invalid packageType');
   }
 
-  // Stage upgrade
-  if (stageDuration === 45) {
-    subtotal += STAGE_UPGRADE_PRICING[performer].to45;
-  } else if (stageDuration === 60) {
-    subtotal += STAGE_UPGRADE_PRICING[performer].to60;
-  }
-
-  const { price, multiplier } = calculateFinalPrice(subtotal, dateString);
+  const { price, multiplier } = calculateFinalPrice(baseSubtotal, dateString);
   return { price, multiplier };
 };
 

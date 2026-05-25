@@ -19,6 +19,8 @@ import {
   KIDS_PRICING,
   VIRTUAL_PRICING,
   getPricingCategory,
+  EXTRA_CLOSEUP_PRICING,
+  STAGE_UPGRADE_PRICING,
 } from '../components/pricing/pricingCalculations';
 import { pricingData } from '../components/pricing/pricingData';
 import { magicExperiencesComparison } from '../components/pricing/tierComparisonData';
@@ -51,9 +53,11 @@ export default function PricingPage() {
 
   // Adult bundle state
   const [performer, setPerformer] = useState('johnny_wu');
+  const [packageType, setPackageType] = useState('bundle'); // 'bundle' | 'close_up_only' | 'stage_only'
   const [bundleType, setBundleType] = useState(''); // 'standard' | 'premium'
   const [extraCloseUpMinutes, setExtraCloseUpMinutes] = useState(0); // 0, 30, 60 (standard only)
   const [stageDuration, setStageDuration] = useState(30);             // 30, 45, 60
+  const [closeUpHours, setCloseUpHours] = useState(1);                // 1 or 2 (close_up_only)
 
   // Kids state
   const [kidsCloseUpAddon, setKidsCloseUpAddon] = useState(false);
@@ -116,16 +120,37 @@ export default function PricingPage() {
       return calculateFinalPrice(base, eventDate);
     }
 
-    if (isAdult && performer && bundleType) {
-      return calculatePackagePrice({
-        performer,
-        bundleType,
-        eventType,
-        eventScale,
-        extraCloseUpMinutes,
-        stageDuration,
-        dateString: eventDate,
-      });
+    if (isAdult && performer) {
+      if (packageType === 'bundle' && bundleType) {
+        return calculatePackagePrice({
+          performer,
+          packageType: 'bundle',
+          bundleType,
+          eventType,
+          eventScale,
+          extraCloseUpMinutes,
+          stageDuration,
+          dateString: eventDate,
+        });
+      } else if (packageType === 'close_up_only') {
+        return calculatePackagePrice({
+          performer,
+          packageType: 'close_up_only',
+          closeUpHours,
+          eventType,
+          eventScale,
+          dateString: eventDate,
+        });
+      } else if (packageType === 'stage_only') {
+        return calculatePackagePrice({
+          performer,
+          packageType: 'stage_only',
+          stageDuration,
+          eventType,
+          eventScale,
+          dateString: eventDate,
+        });
+      }
     }
 
     return { price: 0, multiplier: 1 };
@@ -160,7 +185,11 @@ export default function PricingPage() {
     if (!eventDate) return false;
     if (isVirtual) return !!virtualDuration;
     if (isKidsBirthday) return true;
-    return !!(performer && bundleType);
+    if (!performer) return false;
+    if (packageType === 'bundle') return !!bundleType;
+    if (packageType === 'close_up_only') return true;
+    if (packageType === 'stage_only') return true;
+    return false;
   };
 
   // ── Booking Handlers ───────────────────────────────────────────────────────
@@ -207,12 +236,37 @@ export default function PricingPage() {
         totalInvestment,
       };
     }
+    const performerName = performer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George';
+    if (packageType === 'close_up_only') {
+      return {
+        type: 'Close-Up Only',
+        performer: performerName,
+        duration: `${closeUpHours} hour${closeUpHours > 1 ? 's' : ''} Close-Up Magic`,
+        tier: 'Signature',
+        packagePrice: selectedPackagePrice.price,
+        addons: selectedAddons.length > 0 ? selectedAddons.map((id) => pricingData?.app?.add_ons?.find((a) => a.id === id)?.label).join(', ') : 'None',
+        magicians: '1',
+        totalInvestment,
+      };
+    }
+    if (packageType === 'stage_only') {
+      return {
+        type: 'Stage Show Only',
+        performer: performerName,
+        duration: `${stageDuration} min Stage Show`,
+        tier: 'Signature',
+        packagePrice: selectedPackagePrice.price,
+        addons: selectedAddons.length > 0 ? selectedAddons.map((id) => pricingData?.app?.add_ons?.find((a) => a.id === id)?.label).join(', ') : 'None',
+        magicians: '1',
+        totalInvestment,
+      };
+    }
     const baseCloseUpMin = bundleType === 'standard' ? 60 : 120;
     const totalCloseUpMin = baseCloseUpMin + extraCloseUpMinutes;
     const bundleLabel = bundleType === 'standard' ? 'Signature Bundle' : 'Premium Bundle';
     return {
       type: bundleLabel,
-      performer: performer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George',
+      performer: performerName,
       duration: `${totalCloseUpMin} min Close-Up + ${stageDuration} min Stage`,
       tier: 'Signature',
       packagePrice: selectedPackagePrice.price,
@@ -567,175 +621,232 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
               </div>
             )}
 
-            {/* ── ADULT BUNDLE SELECTOR ─────────────────────────────────────── */}
+            {/* ── ADULT PACKAGE SELECTOR ────────────────────────────────────── */}
             {isAdult && (
               <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-6 mb-4 shadow-sm">
-                <h2 className="text-white text-[20px] md:text-[24px] font-bold mb-1 text-center">Choose Your Package</h2>
-                <p className="text-slate-300 text-[13px] text-center mb-4">Every bundle includes close-up mingling magic + a stage show</p>
+                <h2 className="text-white text-[20px] md:text-[24px] font-bold mb-1 text-center">Choose Your Experience</h2>
+                <p className="text-slate-300 text-[13px] text-center mb-5">World-class magic tailored to your event</p>
 
                 {/* Elite Experience anchor card */}
                 <div className="mb-6 p-4 rounded-lg border-2 border-amber-500/40 bg-gradient-to-br from-amber-900/20 to-slate-800/60">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[11px] bg-amber-500/30 text-amber-300 px-2 py-0.5 rounded font-semibold tracking-wide uppercase">Elite Experience</span>
-                      </div>
-                      <p className="text-white font-bold text-[15px] mb-1">Fully Custom Luxury Production – from $9,500</p>
-                      <p className="text-slate-300 text-[13px]">Reserved for luxury brands, high-profile galas, and celebrity-level events. Fully bespoke scripting, expanded cast, and premium production design. <a href="mailto:hello@omnimagic.co" className="text-amber-400 hover:text-amber-300 underline">Contact us to inquire.</a></p>
-                    </div>
-                  </div>
+                  <span className="text-[11px] bg-amber-500/30 text-amber-300 px-2 py-0.5 rounded font-semibold tracking-wide uppercase">Elite Experience</span>
+                  <p className="text-white font-bold text-[15px] mt-1 mb-1">Fully Custom Luxury Production – from $9,500</p>
+                  <p className="text-slate-300 text-[13px]">Reserved for luxury brands, high-profile galas, and celebrity-level events. <a href="mailto:hello@omnimagic.co" className="text-amber-400 hover:text-amber-300 underline">Contact us to inquire.</a></p>
                 </div>
 
-                {/* Performer Selection */}
+                {/* Step 1: Performer */}
                 <div className="mb-6">
-                  <Label className="text-white text-[14px] mb-3 block font-semibold">Select Performer</Label>
+                  <Label className="text-white text-[14px] mb-3 block font-semibold">Step 1 — Select Your Performer</Label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {[
                       {
                         id: 'johnny_wu',
-                        name: 'Johnny Wu',
-                        title: 'Johnny Wu – Founder & Headlining Magician',
-                        subhead: 'Ideal for galas, luxury weddings, and high‑profile corporate events.',
+                        title: 'Johnny Wu',
+                        subhead: 'Founder & Headlining Magician',
                         badge: 'Premium',
-                        bullets: [
-                          'Celebrity magician featured on Netflix and The Kardashians',
-                          'Trusted by dozens of Fortune 500 companies for their biggest events',
-                          'Elite magic, mentalism, and hypnosis with limited annual availability',
-                        ],
+                        bullets: ['Featured on Netflix & The Kardashians', 'Fortune 500 trusted', 'Limited annual availability'],
                         pricing: [
-                          'Signature Bundle: 1 hour close‑up + 30 minute stage show – from $3,500',
-                          'Premium Bundle: 2 hours close‑up + 30 minute stage show – from $5,000',
+                          { label: 'Close‑Up Only', from: 'from $3,000' },
+                          { label: 'Stage Only', from: 'from $2,500' },
+                          { label: 'Close‑Up + Stage', from: 'from $3,500', popular: true },
                         ],
-                        cta: 'Request Johnny for My Event',
                       },
                       {
                         id: 'dylan_george',
-                        name: 'Dylan George',
-                        title: 'Dylan George – Lead Magician & Crowd Favorite',
-                        subhead: 'Ideal for weddings, private parties, and corporate events that want the Omni Magic experience with more date availability.',
+                        title: 'Dylan George',
+                        subhead: 'Lead Magician & Crowd Favorite',
                         badge: 'Most Booked',
-                        bullets: [
-                          'Delivers the same Omni Magic style and routines as seen with Johnny',
-                          'Personally trained and directed by Johnny Wu',
-                          'Perfect for most events, with more flexible scheduling',
-                        ],
+                        bullets: ['Same Omni Magic routines as Johnny', 'Personally trained by Johnny Wu', 'More flexible scheduling'],
                         pricing: [
-                          'Signature Bundle: 1 hour close‑up + 30 minute stage show – $1,750',
-                          'Premium Bundle: 2 hours close‑up + 30 minute stage show – $2,250',
+                          { label: 'Close‑Up Only', from: 'from $1,250' },
+                          { label: 'Stage Only', from: 'from $900' },
+                          { label: 'Close‑Up + Stage', from: 'from $1,750', popular: true },
                         ],
-                        cta: 'Book Dylan for My Event',
                       },
                     ].map((p) => (
-                      <button key={p.id} onClick={() => { setPerformer(p.id); setExtraCloseUpMinutes(0); setStageDuration(30); }}
+                      <button key={p.id} onClick={() => { setPerformer(p.id); setExtraCloseUpMinutes(0); setStageDuration(30); setCloseUpHours(1); }}
                         className={`p-5 rounded-lg border-2 text-left transition-all ${performer === p.id ? 'border-amber-500 bg-amber-500/10' : 'border-slate-600 hover:border-slate-500'}`}>
-                        <div className="flex justify-between items-start mb-2">
-                          <p className="text-white font-bold text-[15px] leading-snug pr-2">{p.title}</p>
-                          <span className={`text-[11px] px-2 py-1 rounded font-medium whitespace-nowrap flex-shrink-0 ${p.badge === 'Premium' ? 'bg-amber-500/20 text-amber-300' : 'bg-green-600/70 text-white'}`}>
-                            {p.badge}
-                          </span>
+                        <div className="flex justify-between items-start mb-1">
+                          <p className="text-white font-bold text-[16px]">{p.title}</p>
+                          <span className={`text-[11px] px-2 py-1 rounded font-medium whitespace-nowrap flex-shrink-0 ${p.badge === 'Premium' ? 'bg-amber-500/20 text-amber-300' : 'bg-green-600/70 text-white'}`}>{p.badge}</span>
                         </div>
-                        <p className="text-slate-300 text-[13px] mb-3 italic">{p.subhead}</p>
+                        <p className="text-slate-400 text-[12px] italic mb-3">{p.subhead}</p>
                         <ul className="space-y-1 mb-3">
                           {p.bullets.map((b, i) => (
-                            <li key={i} className="text-slate-200 text-[12px] flex items-start gap-2">
-                              <span className="text-amber-400 mt-0.5">✓</span>{b}
-                            </li>
+                            <li key={i} className="text-slate-200 text-[12px] flex items-start gap-2"><span className="text-amber-400">✓</span>{b}</li>
                           ))}
                         </ul>
-                        <div className="space-y-1 mb-3 border-t border-slate-600 pt-3">
+                        <div className="border-t border-slate-600 pt-3 space-y-1">
                           {p.pricing.map((line, i) => (
-                            <p key={i} className="text-amber-300 text-[12px] font-medium">{line}</p>
+                            <div key={i} className="flex justify-between items-center">
+                              <span className={`text-[12px] ${line.popular ? 'text-amber-300 font-semibold' : 'text-slate-300'}`}>{line.label}{line.popular ? ' ⭐' : ''}</span>
+                              <span className="text-amber-400 text-[12px] font-medium">{line.from}</span>
+                            </div>
                           ))}
                         </div>
-                        <div className={`text-center text-[13px] font-semibold px-3 py-2 rounded transition-all ${performer === p.id ? 'bg-amber-500 text-slate-900' : 'bg-slate-700 text-white'}`}>
-                          {p.cta}
+                        <div className={`mt-3 text-center text-[13px] font-semibold px-3 py-2 rounded transition-all ${performer === p.id ? 'bg-amber-500 text-slate-900' : 'bg-slate-700 text-white'}`}>
+                          {performer === p.id ? '✓ Selected' : `Select ${p.title.split(' ')[0]}`}
                         </div>
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Bundle Type Selection */}
-                <div>
-                  <Label className="text-white text-[14px] mb-3 block font-semibold">Select Bundle</Label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {/* Step 2: Experience Type */}
+                <div className="mb-5">
+                  <Label className="text-white text-[14px] mb-3 block font-semibold">Step 2 — Choose Your Experience</Label>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     {[
                       {
-                        key: 'standard',
-                        label: 'Signature Bundle',
-                        sub: '1 Hour Close-Up + 30 Min Stage',
+                        key: 'bundle',
+                        label: 'Close‑Up + Stage',
+                        sub: 'Mingling magic & a feature show',
                         badge: '⭐ Most Popular',
                       },
                       {
-                        key: 'premium',
-                        label: 'Premium Bundle',
-                        sub: '2 Hours Close-Up + 30 Min Stage',
+                        key: 'close_up_only',
+                        label: 'Close‑Up Only',
+                        sub: 'Intimate mingling magic',
+                        badge: null,
                       },
-                    ].map((b) => {
-                      const previewPrice = getBundlePreviewPrice(performer, b.key);
-                      return (
-                        <button key={b.key} onClick={() => { setBundleType(b.key); setExtraCloseUpMinutes(0); setStageDuration(30); }}
-                          className={`p-4 rounded-lg border-2 text-left transition-all ${bundleType === b.key ? 'border-amber-500 bg-amber-500/10' : 'border-slate-600 hover:border-slate-500'}`}>
-                          <div className="flex justify-between items-start mb-1">
-                            <p className="text-white font-bold text-[15px]">{b.label}</p>
-                            {b.badge && <span className="text-[10px] bg-green-600/80 text-white px-2 py-1 rounded font-medium">{b.badge}</span>}
-                          </div>
-                          <p className="text-slate-300 text-[13px] mb-2">{b.sub}</p>
-                          <p className="text-amber-400 font-bold text-[18px]">
-                            {previewPrice > 0 ? `$${previewPrice.toLocaleString()}` : '—'}
-                          </p>
-                        </button>
-                      );
-                    })}
+                      {
+                        key: 'stage_only',
+                        label: 'Stage Show Only',
+                        sub: 'Feature stage performance',
+                        badge: null,
+                      },
+                    ].map((opt) => (
+                      <button key={opt.key}
+                        onClick={() => {
+                          setPackageType(opt.key);
+                          if (opt.key === 'bundle') { setBundleType(''); setExtraCloseUpMinutes(0); setStageDuration(30); }
+                          if (opt.key === 'close_up_only') { setCloseUpHours(1); }
+                          if (opt.key === 'stage_only') { setStageDuration(30); }
+                        }}
+                        className={`p-4 rounded-lg border-2 text-left transition-all ${packageType === opt.key ? 'border-amber-500 bg-amber-500/10' : 'border-slate-600 hover:border-slate-500'}`}>
+                        <div className="flex justify-between items-start mb-1">
+                          <p className="text-white font-bold text-[14px]">{opt.label}</p>
+                          {opt.badge && <span className="text-[10px] bg-green-600/80 text-white px-2 py-0.5 rounded font-medium whitespace-nowrap">{opt.badge}</span>}
+                        </div>
+                        <p className="text-slate-300 text-[12px]">{opt.sub}</p>
+                      </button>
+                    ))}
                   </div>
                 </div>
 
-                {/* Customize Your Time */}
-                {bundleType && (
-                  <div className="mt-6 border-t border-slate-600 pt-5 space-y-5">
-                    <h3 className="text-white text-[16px] font-bold">Customize Your Time</h3>
-
-                    {/* Close-up add-on — only for Standard (Premium already at 2h max) */}
-                    {bundleType === 'standard' ? (
-                      <div>
-                        <Label className="text-slate-200 text-[13px] mb-2 block">Add more mingling magic?</Label>
-                        <div className="space-y-2">
-                          {[
-                            { value: 0,  label: 'Keep it at 1 hour (included)', extra: null },
-                            { value: 30, label: '+30 min close‑up magic → 1.5 hours total', extra: performer === 'johnny_wu' ? 750 : 300 },
-                            { value: 60, label: '+60 min close‑up magic → 2 hours total',   extra: performer === 'johnny_wu' ? 1500 : 600 },
-                          ].map((opt) => (
-                            <button key={opt.value} onClick={() => setExtraCloseUpMinutes(opt.value)}
-                              className={`w-full text-left px-4 py-2.5 rounded border-2 text-[13px] transition-all flex justify-between items-center ${extraCloseUpMinutes === opt.value ? 'border-amber-500 bg-amber-500/10 text-white font-medium' : 'border-slate-600 hover:border-slate-500 text-slate-300'}`}>
-                              <span>{opt.label}</span>
-                              {opt.extra && <span className="text-amber-400 font-semibold">+${opt.extra.toLocaleString()}</span>}
+                {/* Step 3a: Bundle options */}
+                {packageType === 'bundle' && (
+                  <div className="border-t border-slate-600 pt-5 space-y-5">
+                    <div>
+                      <Label className="text-white text-[14px] mb-3 block font-semibold">Step 3 — Select Bundle</Label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {[
+                          { key: 'standard', label: 'Signature Bundle', sub: '1 Hour Close-Up + 30 Min Stage', badge: '⭐ Most Popular' },
+                          { key: 'premium', label: 'Premium Bundle', sub: '2 Hours Close-Up + 30 Min Stage' },
+                        ].map((b) => {
+                          const previewPrice = getBundlePreviewPrice(performer, b.key);
+                          return (
+                            <button key={b.key} onClick={() => { setBundleType(b.key); setExtraCloseUpMinutes(0); setStageDuration(30); }}
+                              className={`p-4 rounded-lg border-2 text-left transition-all ${bundleType === b.key ? 'border-amber-500 bg-amber-500/10' : 'border-slate-600 hover:border-slate-500'}`}>
+                              <div className="flex justify-between items-start mb-1">
+                                <p className="text-white font-bold text-[15px]">{b.label}</p>
+                                {b.badge && <span className="text-[10px] bg-green-600/80 text-white px-2 py-1 rounded font-medium">{b.badge}</span>}
+                              </div>
+                              <p className="text-slate-300 text-[13px] mb-2">{b.sub}</p>
+                              <p className="text-amber-400 font-bold text-[18px]">{previewPrice > 0 ? `$${previewPrice.toLocaleString()}` : '—'}</p>
                             </button>
-                          ))}
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {bundleType && (
+                      <div className="space-y-5">
+                        {bundleType === 'standard' ? (
+                          <div>
+                            <Label className="text-slate-200 text-[13px] mb-2 block">Add more close-up magic?</Label>
+                            <div className="space-y-2">
+                              {[
+                                { value: 0,  label: '1 hour (included)', extra: null },
+                                { value: 30, label: '+30 min → 1.5 hours total', extra: performer === 'johnny_wu' ? 750 : 300 },
+                                { value: 60, label: '+60 min → 2 hours total',   extra: performer === 'johnny_wu' ? 1500 : 600 },
+                              ].map((opt) => (
+                                <button key={opt.value} onClick={() => setExtraCloseUpMinutes(opt.value)}
+                                  className={`w-full text-left px-4 py-2.5 rounded border-2 text-[13px] transition-all flex justify-between items-center ${extraCloseUpMinutes === opt.value ? 'border-amber-500 bg-amber-500/10 text-white font-medium' : 'border-slate-600 hover:border-slate-500 text-slate-300'}`}>
+                                  <span>{opt.label}</span>
+                                  {opt.extra && <span className="text-amber-400 font-semibold">+${opt.extra.toLocaleString()}</span>}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="p-3 bg-slate-700/40 rounded border border-slate-600">
+                            <p className="text-slate-300 text-[13px]">✓ Premium bundle includes the maximum 2 hours of close-up magic.</p>
+                          </div>
+                        )}
+                        <div>
+                          <Label className="text-slate-200 text-[13px] mb-1 block">Extend the stage show?</Label>
+                          <p className="text-slate-400 text-[12px] mb-2">All bundles include a 30-minute feature show.</p>
+                          <div className="space-y-2">
+                            {[
+                              { value: 30, label: '30 minutes (included)', extra: null },
+                              { value: 45, label: 'Upgrade to 45 minutes', extra: performer === 'johnny_wu' ? 500 : 250 },
+                              { value: 60, label: 'Upgrade to 60 minutes', extra: performer === 'johnny_wu' ? 1000 : 500 },
+                            ].map((opt) => (
+                              <button key={opt.value} onClick={() => setStageDuration(opt.value)}
+                                className={`w-full text-left px-4 py-2.5 rounded border-2 text-[13px] transition-all flex justify-between items-center ${stageDuration === opt.value ? 'border-amber-500 bg-amber-500/10 text-white font-medium' : 'border-slate-600 hover:border-slate-500 text-slate-300'}`}>
+                                <span>{opt.label}</span>
+                                {opt.extra && <span className="text-amber-400 font-semibold">+${opt.extra.toLocaleString()}</span>}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       </div>
-                    ) : (
-                      <div className="p-3 bg-slate-700/40 rounded border border-slate-600">
-                        <p className="text-slate-300 text-[13px]">✓ Premium bundle already includes the maximum 2 hours of close‑up magic.</p>
-                      </div>
                     )}
+                  </div>
+                )}
 
-                    {/* Stage upgrade */}
-                    <div>
-                      <Label className="text-slate-200 text-[13px] mb-1 block">Extend the stage show?</Label>
-                      <p className="text-slate-400 text-[12px] mb-2">All bundles include a 30‑minute feature show.</p>
-                      <div className="space-y-2">
-                        {[
-                          { value: 30, label: '30 minutes (included)',          extra: null },
-                          { value: 45, label: 'Upgrade to 45 minutes',          extra: performer === 'johnny_wu' ? 500  : 250 },
-                          { value: 60, label: 'Upgrade to 60 minutes',          extra: performer === 'johnny_wu' ? 1000 : 500 },
-                        ].map((opt) => (
-                          <button key={opt.value} onClick={() => setStageDuration(opt.value)}
-                            className={`w-full text-left px-4 py-2.5 rounded border-2 text-[13px] transition-all flex justify-between items-center ${stageDuration === opt.value ? 'border-amber-500 bg-amber-500/10 text-white font-medium' : 'border-slate-600 hover:border-slate-500 text-slate-300'}`}>
+                {/* Step 3b: Close-Up Only options */}
+                {packageType === 'close_up_only' && (
+                  <div className="border-t border-slate-600 pt-5">
+                    <Label className="text-white text-[14px] mb-3 block font-semibold">Step 3 — Select Duration</Label>
+                    <div className="space-y-2">
+                      {[
+                        { value: 1, label: '1 Hour Close-Up Magic' },
+                        { value: 2, label: '2 Hours Close-Up Magic' },
+                      ].map((opt) => {
+                        const preview = calculatePackagePrice({ performer, packageType: 'close_up_only', closeUpHours: opt.value, eventType, eventScale, dateString: eventDate });
+                        return (
+                          <button key={opt.value} onClick={() => setCloseUpHours(opt.value)}
+                            className={`w-full text-left px-4 py-3 rounded border-2 text-[13px] transition-all flex justify-between items-center ${closeUpHours === opt.value ? 'border-amber-500 bg-amber-500/10 text-white font-medium' : 'border-slate-600 hover:border-slate-500 text-slate-300'}`}>
                             <span>{opt.label}</span>
-                            {opt.extra && <span className="text-amber-400 font-semibold">+${opt.extra.toLocaleString()}</span>}
+                            <span className="text-amber-400 font-semibold">${preview.price.toLocaleString()}</span>
                           </button>
-                        ))}
-                      </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Step 3c: Stage Only options */}
+                {packageType === 'stage_only' && (
+                  <div className="border-t border-slate-600 pt-5">
+                    <Label className="text-white text-[14px] mb-3 block font-semibold">Step 3 — Select Duration</Label>
+                    <div className="space-y-2">
+                      {[
+                        { value: 30, label: '30-Minute Stage Show' },
+                        { value: 45, label: '45-Minute Stage Show' },
+                        { value: 60, label: '60-Minute Stage Show' },
+                      ].map((opt) => {
+                        const preview = calculatePackagePrice({ performer, packageType: 'stage_only', stageDuration: opt.value, eventType, eventScale, dateString: eventDate });
+                        return (
+                          <button key={opt.value} onClick={() => setStageDuration(opt.value)}
+                            className={`w-full text-left px-4 py-3 rounded border-2 text-[13px] transition-all flex justify-between items-center ${stageDuration === opt.value ? 'border-amber-500 bg-amber-500/10 text-white font-medium' : 'border-slate-600 hover:border-slate-500 text-slate-300'}`}>
+                            <span>{opt.label}</span>
+                            <span className="text-amber-400 font-semibold">${preview.price.toLocaleString()}</span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
@@ -834,17 +945,35 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
                         <span className="text-white font-medium">{performer === 'johnny_wu' ? 'Johnny Wu' : 'Dylan George'}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-300">Bundle</span>
-                        <span className="text-white font-medium">{bundleType === 'standard' ? 'Signature Bundle' : 'Premium Bundle'}</span>
+                        <span className="text-slate-300">Experience</span>
+                        <span className="text-white font-medium">
+                          {packageType === 'bundle' ? (bundleType === 'standard' ? 'Signature Bundle' : 'Premium Bundle') : packageType === 'close_up_only' ? 'Close-Up Only' : 'Stage Show Only'}
+                        </span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-300">Close-Up</span>
-                        <span className="text-white font-medium">{(bundleType === 'standard' ? 60 : 120) + extraCloseUpMinutes} min mingling magic</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-slate-300">Stage Show</span>
-                        <span className="text-white font-medium">{stageDuration} minutes</span>
-                      </div>
+                      {packageType === 'bundle' && (
+                        <>
+                          <div className="flex justify-between">
+                            <span className="text-slate-300">Close-Up</span>
+                            <span className="text-white font-medium">{(bundleType === 'standard' ? 60 : 120) + extraCloseUpMinutes} min</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-300">Stage Show</span>
+                            <span className="text-white font-medium">{stageDuration} min</span>
+                          </div>
+                        </>
+                      )}
+                      {packageType === 'close_up_only' && (
+                        <div className="flex justify-between">
+                          <span className="text-slate-300">Duration</span>
+                          <span className="text-white font-medium">{closeUpHours} hour{closeUpHours > 1 ? 's' : ''} close-up magic</span>
+                        </div>
+                      )}
+                      {packageType === 'stage_only' && (
+                        <div className="flex justify-between">
+                          <span className="text-slate-300">Duration</span>
+                          <span className="text-white font-medium">{stageDuration} min stage show</span>
+                        </div>
+                      )}
                     </>
                   )}
                   {isVirtual && (
