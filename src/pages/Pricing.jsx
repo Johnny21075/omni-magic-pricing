@@ -429,9 +429,10 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
                 <h2 className="text-white text-[18px] md:text-[22px] font-bold mb-1 text-center">Event Date</h2>
                 <p className="text-amber-400 text-[13px] text-center mb-4">* Required to calculate accurate pricing</p>
                 <div className="max-w-md mx-auto">
-                  <Input type="date" value={eventDate} onChange={handleDateChange} min={getTodayDate()} required
-                    className="w-full bg-slate-700 border-2 border-slate-500 focus:border-amber-500 text-white text-[13px] md:text-[14px] h-10 px-3 rounded-lg" />
-                </div>
+                   <Input type="date" value={eventDate} onChange={handleDateChange} min={getTodayDate()} required
+                     onClick={(e) => e.target.showPicker && e.target.showPicker()}
+                     className="w-full bg-slate-700 border-2 border-slate-500 focus:border-amber-500 text-white text-[13px] md:text-[14px] h-10 px-3 rounded-lg cursor-pointer" />
+                 </div>
                 {eventDate && isPeakDate(eventDate) && (
                   <div className="mt-3 p-3 bg-amber-500/20 border-2 border-amber-500/40 rounded-lg text-amber-300 text-[13px] text-center max-w-md mx-auto">
                     🔥 <span className="font-semibold">High demand date</span> — 1.5× pricing applies
@@ -1028,7 +1029,8 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
             <div>
               <Label className="text-slate-200 text-[13px] mb-1 block">Event Time</Label>
               <Input type="time" value={eventTime} onChange={(e) => setEventTime(e.target.value)}
-                className="bg-slate-700 border-slate-600 text-white text-[14px] h-9" />
+                onClick={(e) => e.target.showPicker && e.target.showPicker()}
+                className="bg-slate-700 border-slate-600 text-white text-[14px] h-9 cursor-pointer" />
             </div>
             <div>
               <Label className="text-slate-200 text-[13px] mb-1 block">Venue Address</Label>
