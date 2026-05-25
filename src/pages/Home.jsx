@@ -385,10 +385,9 @@ export default function Home() {
                     </div>
                   </button>
 
-                  {/* VIP Option (only for under 100) */}
-                  {corporateSize === 'under100' &&
-                <button
-                  onClick={() => handleCorporateSelection(corporateSize, 'vip')}
+                  {/* VIP Option (always shown) */}
+                  <button
+                  onClick={() => handleCorporateSelection(corporateSize, 'vip_gala')}
                   className="w-full rounded-xl p-5 bg-gradient-to-br from-amber-900/40 to-amber-800/40 border-2 border-amber-500 hover:border-amber-400 hover:shadow-lg transition-all duration-300 text-left group">
 
                       <div>
@@ -400,7 +399,6 @@ export default function Home() {
                         </p>
                       </div>
                     </button>
-                }
                 </div>
               </motion.div>
             }

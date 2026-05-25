@@ -173,7 +173,7 @@ export default function PricingPage() {
     ? (kidsPerformer === 'johnny_wu' ? KIDS_PRICING.johnny_wu.closeup_addon : KIDS_PRICING.dylan_george.closeup_addon)
     : 0;
 
-  const isCorporateGala = eventType === 'corporate' && (eventScale === 'large' || eventScale === 'vip');
+  const isCorporateGala = eventType === 'corporate' && (eventScale === 'large' || eventScale === 'vip' || eventScale === 'vip_gala');
 
   const getAddonPrice = (addon) => isCorporateGala ? addon.price * 2 : addon.price;
 
@@ -828,11 +828,19 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
                         subhead: 'Founder & Headlining Magician',
                         badge: 'Premium',
                         bullets: ['Featured on Netflix & The Kardashians', 'Fortune 500 trusted', 'Limited annual availability'],
-                        pricing: [
-                          { label: 'Close‑Up Only', from: 'from $3,000' },
-                          { label: 'Stage Only', from: 'from $2,500' },
-                          { label: 'Close‑Up + Stage', from: 'from $3,500', popular: true },
-                        ],
+                        pricing: (() => {
+                          const cat = getPricingCategory(eventType, eventScale);
+                          const isVip = cat === 'corporate_vip_gala';
+                          const isGala = cat === 'corporate_gala';
+                          const cuFrom = isVip ? 'from $8,000' : isGala ? 'from $4,000' : 'from $3,000';
+                          const stFrom = isVip ? 'from $7,000' : isGala ? 'from $3,500' : 'from $2,500';
+                          const buFrom = isVip ? 'from $9,000' : isGala ? 'from $4,500' : 'from $3,500';
+                          return [
+                            { label: 'Close‑Up Only', from: cuFrom },
+                            { label: 'Stage Only', from: stFrom },
+                            { label: 'Close‑Up + Stage', from: buFrom, popular: true },
+                          ];
+                        })(),
                       },
                       {
                         id: 'dylan_george',
@@ -840,11 +848,19 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
                         subhead: 'Lead Magician & Crowd Favorite',
                         badge: 'Most Booked',
                         bullets: ['Same Omni Magic routines as Johnny', 'Personally trained by Johnny Wu', 'More flexible scheduling'],
-                        pricing: [
-                          { label: 'Close‑Up Only', from: 'from $1,250' },
-                          { label: 'Stage Only', from: 'from $900' },
-                          { label: 'Close‑Up + Stage', from: 'from $1,750', popular: true },
-                        ],
+                        pricing: (() => {
+                          const cat = getPricingCategory(eventType, eventScale);
+                          const isVip = cat === 'corporate_vip_gala';
+                          const isGala = cat === 'corporate_gala';
+                          const cuFrom = isVip ? 'from $5,000' : isGala ? 'from $2,500' : 'from $1,250';
+                          const stFrom = isVip ? 'from $3,600' : isGala ? 'from $1,800' : 'from $900';
+                          const buFrom = isVip ? 'from $3,600' : isGala ? 'from $1,800' : 'from $1,750';
+                          return [
+                            { label: 'Close‑Up Only', from: cuFrom },
+                            { label: 'Stage Only', from: stFrom },
+                            { label: 'Close‑Up + Stage', from: buFrom, popular: true },
+                          ];
+                        })(),
                       },
                     ].map((p) => (
                       <button key={p.id} onClick={() => { setPerformer(p.id); setExtraCloseUpMinutes(0); setStageDuration(30); setCloseUpHours(1); }}

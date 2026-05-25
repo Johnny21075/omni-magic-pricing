@@ -21,6 +21,11 @@ export const PRICING = {
       signature: { close_up_per_hr: 4000, stage_30: 3500, stage_45: 4500, stage_60: 5500 },
       diamond:   { close_up_per_hr: 11999, stage_30: 11999, stage_45: 16499, stage_60: 20999 }
     },
+    corporate_vip_gala: {
+      gold:      { close_up_per_hr: 5998, stage_30: 5998, stage_45: 8998, stage_60: 11998 },
+      signature: { close_up_per_hr: 8000, stage_30: 7000, stage_45: 9000, stage_60: 11000 },
+      diamond:   { close_up_per_hr: 23998, stage_30: 23998, stage_45: 32998, stage_60: 41998 }
+    },
     kids_birthday: {
       gold: { stage_30: 1499, stage_45: 1999, stage_60: 2499 },
       signature: { stage_30: 1999, stage_45: 2499, stage_60: 2999 },
@@ -49,9 +54,14 @@ export const PRICING = {
       diamond:   { close_up_per_hr: 2999, stage_30: 2999, stage_45: 4499, stage_60: 5999 }
     },
     corporate_gala: {
-      gold:      { close_up_per_hr: 1849, stage_30: 1849, stage_45: 2749, stage_60: 3849 },
-      signature: { close_up_per_hr: 1750, stage_30: 1500, stage_45: 1900, stage_60: 2250 },
-      diamond:   { close_up_per_hr: 2999, stage_30: 2999, stage_45: 4499, stage_60: 5999 }
+      gold:      { close_up_per_hr: 1698, stage_30: 1698, stage_45: 2498, stage_60: 2998 },
+      signature: { close_up_per_hr: 2500, stage_30: 1800, stage_45: 2500, stage_60: 3000 },
+      diamond:   { close_up_per_hr: 5998, stage_30: 5998, stage_45: 8998, stage_60: 11998 }
+    },
+    corporate_vip_gala: {
+      gold:      { close_up_per_hr: 3396, stage_30: 3396, stage_45: 4996, stage_60: 5996 },
+      signature: { close_up_per_hr: 5000, stage_30: 3600, stage_45: 5000, stage_60: 6000 },
+      diamond:   { close_up_per_hr: 11996, stage_30: 11996, stage_45: 17996, stage_60: 23996 }
     },
     kids_birthday: {
       gold:      { stage_30: 599,  stage_45: 799,  stage_60: 999  },
@@ -87,6 +97,10 @@ export const BUNDLES = {
       standard: { closeUpHours: 1, stageDuration: 30, basePrice: 4500 },
       premium:  { closeUpHours: 2, stageDuration: 30, basePrice: 6500 },
     },
+    corporate_vip_gala: {
+      standard: { closeUpHours: 1, stageDuration: 30, basePrice: 9000 },
+      premium:  { closeUpHours: 2, stageDuration: 30, basePrice: 13000 },
+    },
     bar_bat_mitzvah: {
       standard: { closeUpHours: 1, stageDuration: 30, basePrice: 3500 },
       premium:  { closeUpHours: 2, stageDuration: 30, basePrice: 5000 },
@@ -106,8 +120,12 @@ export const BUNDLES = {
       premium:  { closeUpHours: 2, stageDuration: 30, basePrice: 2250 },
     },
     corporate_gala: {
-      standard: { closeUpHours: 1, stageDuration: 30, basePrice: 2250 },
-      premium:  { closeUpHours: 2, stageDuration: 30, basePrice: 3000 },
+      standard: { closeUpHours: 1, stageDuration: 30, basePrice: 1800 },
+      premium:  { closeUpHours: 2, stageDuration: 30, basePrice: 2300 },
+    },
+    corporate_vip_gala: {
+      standard: { closeUpHours: 1, stageDuration: 30, basePrice: 3600 },
+      premium:  { closeUpHours: 2, stageDuration: 30, basePrice: 4600 },
     },
     bar_bat_mitzvah: {
       standard: { closeUpHours: 1, stageDuration: 30, basePrice: 1750 },
@@ -219,8 +237,11 @@ export const getPricingCategory = (eventType, eventScale) => {
     if (eventScale === 'small') {
       return 'corporate_small';
     }
-    if (eventScale === 'large' || eventScale === 'vip') {
+    if (eventScale === 'large') {
       return 'corporate_gala';
+    }
+    if (eventScale === 'vip' || eventScale === 'vip_gala') {
+      return 'corporate_vip_gala';
     }
   }
 
