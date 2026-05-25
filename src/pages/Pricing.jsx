@@ -852,9 +852,9 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
                           const cat = getPricingCategory(eventType, eventScale);
                           const isVip = cat === 'corporate_vip_gala';
                           const isGala = cat === 'corporate_gala';
-                          const cuFrom = isVip ? 'from $5,000' : isGala ? 'from $2,500' : 'from $1,250';
-                          const stFrom = isVip ? 'from $3,600' : isGala ? 'from $1,800' : 'from $900';
-                          const buFrom = isVip ? 'from $3,600' : isGala ? 'from $1,800' : 'from $1,750';
+                          const cuFrom = isVip ? 'from $2,400' : isGala ? 'from $1,200' : 'from $1,250';
+                          const stFrom = isVip ? 'from $2,100' : isGala ? 'from $1,050' : 'from $900';
+                          const buFrom = isVip ? 'from $2,700' : isGala ? 'from $1,350' : 'from $1,750';
                           return [
                             { label: 'Close‑Up Only', from: cuFrom },
                             { label: 'Stage Only', from: stFrom },
