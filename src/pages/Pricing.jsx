@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { DayPicker } from "react-day-picker";
+import "react-day-picker/dist/style.css";
 import { base44 } from "@/api/base44Client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -437,28 +439,39 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
               <div className="p-4 md:p-6">
                 <h2 className="text-white text-[18px] md:text-[22px] font-bold mb-1 text-center">Event Date</h2>
                 <p className="text-amber-400 text-[13px] text-center mb-4">* Required to calculate accurate pricing</p>
-                <div className="max-w-md mx-auto">
-                  {/* Wrapper: styled display layered under a transparent native input */}
-                  <div className="relative h-12">
-                    {/* Visual layer */}
-                    <div className="absolute inset-0 flex items-center justify-between bg-slate-700 border-2 border-slate-500 hover:border-amber-500 text-white text-[14px] px-4 rounded-lg pointer-events-none transition-colors">
-                      <span className={eventDate ? 'text-white' : 'text-slate-400'}>
-                        {eventDate ? new Date(eventDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'long', day: 'numeric' }) : 'Select your event date'}
-                      </span>
-                      <svg className="w-5 h-5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    {/* Transparent native date input sits on top — full clickable area */}
-                    <input
-                      type="date"
-                      value={eventDate}
-                      onChange={handleDateChange}
-                      min={getTodayDate()}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                    />
-                  </div>
-                </div>
+                <style>{`
+                  .rdp { --rdp-accent-color: #f59e0b; --rdp-background-color: rgba(245,158,11,0.15); margin: 0 auto; }
+                  .rdp-months { justify-content: center; }
+                  .rdp-month { background: transparent; }
+                  .rdp-caption { color: #fff; font-size: 15px; font-weight: 600; }
+                  .rdp-nav_button { color: #94a3b8; }
+                  .rdp-nav_button:hover { background: rgba(255,255,255,0.1); color: #fff; }
+                  .rdp-head_cell { color: #94a3b8; font-size: 12px; font-weight: 500; }
+                  .rdp-day { color: #e2e8f0; font-size: 14px; border-radius: 8px; }
+                  .rdp-day:hover:not([disabled]) { background: rgba(245,158,11,0.2); color: #fff; }
+                  .rdp-day_selected { background: #f59e0b !important; color: #1e293b !important; font-weight: 700; }
+                  .rdp-day_today { border: 1px solid #64748b; }
+                  .rdp-day_disabled { color: #334155 !important; cursor: not-allowed; }
+                `}</style>
+                <DayPicker
+                  mode="single"
+                  selected={eventDate ? new Date(eventDate + 'T00:00:00') : undefined}
+                  onSelect={(date) => {
+                    if (date) {
+                      const y = date.getFullYear();
+                      const m = String(date.getMonth() + 1).padStart(2, '0');
+                      const d = String(date.getDate()).padStart(2, '0');
+                      setEventDate(`${y}-${m}-${d}`);
+                    }
+                  }}
+                  disabled={{ before: new Date() }}
+                  showOutsideDays
+                />
+                {eventDate && (
+                  <p className="text-center text-white text-[14px] font-medium mt-2">
+                    📅 {new Date(eventDate + 'T00:00:00').toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                  </p>
+                )}
                 {eventDate && isPeakDate(eventDate) && (
                   <div className="mt-3 p-3 bg-amber-500/20 border-2 border-amber-500/40 rounded-lg text-amber-300 text-[13px] text-center max-w-md mx-auto">
                     🔥 <span className="font-semibold">High demand date</span> — 1.5× pricing applies
