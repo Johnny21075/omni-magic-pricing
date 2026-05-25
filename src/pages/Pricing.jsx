@@ -25,6 +25,7 @@ import {
 import { pricingData } from '../components/pricing/pricingData';
 import { magicExperiencesComparison } from '../components/pricing/tierComparisonData';
 import TierComparisonTable from '../components/pricing/TierComparisonTable';
+import BookingSummary from '../components/pricing/BookingSummary';
 import { createPageUrl } from '@/utils';
 
 const backgroundImageUrl = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/68b9fdb80e10eb3dae94dfbf/e620330f2_IMG_1641.jpg";
@@ -82,6 +83,7 @@ export default function PricingPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [holdExpiryTime, setHoldExpiryTime] = useState(null);
+  const [summaryData, setSummaryData] = useState(null);
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
@@ -339,10 +341,32 @@ export default function PricingPage() {
         paymentMethod,
       });
       setHoldExpiryTime(expiryTime);
+      setSummaryData({
+        customerName: fullName,
+        customerEmail: email,
+        eventDate,
+        packageDetails: buildPackageDetails(),
+        depositAmount,
+        totalInvestment,
+        remainingBalance: totalInvestment - depositAmount,
+        expiryTime: expiryTime.toISOString(),
+        paymentMethod,
+      });
       setShowSuccessModal(true);
     } catch (error) {
       console.error('Hold date error:', error);
       setHoldExpiryTime(expiryTime);
+      setSummaryData({
+        customerName: fullName,
+        customerEmail: email,
+        eventDate,
+        packageDetails: buildPackageDetails(),
+        depositAmount,
+        totalInvestment,
+        remainingBalance: totalInvestment - depositAmount,
+        expiryTime: expiryTime.toISOString(),
+        paymentMethod,
+      });
       setShowSuccessModal(true);
     } finally {
       setIsSubmitting(false);
@@ -420,9 +444,31 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
         body: `<p>Hi ${fullName},</p><p>We've received your booking request and will send you an official contract and invoice within 24 hours.</p><p>Questions? Email us at <a href="mailto:hello@omnimagic.co">hello@omnimagic.co</a></p><p>– The Omni Magic Team</p>`,
       });
 
+      setSummaryData({
+        customerName: fullName,
+        customerEmail: email,
+        eventDate,
+        packageDetails: buildPackageDetails(),
+        depositAmount: 0,
+        totalInvestment,
+        remainingBalance: totalInvestment,
+        expiryTime: null,
+        paymentMethod: null,
+      });
       setShowSuccessModal(true);
     } catch (error) {
       console.error('Confirm now error:', error);
+      setSummaryData({
+        customerName: fullName,
+        customerEmail: email,
+        eventDate,
+        packageDetails: buildPackageDetails(),
+        depositAmount: 0,
+        totalInvestment,
+        remainingBalance: totalInvestment,
+        expiryTime: null,
+        paymentMethod: null,
+      });
       setShowSuccessModal(true);
     } finally {
       setIsSubmitting(false);
@@ -439,6 +485,17 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
         if (res.data?.success) {
           setHoldExpiryTime(new Date(res.data.expiryTime));
           setEmail(res.data.customerEmail);
+          setSummaryData({
+            customerName: res.data.customerName,
+            customerEmail: res.data.customerEmail,
+            eventDate,
+            packageDetails: res.data.packageDetails,
+            depositAmount: res.data.depositAmount,
+            totalInvestment: res.data.totalInvestment,
+            remainingBalance: res.data.remainingBalance,
+            expiryTime: res.data.expiryTime,
+            paymentMethod: 'Credit Card',
+          });
           setShowSuccessModal(true);
         }
       }).catch(() => setShowSuccessModal(true));
@@ -471,6 +528,16 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
   };
 
   // ── Render ─────────────────────────────────────────────────────────────────
+
+  // Show full-page summary after booking
+  if (showSuccessModal && summaryData) {
+    return (
+      <BookingSummary
+        data={summaryData}
+        onClose={() => window.location.href = '/'}
+      />
+    );
+  }
 
   return (
     <>
@@ -1349,38 +1416,7 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
         </DialogContent>
       </Dialog>
 
-      {/* Success Modal */}
-      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
-        <DialogContent className="bg-slate-900 border-amber-400/30 text-white max-w-md overflow-y-auto">
-          <div className="text-center py-6">
-            <CheckCircle className="w-16 h-16 text-green-400 mx-auto mb-4" />
-            <h3 className="text-[22px] font-semibold text-white mb-3">
-              {bookingOption === 'hold' ? 'Hold Request Sent! 🎉' : 'Request Sent! 📧'}
-            </h3>
-            {bookingOption === 'hold' ? (
-              <>
-                <p className="text-[15px] text-slate-200 mb-4">
-                  Complete your <span className="font-bold text-amber-400">${depositAmount.toLocaleString()}</span> deposit via Stripe, Zelle, or Venmo within 48 hours to confirm your date.
-                </p>
-                {holdExpiryTime && (
-                  <div className="bg-blue-900/30 rounded p-3 mb-4">
-                    <p className="text-blue-400 text-[13px] mb-1">Your hold expires:</p>
-                    <p className="text-white text-[16px] font-semibold">{format(holdExpiryTime, 'PPpp')}</p>
-                  </div>
-                )}
-              </>
-            ) : (
-              <p className="text-[15px] text-slate-200 mb-4">
-                We've received your booking request and will email you a contract and invoice within 24 hours.
-              </p>
-            )}
-            <Button onClick={() => window.location.reload()}
-              className="bg-amber-500 hover:bg-amber-400 text-slate-900 font-medium px-6 h-10">
-              Close
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Success is handled by full-page BookingSummary above */}
 
       {/* Video Modal */}
       <Dialog open={showVideoModal} onOpenChange={setShowVideoModal}>
