@@ -430,7 +430,7 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
                 <p className="text-amber-400 text-[13px] text-center mb-4">* Required to calculate accurate pricing</p>
                 <div className="max-w-md mx-auto">
                    <Input type="date" value={eventDate} onChange={handleDateChange} min={getTodayDate()} required
-                     onClick={(e) => e.target.showPicker && e.target.showPicker()}
+                     onClick={(e) => { try { e.target.showPicker && e.target.showPicker(); } catch (_) {} }}
                      className="w-full bg-slate-700 border-2 border-slate-500 focus:border-amber-500 text-white text-[13px] md:text-[14px] h-10 px-3 rounded-lg cursor-pointer" />
                  </div>
                 {eventDate && isPeakDate(eventDate) && (
@@ -1029,7 +1029,7 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
             <div>
               <Label className="text-slate-200 text-[13px] mb-1 block">Event Time</Label>
               <Input type="time" value={eventTime} onChange={(e) => setEventTime(e.target.value)}
-                onClick={(e) => e.target.showPicker && e.target.showPicker()}
+                onClick={(e) => { try { e.target.showPicker && e.target.showPicker(); } catch (_) {} }}
                 className="bg-slate-700 border-slate-600 text-white text-[14px] h-9 cursor-pointer" />
             </div>
             <div>
