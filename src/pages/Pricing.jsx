@@ -596,10 +596,56 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
             {/* ── KIDS BIRTHDAY ─────────────────────────────────────────────── */}
             {isKidsBirthday && (
               <div className="bg-slate-800/90 rounded-lg border border-slate-700 p-4 md:p-6 mb-4 shadow-sm">
-                <h2 className="text-white text-[20px] md:text-[24px] font-bold mb-2 text-center">Kids' Birthday Magic</h2>
+                <h2 className="text-white text-[20px] md:text-[24px] font-bold mb-1 text-center">Kids' Birthday Magic</h2>
                 <p className="text-slate-300 text-[14px] text-center mb-6 max-w-2xl mx-auto">
                   Modern, high‑energy kids' shows that parents love and kids talk about for weeks.
                 </p>
+
+                {/* Pricing Breakdown */}
+                <div className="bg-slate-700/40 rounded-lg p-5 mb-6 border border-slate-600">
+                  <h3 className="text-amber-400 text-[16px] font-semibold mb-5 text-center">Kids Birthday Pricing (Public Version)</h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    {/* Johnny Wu */}
+                    <div className="bg-slate-800/60 rounded p-4 border border-amber-500/30">
+                      <h4 className="text-white text-[15px] font-bold mb-1">Johnny Wu</h4>
+                      <p className="text-amber-300 text-[12px] font-medium mb-3">Premium Kids Magic Experience</p>
+                      <div className="space-y-1 text-[13px]">
+                        <div className="flex justify-between text-slate-200"><span>30 Minutes</span><span className="text-amber-400 font-semibold">$1,499</span></div>
+                        <div className="flex justify-between text-slate-200"><span>45 Minutes</span><span className="text-amber-400 font-semibold">$1,999</span></div>
+                        <div className="flex justify-between text-slate-200"><span>60 Minutes</span><span className="text-amber-400 font-semibold">$2,499</span></div>
+                      </div>
+                      <p className="text-slate-300 text-[11px] mt-3 italic">Perfect for parents who want a high-energy, unforgettable birthday experience with premium magic and big reactions.</p>
+                    </div>
+
+                    {/* Dylan George */}
+                    <div className="bg-slate-800/60 rounded p-4 border border-green-500/30">
+                      <h4 className="text-white text-[15px] font-bold mb-1">Dylan George</h4>
+                      <p className="text-green-400 text-[12px] font-medium mb-3">Kids Magic Experience</p>
+                      
+                      <div className="mb-3">
+                        <p className="text-slate-300 text-[12px] font-semibold mb-2">Weekday Pricing</p>
+                        <div className="space-y-1 text-[13px]">
+                          <div className="flex justify-between text-slate-200"><span>30 Minutes</span><span className="text-green-400 font-semibold">$599</span></div>
+                          <div className="flex justify-between text-slate-200"><span>45 Minutes</span><span className="text-green-400 font-semibold">$799</span></div>
+                          <div className="flex justify-between text-slate-200"><span>60 Minutes</span><span className="text-green-400 font-semibold">$999</span></div>
+                        </div>
+                      </div>
+
+                      <div className="mb-3">
+                        <p className="text-slate-300 text-[12px] font-semibold mb-2">Weekend Pricing</p>
+                        <div className="space-y-1 text-[13px]">
+                          <div className="flex justify-between text-slate-200"><span>30 Minutes</span><span className="text-green-400 font-semibold">$699</span></div>
+                          <div className="flex justify-between text-slate-200"><span>45 Minutes</span><span className="text-green-400 font-semibold">$899</span></div>
+                          <div className="flex justify-between text-slate-200"><span>60 Minutes</span><span className="text-green-400 font-semibold">$1,199</span></div>
+                        </div>
+                      </div>
+
+                      <p className="text-slate-400 text-[11px] py-2 border-t border-slate-600">Add Close-Up Magic (after show or during party): <span className="text-green-400 font-semibold">+$299</span></p>
+                      <p className="text-slate-300 text-[11px] mt-3 italic">Perfect for fun, interactive birthday parties with lots of laughter and engagement.</p>
+                    </div>
+                  </div>
+                </div>
 
                 {/* Performer Selection */}
                 <div className="mb-6">
