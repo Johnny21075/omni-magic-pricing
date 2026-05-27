@@ -399,6 +399,21 @@ export default function Home() {
                         </p>
                       </div>
                     </button>
+
+                  {/* Virtual Show */}
+                  <button
+                  onClick={() => window.location.href = `/Pricing?eventType=virtual&eventSize=${corporateSize}&eventScale=virtual`}
+                  className="w-full rounded-xl p-5 bg-slate-800 border-2 border-slate-600 hover:border-cyan-500 hover:bg-slate-750 transition-all duration-300 text-left group">
+
+                    <div>
+                      <p className="font-bold text-[17px] md:text-[18px] text-white mb-2 group-hover:text-cyan-400 transition-colors">
+                        🖥️ Virtual Show
+                      </p>
+                      <p className="text-[14px] text-slate-200 leading-relaxed">
+                        World-class magic and mentalism delivered live over Zoom or any video platform — no travel required.
+                      </p>
+                    </div>
+                  </button>
                 </div>
               </motion.div>
             }
