@@ -119,6 +119,7 @@ Deno.serve(async (req) => {
       <div class="section-title">📅 Event Details</div>
       <div class="section-content">
         <div class="detail-row"><strong>Event Date:</strong> ${metadata.event_date || 'N/A'}</div>
+        ${metadata.event_time ? `<div class="detail-row"><strong>Event Time:</strong> ${metadata.event_time}</div>` : ''}
       </div>
     </div>
 
@@ -232,6 +233,7 @@ Deno.serve(async (req) => {
       <div class="section-title">📅 Event Details</div>
       <div class="section-content">
         <div><strong>Date:</strong> ${metadata.event_date || 'N/A'}</div>
+        ${metadata.event_time ? `<div><strong>Time:</strong> ${metadata.event_time}</div>` : ''}
         <div><strong>Service Type:</strong> ${metadata.package_type || 'N/A'}</div>
         <div><strong>Performer:</strong> ${metadata.package_performer || 'N/A'}</div>
         <div><strong>Duration:</strong> ${metadata.package_duration || 'N/A'}</div>
@@ -285,6 +287,7 @@ Deno.serve(async (req) => {
       totalInvestment: parseFloat(metadata.total_investment || '0'),
       remainingBalance,
       eventDate: metadata.event_date,
+      eventTime: metadata.event_time || '',
       packageDetails,
     });
   } catch (error) {

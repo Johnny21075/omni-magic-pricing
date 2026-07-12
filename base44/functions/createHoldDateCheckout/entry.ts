@@ -11,6 +11,7 @@ Deno.serve(async (req) => {
       customerName,
       packageDetails,
       eventDate,
+      eventTime,
       phone,
       additionalNotes
     } = await req.json();
@@ -64,6 +65,7 @@ Deno.serve(async (req) => {
         customer_email: customerEmail,
         customer_phone: phone || '',
         event_date: eventDate || '',
+        event_time: eventTime || '',
         package_type: packageDetails?.type || '',
         package_performer: packageDetails?.performer || '',
         package_duration: packageDetails?.duration || '',

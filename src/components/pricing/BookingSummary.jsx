@@ -8,6 +8,7 @@ export default function BookingSummary({ data, onClose }) {
     customerName,
     customerEmail,
     eventDate,
+    eventTime,
     packageDetails,
     depositAmount,
     totalInvestment,
@@ -24,6 +25,16 @@ export default function BookingSummary({ data, onClose }) {
         day: "numeric",
       })
     : "Not specified";
+
+  const formattedEventTime = eventTime
+    ? (() => {
+        const [h, m] = eventTime.split(":");
+        const hour = parseInt(h, 10);
+        const ampm = hour >= 12 ? "PM" : "AM";
+        const displayHour = hour % 12 || 12;
+        return `${displayHour}:${m} ${ampm}`;
+      })()
+    : null;
 
   const formattedExpiry = expiryTime
     ? format(new Date(expiryTime), "PPpp")
@@ -61,6 +72,12 @@ export default function BookingSummary({ data, onClose }) {
                 <span className="text-slate-400">Date</span>
                 <span className="text-white font-medium">{formattedEventDate}</span>
               </div>
+              {formattedEventTime && (
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Time</span>
+                  <span className="text-white font-medium">{formattedEventTime}</span>
+                </div>
+              )}
               {packageDetails?.performer && (
                 <div className="flex justify-between">
                   <span className="text-slate-400">Performer</span>
