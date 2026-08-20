@@ -41,8 +41,9 @@ export default function BookingSummary({ data, onClose }) {
     : null;
 
   return (
-    <div className="min-h-screen bg-slate-900 flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-lg">
+    <div className="h-screen bg-slate-900 overflow-y-auto">
+      <div className="min-h-full flex items-center justify-center px-4 py-12 bg-slate-900">
+        <div className="w-full max-w-lg">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="w-20 h-20 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -173,6 +174,7 @@ export default function BookingSummary({ data, onClose }) {
           >
             Back to Home
           </Button>
+        </div>
         </div>
       </div>
     </div>
