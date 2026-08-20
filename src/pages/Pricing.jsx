@@ -435,16 +435,11 @@ ${venueAddress ? `<div><strong>Venue:</strong> ${venueAddress}</div>` : ''}
 ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES</div><div class="section-content">${additionalNotes}</div></div>` : ''}
 </div></body></html>`;
 
-      await base44.integrations.Core.SendEmail({
-        to: 'hello@omnimagic.co',
+      await base44.functions.invoke('sendBookingRequest', {
+        businessEmailBody: bookingEmailBody,
+        customerName: fullName,
+        customerEmail: email,
         subject: `📋 New Booking Request – ${pkg.type}`,
-        body: bookingEmailBody,
-      });
-
-      await base44.integrations.Core.SendEmail({
-        to: email,
-        subject: `✨ Your Omni Magic Booking Request Received!`,
-        body: `<p>Hi ${fullName},</p><p>We've received your booking request and will send you an official contract and invoice within 24 hours.</p><p>Questions? Email us at <a href="mailto:hello@omnimagic.co">hello@omnimagic.co</a></p><p>– The Omni Magic Team</p>`,
       });
 
       setSummaryData({
@@ -462,19 +457,7 @@ ${additionalNotes ? `<div class="section"><div class="section-title">📝 NOTES<
       setShowSuccessModal(true);
     } catch (error) {
       console.error('Confirm now error:', error);
-      setSummaryData({
-        customerName: fullName,
-        customerEmail: email,
-        eventDate,
-        eventTime,
-        packageDetails: buildPackageDetails(),
-        depositAmount: 0,
-        totalInvestment,
-        remainingBalance: totalInvestment,
-        expiryTime: null,
-        paymentMethod: null,
-      });
-      setShowSuccessModal(true);
+      alert('Sorry, we could not send your booking request. Please email us directly at hello@omnimagic.co and we will take care of you right away.');
     } finally {
       setIsSubmitting(false);
     }
